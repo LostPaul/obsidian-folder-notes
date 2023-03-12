@@ -1,0 +1,11 @@
+{
+	"id": "folder-notes",
+	"name": "Folder Notes",
+	"version": "1.0.1",
+	"minAppVersion": "0.15.0",
+	"description": "Adds Folder Notes to the default file tree.",
+	"author": "Alan Grainger",
+	"authorUrl": "https://github.com/alangrainger/obsidian-folder-notes",
+	"fundingUrl": "https://ko-fi.com/alan_",
+	"isDesktopOnly": false
+}

@@ -1,0 +1,13 @@
+.nav-folder-title-content {
+    flex-grow: 1;
+    padding-bottom: 4px;
+    padding-top: 4px;
+}
+.nav-folder-title {
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
+.hide-folder-note .is-folder-note {
+    display: none;
+}
