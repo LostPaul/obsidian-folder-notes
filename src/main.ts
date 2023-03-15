@@ -1,5 +1,6 @@
 import { Plugin, TFile, TFolder, TAbstractFile } from 'obsidian'
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings'
+import FolderNameModal from './folderNameModal';
 export default class FolderNotesPlugin extends Plugin {
   observer: MutationObserver
   folders: TFolder[] = []
@@ -9,16 +10,22 @@ export default class FolderNotesPlugin extends Plugin {
     console.log('loading folder notes plugin');
     await this.loadSettings();
     this.settingsTab = new SettingsTab(this.app, this);
+    this.addSettingTab(this.settingsTab);
     if (this.settings.hideFolderNote) {
       document.body.classList.add('hide-folder-note');
     } else {
       document.body.classList.remove('hide-folder-note');
     }
     this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
+      if (!this.app.workspace.layoutReady) return;
       if (!this.settings.autoCreate) return;
       if (file instanceof TFolder) {
         const path = file.path + '/' + file.name + '.md';
+        if (!path) return;
+        const folder = this.app.vault.getAbstractFileByPath(path);
+        if (folder) return;
         this.createFolderNote(path);
+
       }
     }));
 
@@ -51,14 +58,13 @@ export default class FolderNotesPlugin extends Plugin {
             .forEach((element: HTMLElement) => {
               element.onclick = (event: MouseEvent) => this.handleFolderClick(event);
             });
-        } 
+        }
       })
     });
     this.observer.observe(document.body, {
       childList: true,
       subtree: true,
     });
-
   }
 
   async handleFolderClick(event: MouseEvent) {
@@ -70,9 +76,10 @@ export default class FolderNotesPlugin extends Plugin {
 
     if (this.app.vault.getAbstractFileByPath(path)) {
       this.openFolderNote(path);
+      if (!this.settings.hideFolderNote) return;
       event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
         .forEach((element: HTMLElement) => {
-          if (element.innerText === (event.target as HTMLElement)?.innerText) {
+          if (element.innerText === (event.target as HTMLElement)?.innerText && !element.classList.contains('is-folder-note')) {
             element.classList.add('is-folder-note');
           }
         });
@@ -80,12 +87,13 @@ export default class FolderNotesPlugin extends Plugin {
     } else if (event.altKey || event.ctrlKey) {
       if ((this.settings.altKey && event.altKey) || (this.settings.ctrlKey && event.ctrlKey)) {
         this.createFolderNote(path);
+        if (!this.settings.hideFolderNote) return;
         event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
-        .forEach((element: HTMLElement) => {
-          if (element.innerText === (event.target as HTMLElement)?.innerText) {
-            element.classList.add('is-folder-note');
-          }
-        });
+          .forEach((element: HTMLElement) => {
+            if (element.innerText === (event.target as HTMLElement)?.innerText && !element.classList.contains('is-folder-note')) {
+              element.classList.add('is-folder-note');
+            }
+          });
       } else {
         event.target.onclick = null;
         event.target.click();
@@ -100,6 +108,11 @@ export default class FolderNotesPlugin extends Plugin {
     const leaf = this.app.workspace.getLeaf(false);
     const file = await this.app.vault.create(path, '');
     await leaf.openFile(file);
+    if (!this.settings.autoCreate) return;
+    const folder = this.app.vault.getAbstractFileByPath(path.substring(0, path.lastIndexOf('/' || '\\')));
+    if (!(folder instanceof TFolder)) return;
+    const modal = new FolderNameModal(this.app, this, folder);
+    modal.open();
   }
 
   async openFolderNote(path: string) {
