@@ -4,19 +4,19 @@ export interface FolderNotesSettings {
     syncFolderName: boolean;
     ctrlKey: boolean;
     altKey: boolean;
-    autoRename: boolean;
     hideFolderNote: boolean;
     templatePath: string;
     autoCreate: boolean;
+    excludeFolders: string[];
 }
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
     syncFolderName: true,
     ctrlKey: true,
     altKey: false,
-    autoRename: true,
     hideFolderNote: true,
     templatePath: '',
-    autoCreate: true,
+    autoCreate: false,
+    excludeFolders: [],
 };
 export class SettingsTab extends PluginSettingTab {
     plugin: FolderNotesPlugin;
@@ -48,5 +48,46 @@ export class SettingsTab extends PluginSettingTab {
                         this.display();
                     })
             );
+        new Setting(containerEl)
+            .setName('Sync folder name')
+            .setDesc('Automatically rename the folder note when the folder name is changed')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.syncFolderName)
+                    .onChange(async (value) => {
+                        this.plugin.settings.syncFolderName = value;
+                        await this.plugin.saveSettings();
+                        this.display();
+                    })
+            );
+        new Setting(containerEl)
+            .setName('Auto create folder note')
+            .setDesc('Automatically create a folder note when a new folder is created')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.autoCreate)
+                    .onChange(async (value) => {
+                        this.plugin.settings.autoCreate = value;
+                        await this.plugin.saveSettings();
+                        this.display();
+                    })
+            );
+        new Setting(containerEl)
+            .setName('Key for creating folder note')
+            .setDesc('The key combination to create a folder note')
+            .addDropdown((dropdown) => {
+                dropdown
+                    .addOption('ctrl', 'Ctrl + Click')
+                    .addOption('alt', 'Alt + Click')
+                    .setValue(this.plugin.settings.ctrlKey ? 'ctrl' : 'alt')
+                    .onChange(async (value) => {
+                        this.plugin.settings.ctrlKey = value === 'ctrl';
+                        this.plugin.settings.altKey = value === 'alt';
+                        await this.plugin.saveSettings();
+                        this.display();
+                    });
+            });
+
+
     }
 }

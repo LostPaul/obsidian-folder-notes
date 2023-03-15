@@ -11,3 +11,7 @@
 .hide-folder-note .is-folder-note {
     display: none;
 }
+
+.nav-folder-collapse-indicator:hover {
+    cursor: pointer;
+}
