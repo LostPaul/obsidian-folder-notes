@@ -1,6 +1,6 @@
 import { Plugin, TFile, TFolder, TAbstractFile } from 'obsidian'
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings'
-import FolderNameModal from './folderNameModal';
+import FolderNameModal from './modals/folderName';
 export default class FolderNotesPlugin extends Plugin {
   observer: MutationObserver
   folders: TFolder[] = []
