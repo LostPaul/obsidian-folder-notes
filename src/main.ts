@@ -45,6 +45,7 @@ export default class FolderNotesPlugin extends Plugin {
         }
       } else if (file instanceof TFile) {
         const folder = this.app.vault.getAbstractFileByPath(oldPath.substring(0, oldPath.lastIndexOf('/' || '\\')));
+        if (file.name !== folder?.name + '.md') return;
         if (folder instanceof TFolder) {
           this.app.vault.rename(folder, folder.path.substring(0, folder.path.lastIndexOf('/' || '\\')) + '/' + file.name.substring(0, file.name.lastIndexOf('.')));
         }
