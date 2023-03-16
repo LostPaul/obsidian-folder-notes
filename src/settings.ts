@@ -9,6 +9,14 @@ export interface FolderNotesSettings {
     autoCreate: boolean;
     excludeFolders: string[];
 }
+export interface ExcludeFolder {
+    path: string;
+    subFolders: boolean;
+    exludeSync: boolean;
+    excludeAutoCreate: boolean;
+    disableFolderNote: boolean;
+    position: number;
+}
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
     syncFolderName: true,
     ctrlKey: true,
@@ -88,6 +96,23 @@ export class SettingsTab extends PluginSettingTab {
                     });
             });
 
-
+        new Setting(containerEl)
+            .setHeading()
+            .setName('Manage excluded folders')
+        new Setting(containerEl)
+            .setName('Add excluded folder')
+            .addButton(cb => {
+                cb.setIcon('plus');
+                cb.setClass('add-exclude-folder');
+                cb.setTooltip('Add excluded folder');
+                cb.onClick(() => {
+                })
+            })
+    }
+    addExcludeFolderListItem(excludeFolder: ExcludeFolder) {
+        const { containerEl } = this;
+        new Setting(containerEl)
+    }
+    addExcludeFolder(excludeFolder: ExcludeFolder) {
     }
 }
