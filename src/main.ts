@@ -17,16 +17,19 @@ export default class FolderNotesPlugin extends Plugin {
     } else {
       document.body.classList.remove('hide-folder-note');
     }
-    this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
+    this.registerEvent(this.app.vault.on('create', (folder: TAbstractFile) => {
       if (!this.app.workspace.layoutReady) return;
       if (!this.settings.autoCreate) return;
-      if (file instanceof TFolder) {
-        const path = file.path + '/' + file.name + '.md';
-        if (!path) return;
-        const folder = this.app.vault.getAbstractFileByPath(path);
-        if (folder) return;
-        this.createFolderNote(path, true);
-      }
+      if (!(folder instanceof TFolder)) return;
+      const excludedFolder = this.settings.excludeFolders.find((excludedFolder) => excludedFolder.path === folder.path);
+      if (excludedFolder?.disableAutoCreate) return;
+
+      const path = folder.path + '/' + folder.name + '.md';
+      if (!path) return;
+      const file = this.app.vault.getAbstractFileByPath(path);
+      if (file) return;
+      this.createFolderNote(path, true);
+
     }));
 
     this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
@@ -45,6 +48,8 @@ export default class FolderNotesPlugin extends Plugin {
         }
       } else if (file instanceof TFile) {
         const folder = this.app.vault.getAbstractFileByPath(oldPath.substring(0, oldPath.lastIndexOf('/' || '\\')));
+        const excludedFolder = this.settings.excludeFolders.find((excludedFolder) => excludedFolder.path === folder?.path);
+        if (excludedFolder?.disableSync) return;
         if (file.name !== folder?.name + '.md') return;
         if (folder instanceof TFolder) {
           this.app.vault.rename(folder, folder.path.substring(0, folder.path.lastIndexOf('/' || '\\')) + '/' + file.name.substring(0, file.name.lastIndexOf('.')));

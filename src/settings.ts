@@ -114,6 +114,7 @@ export class SettingsTab extends PluginSettingTab {
     }
     addExcludeFolderListItem(containerEl: HTMLElement, excludedFolder: ExcludedFolder) {
         const setting = new Setting(containerEl)
+        setting.setClass('fn-exclude-folder-list-item')
         setting.addSearch(cb => {
             new FolderSuggest(
                 cb.inputEl,
@@ -194,15 +195,16 @@ export class SettingsTab extends PluginSettingTab {
 export class ExcludedFolder {
     path: string;
     subFolders: boolean;
-    exludeSync: boolean;
-    excludeAutoCreate: boolean;
+    disableSync: boolean;
+    disableAutoCreate: boolean;
     disableFolderNote: boolean;
+    enableCollapsing: boolean;
     position: number;
-    constructor(path: string, subFolders: boolean, exludeSync: boolean, excludeAutoCreate: boolean, disableFolderNote: boolean, position: number) {
+    constructor(path: string, subFolders: boolean, disableSync: boolean, disableAutoCreate: boolean, disableFolderNote: boolean, position: number) {
         this.path = path;
         this.subFolders = subFolders;
-        this.exludeSync = exludeSync;
-        this.excludeAutoCreate = excludeAutoCreate;
+        this.disableSync = disableSync;
+        this.disableAutoCreate = disableAutoCreate;
         this.disableFolderNote = disableFolderNote;
         this.position = position;
     }

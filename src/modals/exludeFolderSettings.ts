@@ -26,6 +26,9 @@ export default class ExcludedFolderSettings extends Modal {
                     })
             );
 
+        new Setting(contentEl)
+            
+
     }
     onClose() {
         const { contentEl } = this;
