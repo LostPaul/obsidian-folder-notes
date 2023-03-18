@@ -17,17 +17,24 @@
 }
 
 .fn-exclude-folder-list-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
     border-top: none;
-    float: left;
-    display: block;
+    padding-top: 0;
 }
 
-.fn-exclude-folder-list-item input {
-    width: 34.5rem;
+.fn-exclude-folder-path {
+    width: calc(100% - 20px);
 }
 
-@media screen and (max-width: 1250px) {
-    .fn-exclude-folder-list-item input {
-        width: 100%;
-    }
+.fn-exclude-folder-list-item .setting-item-control {
+    width: 100%;
+    justify-content: flex-end;
+    flex: 1 1 auto;
+    display: flex;
+}
+
+.fn-exclude-folder-list-item > *.last-child {
+    margin-right: 0;
 }

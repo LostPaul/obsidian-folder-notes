@@ -1,7 +1,8 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import FolderNotesPlugin from "./main";
-import { FolderSuggest } from "./suggesters/FolderSuggester";
+import { FolderSuggest } from "./suggesters/folderSuggester";
 import ExcludedFolderSettings from "./modals/exludeFolderSettings";
+import { TemplateSuggest } from "./suggesters/templateSuggester";
 export interface FolderNotesSettings {
     syncFolderName: boolean;
     ctrlKey: boolean;
@@ -93,6 +94,23 @@ export class SettingsTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
+            .setName('Template path')
+            .setDesc('The path to the template file')
+            .addSearch((cb) => {
+                new TemplateSuggest(cb.inputEl, this.plugin);
+                cb.setPlaceholder('Template path');
+                cb.setValue(this.plugin.app.vault.getAbstractFileByPath(this.plugin.settings.templatePath)?.name.replace('.md', '') || '');
+                cb.onChange(async (value) => {
+                    if (value.trim() === '') {
+                        this.plugin.settings.templatePath = '';
+                        await this.plugin.saveSettings();
+                        this.display();
+                        return;
+                    }
+                });
+            });
+
+        new Setting(containerEl)
             .setHeading()
             .setName('Manage excluded folders')
         new Setting(containerEl)
@@ -102,7 +120,7 @@ export class SettingsTab extends PluginSettingTab {
                 cb.setClass('add-exclude-folder');
                 cb.setTooltip('Add excluded folder');
                 cb.onClick(() => {
-                    const excludedFolder = new ExcludedFolder('', true, true, true, false, this.plugin.settings.excludeFolders.length);
+                    const excludedFolder = new ExcludedFolder('', this.plugin.settings.excludeFolders.length);
                     this.addExcludeFolderListItem(containerEl, excludedFolder);
                     this.addExcludedFolder(excludedFolder);
                     this.display();
@@ -120,6 +138,8 @@ export class SettingsTab extends PluginSettingTab {
                 cb.inputEl,
                 this.plugin
             );
+            // @ts-ignore
+            cb.containerEl.addClass('fn-exclude-folder-path');
             cb.setPlaceholder('Folder path');
             cb.setValue(excludedFolder.path);
             cb.onChange((value) => {
@@ -198,14 +218,15 @@ export class ExcludedFolder {
     disableSync: boolean;
     disableAutoCreate: boolean;
     disableFolderNote: boolean;
-    enableCollapsing: boolean;
+    enableCollappsing: boolean;
     position: number;
-    constructor(path: string, subFolders: boolean, disableSync: boolean, disableAutoCreate: boolean, disableFolderNote: boolean, position: number) {
+    constructor(path: string, position: number) {
         this.path = path;
-        this.subFolders = subFolders;
-        this.disableSync = disableSync;
-        this.disableAutoCreate = disableAutoCreate;
-        this.disableFolderNote = disableFolderNote;
+        this.subFolders = true;
+        this.disableSync = true;
+        this.disableAutoCreate = true;
+        this.disableFolderNote = false;
+        this.enableCollappsing = false;
         this.position = position;
     }
 }
