@@ -3,6 +3,7 @@ import FolderNotesPlugin from "./main";
 import { FolderSuggest } from "./suggesters/folderSuggester";
 import ExcludedFolderSettings from "./modals/exludeFolderSettings";
 import { TemplateSuggest } from "./suggesters/templateSuggester";
+import ConfirmationModal from "./modals/confirmCreation";
 export interface FolderNotesSettings {
     syncFolderName: boolean;
     ctrlKey: boolean;
@@ -10,6 +11,7 @@ export interface FolderNotesSettings {
     hideFolderNote: boolean;
     templatePath: string;
     autoCreate: boolean;
+    enableCollapsing: boolean;
     excludeFolders: ExcludedFolder[];
 }
 
@@ -20,6 +22,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
     hideFolderNote: true,
     templatePath: '',
     autoCreate: false,
+    enableCollapsing: false,
     excludeFolders: [],
 };
 export class SettingsTab extends PluginSettingTab {
@@ -35,6 +38,18 @@ export class SettingsTab extends PluginSettingTab {
         containerEl.empty();
 
         containerEl.createEl('h2', { text: 'Folder notes settings' });
+
+        new Setting(containerEl)
+            .setName('Disable folder collapsing')
+            .setDesc('Disable the ability to collapse folders by clicking on the folder name')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(!this.plugin.settings.enableCollapsing)
+                    .onChange(async (value) => {
+                        this.plugin.settings.enableCollapsing = !value;
+                        await this.plugin.saveSettings();
+                    })
+            );
 
         new Setting(containerEl)
             .setName('Hide folder note')
@@ -109,6 +124,20 @@ export class SettingsTab extends PluginSettingTab {
                     }
                 });
             });
+
+        new Setting(containerEl)
+            .setName('Create folder note for every folder')
+            .setDesc('Create a folder note for every folder in the vault')
+            .addButton((cb) => {
+                cb.setIcon('plus');
+
+                cb.setTooltip('Create folder notes');
+                cb.onClick(async () => {
+                    new ConfirmationModal(this.app, this.plugin).open();
+                });
+            });
+
+
 
         new Setting(containerEl)
             .setHeading()
@@ -218,7 +247,7 @@ export class ExcludedFolder {
     disableSync: boolean;
     disableAutoCreate: boolean;
     disableFolderNote: boolean;
-    enableCollappsing: boolean;
+    enableCollapsing: boolean;
     position: number;
     constructor(path: string, position: number) {
         this.path = path;
@@ -226,7 +255,7 @@ export class ExcludedFolder {
         this.disableSync = true;
         this.disableAutoCreate = true;
         this.disableFolderNote = false;
-        this.enableCollappsing = false;
+        this.enableCollapsing = false;
         this.position = position;
     }
 }

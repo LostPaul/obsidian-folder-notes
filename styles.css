@@ -12,6 +12,7 @@
     display: none;
 }
 
+
 .nav-folder-collapse-indicator:hover {
     cursor: pointer;
 }
@@ -37,4 +38,12 @@
 
 .fn-exclude-folder-list-item > *.last-child {
     margin-right: 0;
+}
+
+.fn-confirmation-modal {
+    padding-bottom: 0;
+}
+
+.fn-confirmation-modal-button {
+    margin-right: 0.7rem;
 }

@@ -74,9 +74,9 @@ export default class ExcludedFolderSettings extends Modal {
                 .setDesc('Choose if the folder should be collapsed when the folder note is opened')
                 .addToggle((toggle) =>
                     toggle
-                        .setValue(this.excludedFolder.enableCollappsing)
+                        .setValue(this.excludedFolder.enableCollapsing)
                         .onChange(async (value) => {
-                            this.excludedFolder.enableCollappsing = value;
+                            this.excludedFolder.enableCollapsing = value;
                             await this.plugin.saveSettings();
                         })
                 );

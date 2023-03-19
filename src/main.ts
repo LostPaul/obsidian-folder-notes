@@ -24,9 +24,8 @@ export default class FolderNotesPlugin extends Plugin {
       if (!(folder instanceof TFolder)) return;
 
       const excludedFolder = this.settings.excludeFolders.find(
-        (excludedFolder) => (excludedFolder.path ===
-          folder.path?.slice(0, folder?.path.lastIndexOf("/") >= 0 ? folder.path?.lastIndexOf("/") : folder.path.length)) ||
-          (excludedFolder.path === folder?.path.slice(0, folder.path?.lastIndexOf("/")).slice(0, folder.path?.lastIndexOf("/"))
+        (excludedFolder) => (excludedFolder.path === folder.path) ||
+          (excludedFolder.path === folder.path?.slice(0, folder?.path.lastIndexOf("/") >= 0 ? folder.path?.lastIndexOf("/") : folder.path.length)
             && excludedFolder.subFolders));
       if (excludedFolder?.disableAutoCreate) return;
 
@@ -34,7 +33,7 @@ export default class FolderNotesPlugin extends Plugin {
       if (!path) return;
       const file = this.app.vault.getAbstractFileByPath(path);
       if (file) return;
-      this.createFolderNote(path, true);
+      this.createFolderNote(path, true, true);
 
     }));
 
@@ -42,6 +41,12 @@ export default class FolderNotesPlugin extends Plugin {
       if (!this.settings.syncFolderName) return;
       if (file instanceof TFolder) {
         const folder = this.app.vault.getAbstractFileByPath(file?.path);
+        if (!folder) return;
+        const excludedFolder = this.settings.excludeFolders.find(
+          (excludedFolder) => (excludedFolder.path === folder.path) ||
+            (excludedFolder.path === folder.path?.slice(0, folder?.path.lastIndexOf("/") >= 0 ? folder.path?.lastIndexOf("/") : folder.path.length)
+              && excludedFolder.subFolders));
+        if (excludedFolder?.disableSync) return;
         const oldName = oldPath.substring(oldPath.lastIndexOf('/' || '\\'));
         const newPath = folder?.path + '/' + folder?.name + '.md';
         if (folder instanceof TFolder) {
@@ -54,7 +59,11 @@ export default class FolderNotesPlugin extends Plugin {
         }
       } else if (file instanceof TFile) {
         const folder = this.app.vault.getAbstractFileByPath(oldPath.substring(0, oldPath.lastIndexOf('/' || '\\')));
-        const excludedFolder = this.settings.excludeFolders.find((excludedFolder) => excludedFolder.path === folder?.path);
+        if (!folder) return;
+        const excludedFolder = this.settings.excludeFolders.find(
+          (excludedFolder) => (excludedFolder.path === folder.path) ||
+            (excludedFolder.path === folder.path?.slice(0, folder?.path.lastIndexOf("/") >= 0 ? folder.path?.lastIndexOf("/") : folder.path.length)
+              && excludedFolder.subFolders));
         if (excludedFolder?.disableSync) return;
         if (file.name !== folder?.name + '.md') return;
         if (folder instanceof TFolder) {
@@ -68,6 +77,7 @@ export default class FolderNotesPlugin extends Plugin {
         if (rec.type === 'childList') {
           (<Element>rec.target).querySelectorAll('div.nav-folder-title-content')
             .forEach((element: HTMLElement) => {
+              if (element.onclick) return;
               element.onclick = (event: MouseEvent) => this.handleFolderClick(event);
             });
         }
@@ -88,22 +98,24 @@ export default class FolderNotesPlugin extends Plugin {
       return;
     }
 
-
     const folder = event.target.parentElement?.getAttribute('data-path');
     const excludedFolder = this.settings.excludeFolders.find(
-      (excludedFolder) => (excludedFolder.path === folder?.slice(0, folder?.lastIndexOf("/") >= 0 ? folder?.lastIndexOf("/") : folder.length)) ||
-        (excludedFolder.path === folder?.slice(0, folder?.lastIndexOf("/")).slice(0, folder?.lastIndexOf("/"))
+      (excludedFolder) => (excludedFolder.path === folder) ||
+        (excludedFolder.path === folder?.slice(0, folder?.lastIndexOf("/") >= 0 ? folder?.lastIndexOf("/") : folder.length)
           && excludedFolder.subFolders));
-    if (excludedFolder?.enableCollappsing && excludedFolder?.disableFolderNote) {
+    if (excludedFolder?.disableFolderNote) {
       event.target.onclick = null;
       event.target.click();
+      event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
+        .forEach((element: HTMLElement) => {
+          if (element.innerText === (event.target as HTMLElement)?.innerText && element.classList.contains('is-folder-note')) {
+            element.classList.remove('is-folder-note');
+          }
+        });
       return;
-    } else if (excludedFolder?.enableCollappsing) {
+    } else if (excludedFolder?.enableCollapsing || this.settings.enableCollapsing) {
       event.target.onclick = null;
       event.target.click();
-      event.target.onclick = (event: MouseEvent) => this.handFolderClickWithCollapse(event);
-      event.target.click();
-      return;
     }
     const path = folder + '/' + event.target.innerText + '.md';
 
@@ -113,13 +125,14 @@ export default class FolderNotesPlugin extends Plugin {
       event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
         .forEach((element: HTMLElement) => {
           if (element.innerText === (event.target as HTMLElement)?.innerText && !element.classList.contains('is-folder-note')) {
+            console.log(element)
             element.classList.add('is-folder-note');
           }
         });
 
     } else if (event.altKey || event.ctrlKey) {
       if ((this.settings.altKey && event.altKey) || (this.settings.ctrlKey && event.ctrlKey)) {
-        this.createFolderNote(path);
+        this.createFolderNote(path, true, true);
         if (!this.settings.hideFolderNote) return;
         event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
           .forEach((element: HTMLElement) => {
@@ -137,58 +150,12 @@ export default class FolderNotesPlugin extends Plugin {
     }
   }
 
-  handFolderClickWithCollapse(event: MouseEvent) {
-    console.log(event)
-    if (!(event.target instanceof HTMLElement)) return;
-    if (!document.body.classList.contains('folder-notes-plugin')) {
-      event.target.onclick = null;
-      event.target.click();
-      return;
-    }
-    console.log('handFolderClickWithCollapse')
-
-    const folder = event.target.parentElement?.getAttribute('data-path');
-    const path = folder + '/' + event.target.innerText + '.md';
-    console.log(path)
-
-
-    if (this.app.vault.getAbstractFileByPath(path)) {
-      console.log('openFolderNote')
-      this.openFolderNote(path);
-      if (!this.settings.hideFolderNote) return;
-      event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
-        .forEach((element: HTMLElement) => {
-          if (element.innerText === (event.target as HTMLElement)?.innerText && !element.classList.contains('is-folder-note')) {
-            element.classList.add('is-folder-note');
-          }
-        });
-
-    } else if (event.altKey || event.ctrlKey) {
-      console.log(event.altKey, event.ctrlKey);
-      if ((this.settings.altKey && event.altKey) || (this.settings.ctrlKey && event.ctrlKey)) {
-        this.createFolderNote(path);
-        if (!this.settings.hideFolderNote) return;
-        event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
-          .forEach((element: HTMLElement) => {
-            if (element.innerText === (event.target as HTMLElement)?.innerText && !element.classList.contains('is-folder-note')) {
-              element.classList.add('is-folder-note');
-            }
-          });
-      } else {
-        event.target.onclick = null;
-        event.target.click();
-      }
-    } else {
-      console.log('click')
-      event.target.onclick = null;
-      event.target.click();
-    }
-  }
-
-  async createFolderNote(path: string, useModal?: boolean) {
+  async createFolderNote(path: string, openFile: boolean, useModal?: boolean) {
     const leaf = this.app.workspace.getLeaf(false);
     const file = await this.app.vault.create(path, '');
-    await leaf.openFile(file);
+    if (openFile) {
+      await leaf.openFile(file);
+    }
     applyTemplate(this, this.settings.templatePath);
     if (!this.settings.autoCreate) return;
     if (!useModal) return;
