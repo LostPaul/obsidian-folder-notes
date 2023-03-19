@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import FolderNotesPlugin from './main';
-import { FolderSuggest } from './suggesters/folderSuggester';
+import { FolderSuggest } from './suggesters/FolderSuggester';
 import ExcludedFolderSettings from './modals/exludeFolderSettings';
 import { TemplateSuggest } from './suggesters/templateSuggester';
 // import ConfirmationModal from "./modals/confirmCreation";
