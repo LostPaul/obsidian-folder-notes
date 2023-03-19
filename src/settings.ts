@@ -1,5 +1,9 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import FolderNotesPlugin from "./main";
+import { FolderSuggest } from "./suggesters/folderSuggester";
+import ExcludedFolderSettings from "./modals/exludeFolderSettings";
+import { TemplateSuggest } from "./suggesters/templateSuggester";
+import ConfirmationModal from "./modals/confirmCreation";
 export interface FolderNotesSettings {
     syncFolderName: boolean;
     ctrlKey: boolean;
@@ -7,16 +11,10 @@ export interface FolderNotesSettings {
     hideFolderNote: boolean;
     templatePath: string;
     autoCreate: boolean;
-    excludeFolders: string[];
+    enableCollapsing: boolean;
+    excludeFolders: ExcludedFolder[];
 }
-export interface ExcludeFolder {
-    path: string;
-    subFolders: boolean;
-    exludeSync: boolean;
-    excludeAutoCreate: boolean;
-    disableFolderNote: boolean;
-    position: number;
-}
+
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
     syncFolderName: true,
     ctrlKey: true,
@@ -24,11 +22,13 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
     hideFolderNote: true,
     templatePath: '',
     autoCreate: false,
+    enableCollapsing: false,
     excludeFolders: [],
 };
 export class SettingsTab extends PluginSettingTab {
     plugin: FolderNotesPlugin;
     app: App;
+    excludeFolders: ExcludedFolder[];
     constructor(app: App, plugin: FolderNotesPlugin) {
         super(app, plugin);
     }
@@ -38,6 +38,18 @@ export class SettingsTab extends PluginSettingTab {
         containerEl.empty();
 
         containerEl.createEl('h2', { text: 'Folder notes settings' });
+
+        new Setting(containerEl)
+            .setName('Disable folder collapsing')
+            .setDesc('Disable the ability to collapse folders by clicking on the folder name')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(!this.plugin.settings.enableCollapsing)
+                    .onChange(async (value) => {
+                        this.plugin.settings.enableCollapsing = !value;
+                        await this.plugin.saveSettings();
+                    })
+            );
 
         new Setting(containerEl)
             .setName('Hide folder note')
@@ -97,6 +109,37 @@ export class SettingsTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
+            .setName('Template path')
+            .setDesc('The path to the template file')
+            .addSearch((cb) => {
+                new TemplateSuggest(cb.inputEl, this.plugin);
+                cb.setPlaceholder('Template path');
+                cb.setValue(this.plugin.app.vault.getAbstractFileByPath(this.plugin.settings.templatePath)?.name.replace('.md', '') || '');
+                cb.onChange(async (value) => {
+                    if (value.trim() === '') {
+                        this.plugin.settings.templatePath = '';
+                        await this.plugin.saveSettings();
+                        this.display();
+                        return;
+                    }
+                });
+            });
+
+        new Setting(containerEl)
+            .setName('Create folder note for every folder')
+            .setDesc('Create a folder note for every folder in the vault')
+            .addButton((cb) => {
+                cb.setIcon('plus');
+
+                cb.setTooltip('Create folder notes');
+                cb.onClick(async () => {
+                    new ConfirmationModal(this.app, this.plugin).open();
+                });
+            });
+
+
+
+        new Setting(containerEl)
             .setHeading()
             .setName('Manage excluded folders')
         new Setting(containerEl)
@@ -106,13 +149,113 @@ export class SettingsTab extends PluginSettingTab {
                 cb.setClass('add-exclude-folder');
                 cb.setTooltip('Add excluded folder');
                 cb.onClick(() => {
+                    const excludedFolder = new ExcludedFolder('', this.plugin.settings.excludeFolders.length);
+                    this.addExcludeFolderListItem(containerEl, excludedFolder);
+                    this.addExcludedFolder(excludedFolder);
+                    this.display();
                 })
             })
+        this.plugin.settings.excludeFolders.sort((a, b) => a.position - b.position).forEach((excludedFolder) => {
+            this.addExcludeFolderListItem(containerEl, excludedFolder);
+        })
     }
-    addExcludeFolderListItem(excludeFolder: ExcludeFolder) {
-        const { containerEl } = this;
-        new Setting(containerEl)
+    addExcludeFolderListItem(containerEl: HTMLElement, excludedFolder: ExcludedFolder) {
+        const setting = new Setting(containerEl)
+        setting.setClass('fn-exclude-folder-list-item')
+        setting.addSearch(cb => {
+            new FolderSuggest(
+                cb.inputEl,
+                this.plugin
+            );
+            // @ts-ignore
+            cb.containerEl.addClass('fn-exclude-folder-path');
+            cb.setPlaceholder('Folder path');
+            cb.setValue(excludedFolder.path);
+            cb.onChange((value) => {
+                if (!this.app.vault.getAbstractFileByPath(value)) return;
+                excludedFolder.path = value;
+                this.updateExcludedFolder(excludedFolder, excludedFolder);
+            })
+        })
+        setting.addButton(cb => {
+            cb.setIcon('edit');
+            cb.setTooltip('Edit folder note');
+            cb.onClick(() => {
+                new ExcludedFolderSettings(this.app, this.plugin, excludedFolder).open();
+            })
+        })
+
+        setting.addButton(cb => {
+            cb.setIcon('up-chevron-glyph');
+            cb.setTooltip('Move up');
+            cb.onClick(() => {
+                if (excludedFolder.position === 0) return;
+                excludedFolder.position = excludedFolder.position - 1;
+                console.log(excludedFolder.position);
+                this.updateExcludedFolder(excludedFolder, excludedFolder);
+                const oldExcludedFolder = this.plugin.settings.excludeFolders.find(folder => folder.position == excludedFolder.position)
+                if (oldExcludedFolder) {
+
+                    oldExcludedFolder.position = oldExcludedFolder.position + 1;
+                    this.updateExcludedFolder(oldExcludedFolder, oldExcludedFolder);
+                }
+                this.display();
+            })
+        })
+        setting.addButton(cb => {
+            cb.setIcon('down-chevron-glyph');
+            cb.setTooltip('Move down');
+            cb.onClick(() => {
+                if (excludedFolder.position === this.plugin.settings.excludeFolders.length - 1) return;
+                excludedFolder.position = excludedFolder.position + 1;
+                this.updateExcludedFolder(excludedFolder, excludedFolder);
+                const oldExcludedFolder = this.plugin.settings.excludeFolders.find(folder => folder.position == excludedFolder.position)
+                if (oldExcludedFolder) {
+                    oldExcludedFolder.position = oldExcludedFolder.position - 1;
+                    this.updateExcludedFolder(oldExcludedFolder, oldExcludedFolder);
+                }
+                this.display();
+            })
+        })
+        setting.addButton(cb => {
+            cb.setIcon('trash-2');
+            cb.setTooltip('Delete excluded folder');
+            cb.onClick(() => {
+                this.deleteExcludedFolder(excludedFolder);
+                setting.clear();
+                setting.settingEl.remove();
+            })
+        })
     }
-    addExcludeFolder(excludeFolder: ExcludeFolder) {
+    addExcludedFolder(excludedFolder: ExcludedFolder) {
+        this.plugin.settings.excludeFolders.push(excludedFolder);
+        this.plugin.saveSettings();
+    }
+    deleteExcludedFolder(excludedFolder: ExcludedFolder) {
+        this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter((folder) => folder.path !== excludedFolder.path);
+        this.plugin.saveSettings();
+    }
+    updateExcludedFolder(excludedFolder: ExcludedFolder, newExcludeFolder: ExcludedFolder) {
+        this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter((folder) => folder.path !== excludedFolder.path);
+        this.addExcludedFolder(newExcludeFolder);
+    }
+
+}
+export class ExcludedFolder {
+    path: string;
+    subFolders: boolean;
+    disableSync: boolean;
+    disableAutoCreate: boolean;
+    disableFolderNote: boolean;
+    enableCollapsing: boolean;
+    position: number;
+    constructor(path: string, position: number) {
+        this.path = path;
+        this.subFolders = true;
+        this.disableSync = true;
+        this.disableAutoCreate = true;
+        this.disableFolderNote = false;
+        this.enableCollapsing = false;
+        this.position = position;
     }
 }

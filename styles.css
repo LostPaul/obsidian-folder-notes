@@ -16,13 +16,33 @@
     cursor: pointer;
 }
 
-.ofwc-command-list,
-.ofwc-command-list.setting-item-control {
-    flex-shrink: 0;
-    display: block;
-    float: left;
+.fn-exclude-folder-list-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
     border-top: none;
     padding-top: 0;
+}
+
+.fn-exclude-folder-path {
+    width: calc(100% - 20px);
+}
+
+.fn-exclude-folder-list-item .setting-item-control {
     width: 100%;
-    overflow-x: auto;
+    justify-content: flex-end;
+    flex: 1 1 auto;
+    display: flex;
+}
+
+.fn-exclude-folder-list-item > *.last-child {
+    margin-right: 0;
+}
+
+.fn-confirmation-modal {
+    padding-bottom: 0;
+}
+
+.fn-confirmation-modal-button {
+    margin-right: 0.7rem;
 }

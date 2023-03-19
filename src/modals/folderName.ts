@@ -1,5 +1,5 @@
 import { App, Modal, Setting, TFolder } from 'obsidian';
-import FolderNotesPlugin from './main';
+import FolderNotesPlugin from '../main';
 export default class FolderNameModal extends Modal {
     plugin: FolderNotesPlugin;
     app: App;
