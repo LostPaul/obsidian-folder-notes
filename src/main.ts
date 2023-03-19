@@ -11,6 +11,7 @@ export default class FolderNotesPlugin extends Plugin {
     await this.loadSettings();
     this.settingsTab = new SettingsTab(this.app, this);
     this.addSettingTab(this.settingsTab);
+    document.body.classList.add('folder-notes-plugin')
     if (this.settings.hideFolderNote) {
       document.body.classList.add('hide-folder-note');
     } else {
@@ -24,13 +25,12 @@ export default class FolderNotesPlugin extends Plugin {
         if (!path) return;
         const folder = this.app.vault.getAbstractFileByPath(path);
         if (folder) return;
-        this.createFolderNote(path);
-
+        this.createFolderNote(path, true);
       }
     }));
 
     this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
-      if (!this.settings.autoRename) return;
+      if (!this.settings.syncFolderName) return;
       if (file instanceof TFolder) {
         const folder = this.app.vault.getAbstractFileByPath(file?.path);
         const oldName = oldPath.substring(oldPath.lastIndexOf('/' || '\\'));
@@ -45,6 +45,7 @@ export default class FolderNotesPlugin extends Plugin {
         }
       } else if (file instanceof TFile) {
         const folder = this.app.vault.getAbstractFileByPath(oldPath.substring(0, oldPath.lastIndexOf('/' || '\\')));
+        if (file.name !== folder?.name + '.md') return;
         if (folder instanceof TFolder) {
           this.app.vault.rename(folder, folder.path.substring(0, folder.path.lastIndexOf('/' || '\\')) + '/' + file.name.substring(0, file.name.lastIndexOf('.')));
         }
@@ -70,6 +71,11 @@ export default class FolderNotesPlugin extends Plugin {
   async handleFolderClick(event: MouseEvent) {
     if (!(event.target instanceof HTMLElement)) return;
     event.stopImmediatePropagation();
+    if (!document.body.classList.contains('folder-notes-plugin')) {
+      event.target.onclick = null;
+      event.target.click();
+      return;
+    }
 
     const folder = event.target.parentElement?.getAttribute('data-path');
     const path = folder + '/' + event.target.innerText + '.md';
@@ -104,11 +110,12 @@ export default class FolderNotesPlugin extends Plugin {
     }
   }
 
-  async createFolderNote(path: string) {
+  async createFolderNote(path: string, useModal?: boolean) {
     const leaf = this.app.workspace.getLeaf(false);
     const file = await this.app.vault.create(path, '');
     await leaf.openFile(file);
     if (!this.settings.autoCreate) return;
+    if (!useModal) return;
     const folder = this.app.vault.getAbstractFileByPath(path.substring(0, path.lastIndexOf('/' || '\\')));
     if (!(folder instanceof TFolder)) return;
     const modal = new FolderNameModal(this.app, this, folder);
@@ -126,6 +133,7 @@ export default class FolderNotesPlugin extends Plugin {
   onunload() {
     console.log('unloading folder notes plugin');
     this.observer.disconnect();
+    document.body.classList.remove('folder-notes-plugin');
   }
 
   async loadSettings() {

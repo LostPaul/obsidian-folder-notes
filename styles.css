@@ -11,3 +11,18 @@
 .hide-folder-note .is-folder-note {
     display: none;
 }
+
+.nav-folder-collapse-indicator:hover {
+    cursor: pointer;
+}
+
+.ofwc-command-list,
+.ofwc-command-list.setting-item-control {
+    flex-shrink: 0;
+    display: block;
+    float: left;
+    border-top: none;
+    padding-top: 0;
+    width: 100%;
+    overflow-x: auto;
+}
