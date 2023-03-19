@@ -5,78 +5,78 @@
 import { TFile, App } from 'obsidian';
 import FolderNotesPlugin from './main';
 export async function applyTemplate(
-    plugin: FolderNotesPlugin,
-    file: TFile,
-    templatePath?: string
+	plugin: FolderNotesPlugin,
+	file: TFile,
+	templatePath?: string
 ) {
-    const templateFile = templatePath
-        ? plugin.app.vault.getAbstractFileByPath(templatePath)
-        : null;
+	const templateFile = templatePath
+		? plugin.app.vault.getAbstractFileByPath(templatePath)
+		: null;
 
-    if (templateFile && templateFile instanceof TFile) {
-        try {
+	if (templateFile && templateFile instanceof TFile) {
+		try {
 
-            const {
-                templatesEnabled,
-                templaterEnabled,
-                templatesPlugin,
-                templaterPlugin,
-            } = getTemplatePlugins(plugin.app);
-            const templateContent = await plugin.app.vault.read(templateFile);
+			const {
+				templatesEnabled,
+				templaterEnabled,
+				templatesPlugin,
+				templaterPlugin,
+			} = getTemplatePlugins(plugin.app);
+			const templateContent = await plugin.app.vault.read(templateFile);
 
-            // If both plugins are enabled, attempt to detect templater first
+			// If both plugins are enabled, attempt to detect templater first
 
-            if (templatesEnabled && templaterEnabled) {
-                if (/<%/.test(templateContent)) {
-                    return await templaterPlugin.write_template_to_file(
-                        templateFile,
-                        file
-                    );
-                }
-                return await templatesPlugin.instance.insertTemplate(templateFile);
-            }
+			if (templatesEnabled && templaterEnabled) {
+				if (/<%/.test(templateContent)) {
+					return await templaterPlugin.write_template_to_file(
+						templateFile,
+						file
+					);
+				}
+				return await templatesPlugin.instance.insertTemplate(templateFile);
+			}
 
-            if (templatesEnabled) {
-                return await templatesPlugin.instance.insertTemplate(templateFile);
-            }
+			if (templatesEnabled) {
+				return await templatesPlugin.instance.insertTemplate(templateFile);
+			}
 
-            if (templaterEnabled) {
-                return await templaterPlugin.write_template_to_file(
-                    templateFile,
-                    file
-                );
-            }
+			if (templaterEnabled) {
+				return await templaterPlugin.write_template_to_file(
+					templateFile,
+					file
+				);
+			}
 
-        } catch (e) {
-            console.error(e);
-        }
-    }
+		} catch (e) {
+			console.error(e);
+		}
+	}
 }
 
 export function getTemplatePlugins(app: App) {
-    const templatesPlugin = (app as any).internalPlugins.plugins.templates;
-    const templatesEnabled = templatesPlugin.enabled;
-    const templaterPlugin = (app as any).plugins.plugins['templater-obsidian'];
-    const templaterEnabled = (app as any).plugins.enabledPlugins.has(
-        'templater-obsidian'
-    );
-    const templaterEmptyFileTemplate =
-        templaterPlugin &&
-        (this.app as any).plugins.plugins['templater-obsidian'].settings
-            ?.empty_file_template;
+	const templatesPlugin = (app as any).internalPlugins.plugins.templates;
+	const templatesEnabled = templatesPlugin.enabled;
+	const templaterPlugin = (app as any).plugins.plugins['templater-obsidian'];
+	const templaterEnabled = (app as any).plugins.enabledPlugins.has(
+		'templater-obsidian'
+	);
+	const templaterEmptyFileTemplate =
+		templaterPlugin &&
+		(this.app as any).plugins.plugins['templater-obsidian'].settings
+			?.empty_file_template;
 
-    const templateFolder = templatesEnabled
-        ? templatesPlugin.instance.options.folder
-        : templaterPlugin
-            ? templaterPlugin.settings.template_folder
-            : undefined;
+	const templateFolder = templatesEnabled
+		? templatesPlugin.instance.options.folder
+		: templaterPlugin
+			? templaterPlugin.settings.template_folder
+			: undefined;
 
-    return {
-        templatesPlugin,
-        templatesEnabled,
-        templaterPlugin: templaterPlugin?.templater,
-        templaterEnabled,
-        templaterEmptyFileTemplate,
-        templateFolder,
-    };
+	return {
+		templatesPlugin,
+		templatesEnabled,
+		templaterPlugin: templaterPlugin?.templater,
+		templaterEnabled,
+		templaterEmptyFileTemplate,
+		templateFolder,
+	};
 }
