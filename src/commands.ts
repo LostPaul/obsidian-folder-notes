@@ -16,7 +16,8 @@ export class Commands {
 					item.setTitle('Remove folder from excluded folders')
 						.setIcon('x')
 						.onClick(() => {
-							this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter((folder) => folder.path !== file.path);
+							this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter(
+								(folder) => folder.path !== file.path);
 							this.plugin.saveSettings();
 							new Notice('Successfully removed folder from excluded folders');
 						});
