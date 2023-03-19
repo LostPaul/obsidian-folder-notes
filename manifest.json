@@ -1,11 +1,10 @@
 {
 	"id": "folder-notes",
-	"name": "Folder Notes",
-	"version": "1.0.1",
+	"name": "Folder notes",
+	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Adds Folder Notes to the default file tree.",
-	"author": "Alan Grainger",
-	"authorUrl": "https://github.com/alangrainger/obsidian-folder-notes",
-	"fundingUrl": "https://ko-fi.com/alan_",
+	"description": "Create notes within folders that can be accessed without collapsing the folder, similar to the functionality offered in Notion.",
+	"author": "Lost Paul",
+	"authorUrl": "https://github.com/LostPaul",
 	"isDesktopOnly": false
 }
