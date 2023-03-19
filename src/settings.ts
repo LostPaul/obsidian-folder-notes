@@ -3,7 +3,7 @@ import FolderNotesPlugin from "./main";
 import { FolderSuggest } from "./suggesters/folderSuggester";
 import ExcludedFolderSettings from "./modals/exludeFolderSettings";
 import { TemplateSuggest } from "./suggesters/templateSuggester";
-import ConfirmationModal from "./modals/confirmCreation";
+//import ConfirmationModal from "./modals/confirmCreation";
 export interface FolderNotesSettings {
     syncFolderName: boolean;
     ctrlKey: boolean;
@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
     syncFolderName: true,
     ctrlKey: true,
     altKey: false,
-    hideFolderNote: true,
+    hideFolderNote: false,
     templatePath: '',
     autoCreate: false,
     enableCollapsing: false,
@@ -125,18 +125,22 @@ export class SettingsTab extends PluginSettingTab {
                 });
             });
 
-        new Setting(containerEl)
-            .setName('Create folder note for every folder')
-            .setDesc('Create a folder note for every folder in the vault')
-            .addButton((cb) => {
-                cb.setIcon('plus');
+        // Due to issue with templater it'll be disabled for now
+        // If you want to try it yourself make a pr
+        // The issue was that it only used the first folder for all of the other folder notes
+        /*
+    new Setting(containerEl)
+        .setName('Create folder note for every folder')
+        .setDesc('Create a folder note for every folder in the vault')
+        .addButton((cb) => {
+            cb.setIcon('plus');
 
-                cb.setTooltip('Create folder notes');
-                cb.onClick(async () => {
-                    new ConfirmationModal(this.app, this.plugin).open();
-                });
+            cb.setTooltip('Create folder notes');
+            cb.onClick(async () => {
+                new ConfirmationModal(this.app, this.plugin).open();
             });
-
+        });
+        */
 
 
         new Setting(containerEl)
@@ -191,7 +195,6 @@ export class SettingsTab extends PluginSettingTab {
             cb.onClick(() => {
                 if (excludedFolder.position === 0) return;
                 excludedFolder.position = excludedFolder.position - 1;
-                console.log(excludedFolder.position);
                 this.updateExcludedFolder(excludedFolder, excludedFolder);
                 const oldExcludedFolder = this.plugin.settings.excludeFolders.find(folder => folder.position == excludedFolder.position)
                 if (oldExcludedFolder) {

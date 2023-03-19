@@ -2,10 +2,11 @@
 // from where I got the template code for this plugin
 // https://github.com/mgmeyers/obsidian-kanban/blob/48e6c278ce9140b7e034b181432321f697d6e45e/src/components/helpers.ts
 
-import { TFile, MarkdownView, App } from 'obsidian';
+import { TFile, App } from 'obsidian';
 import FolderNotesPlugin from './main';
 export async function applyTemplate(
     plugin: FolderNotesPlugin,
+    file: TFile,
     templatePath?: string
 ) {
     const templateFile = templatePath
@@ -13,19 +14,7 @@ export async function applyTemplate(
         : null;
 
     if (templateFile && templateFile instanceof TFile) {
-        const activeView = app.workspace.getActiveViewOfType(MarkdownView);
-
         try {
-            // Force the view to source mode, if needed
-            if (activeView?.getMode() !== 'source') {
-                await activeView?.setState(
-                    {
-                        ...activeView.getState(),
-                        mode: 'source',
-                    },
-                    {}
-                );
-            }
 
             const {
                 templatesEnabled,
@@ -33,17 +22,17 @@ export async function applyTemplate(
                 templatesPlugin,
                 templaterPlugin,
             } = getTemplatePlugins(plugin.app);
-
             const templateContent = await plugin.app.vault.read(templateFile);
 
             // If both plugins are enabled, attempt to detect templater first
+
             if (templatesEnabled && templaterEnabled) {
                 if (/<%/.test(templateContent)) {
-                    return await templaterPlugin.append_template_to_active_file(
-                        templateFile
+                    return await templaterPlugin.write_template_to_file(
+                        templateFile,
+                        file
                     );
                 }
-
                 return await templatesPlugin.instance.insertTemplate(templateFile);
             }
 
@@ -52,8 +41,9 @@ export async function applyTemplate(
             }
 
             if (templaterEnabled) {
-                return await templaterPlugin.append_template_to_active_file(
-                    templateFile
+                return await templaterPlugin.write_template_to_file(
+                    templateFile,
+                    file
                 );
             }
 

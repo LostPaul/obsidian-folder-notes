@@ -1,7 +1,8 @@
-import { Plugin, TFile, TFolder, TAbstractFile } from 'obsidian'
+import { Plugin, TFile, TFolder, TAbstractFile, Notice } from 'obsidian'
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings'
 import FolderNameModal from './modals/folderName';
 import { applyTemplate } from './template';
+import { Commands } from './commands';
 export default class FolderNotesPlugin extends Plugin {
   observer: MutationObserver
   folders: TFolder[] = []
@@ -18,6 +19,7 @@ export default class FolderNotesPlugin extends Plugin {
     } else {
       document.body.classList.remove('hide-folder-note');
     }
+    new Commands(this.app, this).registerCommands();
     this.registerEvent(this.app.vault.on('create', (folder: TAbstractFile) => {
       if (!this.app.workspace.layoutReady) return;
       if (!this.settings.autoCreate) return;
@@ -38,6 +40,7 @@ export default class FolderNotesPlugin extends Plugin {
     }));
 
     this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
+      console.log('rename')
       if (!this.settings.syncFolderName) return;
       if (file instanceof TFolder) {
         const folder = this.app.vault.getAbstractFileByPath(file?.path);
@@ -47,6 +50,23 @@ export default class FolderNotesPlugin extends Plugin {
             (excludedFolder.path === folder.path?.slice(0, folder?.path.lastIndexOf("/") >= 0 ? folder.path?.lastIndexOf("/") : folder.path.length)
               && excludedFolder.subFolders));
         if (excludedFolder?.disableSync) return;
+        const excludedFolders = this.settings.excludeFolders.filter(
+          (excludedFolder) => excludedFolder.path.includes(oldPath)
+        );
+
+        excludedFolders.forEach((excludedFolder) => {
+          const folders = excludedFolder.path.split('/');
+          if (folders.length < 1) {
+            folders.push(excludedFolder.path);
+          }
+
+          const oldName = oldPath.substring(oldPath.lastIndexOf('/' || '\\'));
+          console.log(oldName.replace('/', ''))
+          folders[folders.indexOf(oldName.replace('/', ''))] = folder.name;
+          excludedFolder.path = folders.join('/');
+        });
+        this.saveSettings();
+
         const oldName = oldPath.substring(oldPath.lastIndexOf('/' || '\\'));
         const newPath = folder?.path + '/' + folder?.name + '.md';
         if (folder instanceof TFolder) {
@@ -59,13 +79,26 @@ export default class FolderNotesPlugin extends Plugin {
         }
       } else if (file instanceof TFile) {
         const folder = this.app.vault.getAbstractFileByPath(oldPath.substring(0, oldPath.lastIndexOf('/' || '\\')));
+        if (folder?.name + '.md' == file.name) return;
+        const oldFileName = oldPath.substring(oldPath.lastIndexOf('/' || '\\') + 1);
         if (!folder) return;
         const excludedFolder = this.settings.excludeFolders.find(
           (excludedFolder) => (excludedFolder.path === folder.path) ||
             (excludedFolder.path === folder.path?.slice(0, folder?.path.lastIndexOf("/") >= 0 ? folder.path?.lastIndexOf("/") : folder.path.length)
               && excludedFolder.subFolders));
         if (excludedFolder?.disableSync) return;
-        if (file.name !== folder?.name + '.md') return;
+        if (oldFileName !== folder?.name + '.md') return console.log('not a folder note');
+        let newFolderPath = file.path.slice(0, file.path.lastIndexOf('/'))
+        if (newFolderPath.lastIndexOf('/') > 0) {
+          newFolderPath = newFolderPath.slice(0, newFolderPath.lastIndexOf('/')) + '/'
+        } else {
+          newFolderPath = ''
+        }
+        newFolderPath = newFolderPath + file.name.replace('.md', '');
+        if (this.app.vault.getAbstractFileByPath(newFolderPath)) {
+          this.app.vault.rename(file, oldPath);
+          return new Notice('A folder with the same name already exists');
+        }
         if (folder instanceof TFolder) {
           this.app.vault.rename(folder, folder.path.substring(0, folder.path.lastIndexOf('/' || '\\')) + '/' + file.name.substring(0, file.name.lastIndexOf('.')));
         }
@@ -109,7 +142,7 @@ export default class FolderNotesPlugin extends Plugin {
       event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
         .forEach((element: HTMLElement) => {
           if (element.innerText === (event.target as HTMLElement)?.innerText && element.classList.contains('is-folder-note')) {
-            element.classList.remove('is-folder-note');
+            element.removeClass('is-folder-note');
           }
         });
       return;
@@ -125,8 +158,8 @@ export default class FolderNotesPlugin extends Plugin {
       event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
         .forEach((element: HTMLElement) => {
           if (element.innerText === (event.target as HTMLElement)?.innerText && !element.classList.contains('is-folder-note')) {
-            console.log(element)
-            element.classList.add('is-folder-note');
+
+            element.addClass('is-folder-note');
           }
         });
 
@@ -137,7 +170,7 @@ export default class FolderNotesPlugin extends Plugin {
         event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
           .forEach((element: HTMLElement) => {
             if (element.innerText === (event.target as HTMLElement)?.innerText && !element.classList.contains('is-folder-note')) {
-              element.classList.add('is-folder-note');
+              element.addClass('is-folder-note');
             }
           });
       } else {
@@ -156,7 +189,9 @@ export default class FolderNotesPlugin extends Plugin {
     if (openFile) {
       await leaf.openFile(file);
     }
-    applyTemplate(this, this.settings.templatePath);
+    if (file) {
+      applyTemplate(this, file, this.settings.templatePath);
+    }
     if (!this.settings.autoCreate) return;
     if (!useModal) return;
     const folder = this.app.vault.getAbstractFileByPath(path.substring(0, path.lastIndexOf('/' || '\\')));

@@ -12,6 +12,12 @@ export default class FolderNameModal extends Modal {
     }
     onOpen() {
         const { contentEl } = this;
+        // close when user presses enter
+        contentEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                this.close();
+            }
+        });
         contentEl.createEl('h2', { text: 'Folder name' });
         new Setting(contentEl)
             .setName('Enter the name of the folder')
@@ -20,7 +26,10 @@ export default class FolderNameModal extends Modal {
                     .setValue(this.folder.name.replace('.md', ''))
                     .onChange(async (value) => {
                         if (value.trim() !== "") {
-                            this.app.vault.rename(this.folder, this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + value);
+                            if (!this.app.vault.getAbstractFileByPath(this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + value.trim()))
+                            {
+                                this.app.vault.rename(this.folder, this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + value.trim());
+                            }
                         }
                     })
             );
