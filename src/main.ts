@@ -40,7 +40,6 @@ export default class FolderNotesPlugin extends Plugin {
     }));
 
     this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
-      console.log('rename')
       if (!this.settings.syncFolderName) return;
       if (file instanceof TFolder) {
         const folder = this.app.vault.getAbstractFileByPath(file?.path);
@@ -61,7 +60,6 @@ export default class FolderNotesPlugin extends Plugin {
           }
 
           const oldName = oldPath.substring(oldPath.lastIndexOf('/' || '\\'));
-          console.log(oldName.replace('/', ''))
           folders[folders.indexOf(oldName.replace('/', ''))] = folder.name;
           excludedFolder.path = folders.join('/');
         });
@@ -87,7 +85,7 @@ export default class FolderNotesPlugin extends Plugin {
             (excludedFolder.path === folder.path?.slice(0, folder?.path.lastIndexOf("/") >= 0 ? folder.path?.lastIndexOf("/") : folder.path.length)
               && excludedFolder.subFolders));
         if (excludedFolder?.disableSync) return;
-        if (oldFileName !== folder?.name + '.md') return console.log('not a folder note');
+        if (oldFileName !== folder?.name + '.md') return;
         let newFolderPath = file.path.slice(0, file.path.lastIndexOf('/'))
         if (newFolderPath.lastIndexOf('/') > 0) {
           newFolderPath = newFolderPath.slice(0, newFolderPath.lastIndexOf('/')) + '/'
