@@ -1,4 +1,4 @@
-import { App, TFolder, Menu, TAbstractFile, Notice, Platform } from 'obsidian';
+import { App, TFolder, Menu, TAbstractFile, Notice, Platform, TFile } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { ExcludedFolder } from './settings';
 export class Commands {
@@ -34,14 +34,25 @@ export class Commands {
 						new Notice('Successfully excluded folder from folder notes');
 					});
 			});
-			
-			menu.addItem((item) => {
-				item.setTitle('Create folder note')
-					.setIcon('plus')
-					.onClick(() => {
-						this.plugin.createFolderNote(file.path, true);
-					});
-			});
+			if (this.plugin.app.vault.getAbstractFileByPath(file.path + '/' + file.name + '.md')) {
+				menu.addItem((item) => {
+					item.setTitle('Delete folder note')
+						.setIcon('trash')
+						.onClick(() => {
+							file = this.plugin.app.vault.getAbstractFileByPath(file?.path + '/' + file?.name + '.md') as TFile;
+							if (!(file instanceof TFile)) return;
+							this.plugin.deleteFolderNote(file);
+						});
+				});
+			} else {
+				menu.addItem((item) => {
+					item.setTitle('Create folder note')
+						.setIcon('plus')
+						.onClick(() => {
+							this.plugin.createFolderNote(file.path, true);
+						});
+				});
+			}
 		}));
 	}
 }

@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings';
 import FolderNameModal from './modals/folderName';
 import { applyTemplate } from './template';
 import { Commands } from './commands';
+import DeleteConfirmationModal from './modals/deleteConfirmation';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	folders: TFolder[] = [];
@@ -207,6 +208,10 @@ export default class FolderNotesPlugin extends Plugin {
 		if (file instanceof TFile) {
 			await leaf.openFile(file);
 		}
+	}
+
+	async deleteFolderNote(file: TFile) {
+		new DeleteConfirmationModal(this.app, this, file).open();
 	}
 
 	onunload() {

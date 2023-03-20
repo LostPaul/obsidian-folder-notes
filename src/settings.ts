@@ -13,6 +13,7 @@ export interface FolderNotesSettings {
 	autoCreate: boolean;
 	enableCollapsing: boolean;
 	excludeFolders: ExcludedFolder[];
+	showDeleteConfirmation: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -24,6 +25,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	autoCreate: false,
 	enableCollapsing: false,
 	excludeFolders: [],
+	showDeleteConfirmation: true,
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
