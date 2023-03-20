@@ -1,4 +1,4 @@
-import { App, TFolder, Menu, TAbstractFile, Notice, Platform, TFile } from 'obsidian';
+import { App, TFolder, Menu, TAbstractFile, Notice, TFile } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { ExcludedFolder } from './settings';
 export class Commands {

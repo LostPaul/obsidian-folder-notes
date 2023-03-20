@@ -3,6 +3,7 @@
     padding-bottom: 4px;
     padding-top: 4px;
 }
+
 .nav-folder-title {
     padding-bottom: 0;
     padding-top: 0;
@@ -35,7 +36,7 @@
     display: flex;
 }
 
-.fn-exclude-folder-list-item > *.last-child {
+.fn-exclude-folder-list-item>*.last-child {
     margin-right: 0;
 }
 
@@ -45,4 +46,24 @@
 
 .fn-confirmation-modal-button {
     margin-right: 0.7rem;
+
+}
+
+.fn-delete-confirmation-modal-buttons {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.fn-delete-confirmation-modal-buttons span:hover,
+.fn-delete-confirmation-modal-buttons input:hover {
+    cursor: pointer;
+}
+
+.fn-delete-confirmation-modal-buttons .fn-confirmation-modal-button {
+    margin-left: auto;
+  }
+
+.fn-delete-confirmation-modal-buttons input[type="checkbox"] {
+    margin-right: 5px;
 }

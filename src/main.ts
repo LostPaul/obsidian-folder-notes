@@ -211,7 +211,11 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	async deleteFolderNote(file: TFile) {
-		new DeleteConfirmationModal(this.app, this, file).open();
+		if (this.settings.showDeleteConfirmation) {
+			new DeleteConfirmationModal(this.app, this, file).open();
+		} else {
+			await this.app.vault.delete(file);
+		}
 	}
 
 	onunload() {
