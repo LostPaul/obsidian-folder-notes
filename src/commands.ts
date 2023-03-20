@@ -1,4 +1,4 @@
-import { App, TFolder, Menu, TAbstractFile, Notice } from 'obsidian';
+import { App, TFolder, Menu, TAbstractFile, Notice, Platform } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { ExcludedFolder } from './settings';
 export class Commands {
@@ -32,6 +32,14 @@ export class Commands {
 						this.plugin.settings.excludeFolders.push(excludedFolder);
 						this.plugin.saveSettings();
 						new Notice('Successfully excluded folder from folder notes');
+					});
+			});
+			
+			menu.addItem((item) => {
+				item.setTitle('Create folder note')
+					.setIcon('plus')
+					.onClick(() => {
+						this.plugin.createFolderNote(file.path, true);
 					});
 			});
 		}));

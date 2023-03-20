@@ -1,18 +1,18 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, Platform, PluginSettingTab, Setting } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { FolderSuggest } from './suggesters/FolderSuggester';
 import ExcludedFolderSettings from './modals/exludeFolderSettings';
 import { TemplateSuggest } from './suggesters/templateSuggester';
 // import ConfirmationModal from "./modals/confirmCreation";
 export interface FolderNotesSettings {
-    syncFolderName: boolean;
-    ctrlKey: boolean;
-    altKey: boolean;
-    hideFolderNote: boolean;
-    templatePath: string;
-    autoCreate: boolean;
-    enableCollapsing: boolean;
-    excludeFolders: ExcludedFolder[];
+	syncFolderName: boolean;
+	ctrlKey: boolean;
+	altKey: boolean;
+	hideFolderNote: boolean;
+	templatePath: string;
+	autoCreate: boolean;
+	enableCollapsing: boolean;
+	excludeFolders: ExcludedFolder[];
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -92,22 +92,23 @@ export class SettingsTab extends PluginSettingTab {
 						this.display();
 					})
 			);
-		new Setting(containerEl)
-			.setName('Key for creating folder note')
-			.setDesc('The key combination to create a folder note')
-			.addDropdown((dropdown) => {
-				dropdown
-					.addOption('ctrl', 'Ctrl + Click')
-					.addOption('alt', 'Alt + Click')
-					.setValue(this.plugin.settings.ctrlKey ? 'ctrl' : 'alt')
-					.onChange(async (value) => {
-						this.plugin.settings.ctrlKey = value === 'ctrl';
-						this.plugin.settings.altKey = value === 'alt';
-						await this.plugin.saveSettings();
-						this.display();
-					});
-			});
-
+		if (Platform.isDesktopApp) {
+			new Setting(containerEl)
+				.setName('Key for creating folder note')
+				.setDesc('The key combination to create a folder note')
+				.addDropdown((dropdown) => {
+					dropdown
+						.addOption('ctrl', 'Ctrl + Click')
+						.addOption('alt', 'Alt + Click')
+						.setValue(this.plugin.settings.ctrlKey ? 'ctrl' : 'alt')
+						.onChange(async (value) => {
+							this.plugin.settings.ctrlKey = value === 'ctrl';
+							this.plugin.settings.altKey = value === 'alt';
+							await this.plugin.saveSettings();
+							this.display();
+						});
+				});
+		}
 		new Setting(containerEl)
 			.setName('Template path')
 			.setDesc('The path to the template file')
@@ -129,18 +130,18 @@ export class SettingsTab extends PluginSettingTab {
 		// If you want to try it yourself make a pr
 		// The issue was that it only used the first folder for all of the other folder notes
 		/*
-    new Setting(containerEl)
-        .setName('Create folder note for every folder')
-        .setDesc('Create a folder note for every folder in the vault')
-        .addButton((cb) => {
-            cb.setIcon('plus');
+	new Setting(containerEl)
+		.setName('Create folder note for every folder')
+		.setDesc('Create a folder note for every folder in the vault')
+		.addButton((cb) => {
+			cb.setIcon('plus');
 
-            cb.setTooltip('Create folder notes');
-            cb.onClick(async () => {
-                new ConfirmationModal(this.app, this.plugin).open();
-            });
-        });
-        */
+			cb.setTooltip('Create folder notes');
+			cb.onClick(async () => {
+				new ConfirmationModal(this.app, this.plugin).open();
+			});
+		});
+		*/
 
 
 		new Setting(containerEl)
