@@ -29,6 +29,7 @@ export default class DeleteConfirmationModal extends Modal {
 			} else {
 				this.plugin.settings.showDeleteConfirmation = true;
 			}
+			this.plugin.saveSettings();
 		});
 		const checkBoxText = buttonContainer.createEl('span', { text: 'Don\'t ask again' });
 		checkBoxText.addEventListener('click', () => {
