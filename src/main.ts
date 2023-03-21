@@ -166,6 +166,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const path = folder + '/' + event.target.innerText + '.md';
 
 		if (this.app.vault.getAbstractFileByPath(path)) {
+			event.target.classList.remove('has-not-folder-note');
 			event.target.classList.add('has-folder-note');
 			this.openFolderNote(path);
 			if (!this.settings.hideFolderNote) return;
@@ -188,10 +189,12 @@ export default class FolderNotesPlugin extends Plugin {
 						}
 					});
 			} else {
+				event.target.classList.remove('has-folder-note');
 				event.target.onclick = null;
 				event.target.click();
 			}
 		} else {
+			event.target.classList.remove('has-folder-note');
 			event.target.onclick = null;
 			event.target.click();
 		}
