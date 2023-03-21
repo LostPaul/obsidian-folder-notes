@@ -34,8 +34,9 @@ export default class FolderNotesPlugin extends Plugin {
 							if (element.onclick) return;
 							element.onclick = (event: MouseEvent) => this.handleFolderClick(event);
 							if (!this.settings.underlineFolder) return;
+							if (element.classList.contains('has-folder-note') || element.classList.contains('has-not-folder-note')) return;
 							const folder = this.app.vault.getAbstractFileByPath(element.parentElement?.getAttribute('data-path') as string);
-							if (!folder) return;
+							if (!folder) return element.classList.add('has-not-folder-note');
 							if (this.app.vault.getAbstractFileByPath(folder.path + '/' + folder.name + '.md')) {
 								element.classList.add('has-folder-note');
 							}
