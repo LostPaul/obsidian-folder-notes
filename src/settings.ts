@@ -14,6 +14,7 @@ export interface FolderNotesSettings {
 	enableCollapsing: boolean;
 	excludeFolders: ExcludedFolder[];
 	showDeleteConfirmation: boolean;
+	underlineFolder: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -26,6 +27,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	enableCollapsing: false,
 	excludeFolders: [],
 	showDeleteConfirmation: true,
+	underlineFolder: true
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -111,6 +113,25 @@ export class SettingsTab extends PluginSettingTab {
 						});
 				});
 		}
+
+		new Setting(containerEl)
+			.setName('Add underline to folders with folder notes')
+			.setDesc('Add an underline to folders that have a folder note')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.underlineFolder)
+					.onChange(async (value) => {
+						this.plugin.settings.underlineFolder = value;
+						if (value) {
+							document.body.classList.add('folder-note-underline');
+						} else {
+							document.body.classList.remove('folder-note-underline');
+						}
+						await this.plugin.saveSettings();
+					})
+			);
+
+
 		new Setting(containerEl)
 			.setName('Template path')
 			.setDesc('The path to the template file')

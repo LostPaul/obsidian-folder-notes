@@ -14,7 +14,7 @@ export class Commands {
 			if (this.plugin.settings.excludeFolders.find((folder) => folder.path === file.path)) {
 				menu.addItem((item) => {
 					item.setTitle('Remove folder from excluded folders')
-						.setIcon('x')
+						.setIcon('trash')
 						.onClick(() => {
 							this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter(
 								(folder) => folder.path !== file.path);
@@ -26,7 +26,7 @@ export class Commands {
 			}
 			menu.addItem((item) => {
 				item.setTitle('Exclude folder from folder notes')
-					.setIcon('x')
+					.setIcon('x-circle')
 					.onClick(() => {
 						const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length);
 						this.plugin.settings.excludeFolders.push(excludedFolder);
@@ -47,7 +47,7 @@ export class Commands {
 			} else {
 				menu.addItem((item) => {
 					item.setTitle('Create folder note')
-						.setIcon('plus')
+						.setIcon('edit')
 						.onClick(() => {
 							this.plugin.createFolderNote(file.path, true);
 						});

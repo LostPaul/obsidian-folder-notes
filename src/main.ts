@@ -20,7 +20,33 @@ export default class FolderNotesPlugin extends Plugin {
 		} else {
 			document.body.classList.remove('hide-folder-note');
 		}
+		if (this.settings.underlineFolder) {
+			document.body.classList.add('folder-note-underline');
+		} else {
+			document.body.classList.remove('folder-note-underline');
+		}
 		new Commands(this.app, this).registerCommands();
+		this.observer = new MutationObserver((mutations: MutationRecord[]) => {
+			mutations.forEach((rec) => {
+				if (rec.type === 'childList') {
+					(<Element>rec.target).querySelectorAll('div.nav-folder-title-content')
+						.forEach((element: HTMLElement) => {
+							if (element.onclick) return;
+							element.onclick = (event: MouseEvent) => this.handleFolderClick(event);
+							if (!this.settings.underlineFolder) return;
+							const folder = this.app.vault.getAbstractFileByPath(element.parentElement?.getAttribute('data-path') as string);
+							if (!folder) return;
+							if (this.app.vault.getAbstractFileByPath(folder.path + '/' + folder.name + '.md')) {
+								element.classList.add('has-folder-note');
+							}
+						});
+				}
+			});
+		});
+		this.observer.observe(document.body, {
+			childList: true,
+			subtree: true,
+		});
 		this.registerEvent(this.app.vault.on('create', (folder: TAbstractFile) => {
 			if (!this.app.workspace.layoutReady) return;
 			if (!this.settings.autoCreate) return;
@@ -106,22 +132,6 @@ export default class FolderNotesPlugin extends Plugin {
 				}
 			}
 		}));
-
-		this.observer = new MutationObserver((mutations: MutationRecord[]) => {
-			mutations.forEach((rec) => {
-				if (rec.type === 'childList') {
-					(<Element>rec.target).querySelectorAll('div.nav-folder-title-content')
-						.forEach((element: HTMLElement) => {
-							if (element.onclick) return;
-							element.onclick = (event: MouseEvent) => this.handleFolderClick(event);
-						});
-				}
-			});
-		});
-		this.observer.observe(document.body, {
-			childList: true,
-			subtree: true,
-		});
 	}
 
 	async handleFolderClick(event: MouseEvent) {
@@ -155,6 +165,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const path = folder + '/' + event.target.innerText + '.md';
 
 		if (this.app.vault.getAbstractFileByPath(path)) {
+			event.target.classList.add('has-folder-note');
 			this.openFolderNote(path);
 			if (!this.settings.hideFolderNote) return;
 			event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
