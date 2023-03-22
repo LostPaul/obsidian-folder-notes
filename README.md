@@ -16,3 +16,6 @@ Create notes within folders that can be accessed without collapsing the folder, 
 - Exclude folders
 - Hide folder note from file explorer
  
+## Credits
+Thank you to everyone who has created a plugin that inspired me and I took code from.
+- Template suggester, created by [SilentVoid13](https://github.com/SilentVoid13) and [Liamcain](https://github.com/liamcain) (their plugins: https://github.com/SilentVoid13/Templater/, https://github.com/liamcain/obsidian-periodic-notes)
