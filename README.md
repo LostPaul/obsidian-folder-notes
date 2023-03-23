@@ -23,6 +23,8 @@ Create notes within folders that can be accessed without collapsing the folder, 
 
 ## Showcase
 
+Open folder notes
+![wzk25GXUpc](https://user-images.githubusercontent.com/70213368/227169041-9bc7552e-c5f5-4001-94d9-b4c80ea88bd1.gif)
 
 
 ## How to install the plugin
