@@ -23,11 +23,14 @@ Create notes within folders that can be accessed without collapsing the folder, 
 
 ## Showcase
 
-Open folder notes
+#### Open folder notes
 ![wzk25GXUpc](https://user-images.githubusercontent.com/70213368/227169041-9bc7552e-c5f5-4001-94d9-b4c80ea88bd1.gif)
 
-Automatically create folder notes
+#### Automatically create folder notes
 ![Obsidian_NLUDzVBWRe](https://user-images.githubusercontent.com/70213368/227169603-3a105622-e6cb-4889-a709-acf52ad06d6e.gif)
+
+#### Exlude folders
+![Obsidian_NLUDzVBWRe](https://user-images.githubusercontent.com/70213368/227179537-605c3337-6de6-4a6b-a0f6-296c983a7c7b.gif)
 
 
 ## How to install the plugin
