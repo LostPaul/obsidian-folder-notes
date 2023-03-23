@@ -16,6 +16,8 @@ Create notes within folders that can be accessed without collapsing the folder, 
 - Automatically create folder notes in folder on folder creation (can be turned on in the settings)
 - Exclude folders
 - Hide folder notes from file explorer
+### Soon 
+- Create folder note for every existing folder
  
 ## Credits
 Thank you to everyone who has created a plugin that inspired me and I took code from.
