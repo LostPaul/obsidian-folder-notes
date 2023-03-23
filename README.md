@@ -19,7 +19,7 @@ Create notes within folders that can be accessed without collapsing the folder, 
  
 ## Credits
 Thank you to everyone who has created a plugin that inspired me and I took code from.
-- Template suggester, created by [SilentVoid13](https://github.com/SilentVoid13) and [Liamcain](https://github.com/liamcain) (their plugins: https://github.com/SilentVoid13/Templater/, https://github.com/liamcain/obsidian-periodic-notes)
+- Template suggester, created by [SilentVoid13](https://github.com/SilentVoid13) and [Liamcain](https://github.com/liamcain) (their plugins: [Templater](https://github.com/SilentVoid13/Templater/), [Periodic notes](https://github.com/liamcain/obsidian-periodic-notes))
 - Apply template to note, first seen in https://github.com/mgmeyers/obsidian-kanban/ from [Mgmeyers](https://github.com/mgmeyers)
 - Folder underline, inspired from https://github.com/aidenlx/alx-folder-note
 - Stop folders from collapsing, the basic idea from https://github.com/alangrainger/obsidian-folder-notes and some code lines
