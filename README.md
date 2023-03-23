@@ -5,6 +5,7 @@ Create notes within folders that can be accessed without collapsing the folder, 
 
 - [Features](#features)
 - [Credits](#credits)
+- [How to install the plugin](#how-to-install-the-plugin)
 
 ## Features
 
@@ -19,7 +20,7 @@ Create notes within folders that can be accessed without collapsing the folder, 
 #### Soon 
 - Create folder note for every existing folder
 
-## How to install
+## How to install the plugin
 
 1. Download main.js, manifest.json, styles.css from the latest release (see [releases](https://github.com/LostPaul/obsidian-folder-notes/releases/))
 2. Create a new folder in `Vault-name/.obsidian/plugins` and put the downloaded files in there
