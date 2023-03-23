@@ -16,8 +16,16 @@ Create notes within folders that can be accessed without collapsing the folder, 
 - Automatically create folder notes in folder on folder creation (can be turned on in the settings)
 - Exclude folders
 - Hide folder notes from file explorer
-### Soon 
+#### Soon 
 - Create folder note for every existing folder
+
+## How to install
+
+1. Download main.js, manifest.json, styles.css from the latest release (see [releases](https://github.com/LostPaul/obsidian-folder-notes/releases/))
+2. Create a new folder in `Vault-name/.obsidian/plugins` and put the downloaded files in there
+3. Reload your plugins and enable the plugin
+![image](https://user-images.githubusercontent.com/70213368/220440006-afc6f592-8ff9-4074-8b24-74f69c22cf18.png)
+![zhWUnifj86Q2KlZTOtfU](https://user-images.githubusercontent.com/70213368/220440083-076bdb60-49a7-44cb-b001-37b3dd7717c3.png)
  
 ## Credits
 Thank you to everyone who has created a plugin that inspired me and I took code from.
