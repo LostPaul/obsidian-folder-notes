@@ -21,7 +21,16 @@ export default class DeleteConfirmationModal extends Modal {
 
 		// Create a container for the buttons and the checkbox
 		const buttonContainer = setting.infoEl.createEl('div', { cls: 'fn-delete-confirmation-modal-buttons' });
-		if (Platform.isDesktopApp) {
+		if (Platform.isMobileApp) {
+			const confirmButton = buttonContainer.createEl('button', { text: 'Delete and don\'t ask again' });
+			confirmButton.classList.add('mod-warning', 'fn-confirmation-modal-button');
+			confirmButton.addEventListener('click', async () => {
+				this.plugin.settings.showDeleteConfirmation = false;
+				this.plugin.saveSettings();
+				this.close();
+				this.app.vault.delete(this.file);
+			});
+		} else {
 			const checkbox = buttonContainer.createEl('input', { type: 'checkbox' });
 			checkbox.addEventListener('change', (e) => {
 				const target = e.target as HTMLInputElement;
@@ -35,15 +44,6 @@ export default class DeleteConfirmationModal extends Modal {
 			const checkBoxText = buttonContainer.createEl('span', { text: 'Don\'t ask again' });
 			checkBoxText.addEventListener('click', () => {
 				checkbox.click();
-			});
-		} else if (Platform.isMobileApp) {
-			const confirmButton = buttonContainer.createEl('button', { text: 'Delete and don\'t ask again' });
-			confirmButton.classList.add('mod-warning', 'fn-confirmation-modal-button');
-			confirmButton.addEventListener('click', async () => {
-				this.plugin.settings.showDeleteConfirmation = false;
-				this.plugin.saveSettings();
-				this.close();
-				this.app.vault.delete(this.file);
 			});
 		}
 		const button = buttonContainer.createEl('button', { text: 'Delete' });
