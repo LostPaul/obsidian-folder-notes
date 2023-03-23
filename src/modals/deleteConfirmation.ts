@@ -1,4 +1,4 @@
-import { App, Modal, Setting, TFile } from 'obsidian';
+import { App, Modal, Setting, TFile, Platform } from 'obsidian';
 import FolderNotesPlugin from '../main';
 export default class DeleteConfirmationModal extends Modal {
 	plugin: FolderNotesPlugin;
@@ -21,20 +21,31 @@ export default class DeleteConfirmationModal extends Modal {
 
 		// Create a container for the buttons and the checkbox
 		const buttonContainer = setting.infoEl.createEl('div', { cls: 'fn-delete-confirmation-modal-buttons' });
-		const checkbox = buttonContainer.createEl('input', { type: 'checkbox' });
-		checkbox.addEventListener('change', (e) => {
-			const target = e.target as HTMLInputElement;
-			if (target.checked) {
+		if (Platform.isDesktopApp) {
+			const checkbox = buttonContainer.createEl('input', { type: 'checkbox' });
+			checkbox.addEventListener('change', (e) => {
+				const target = e.target as HTMLInputElement;
+				if (target.checked) {
+					this.plugin.settings.showDeleteConfirmation = false;
+				} else {
+					this.plugin.settings.showDeleteConfirmation = true;
+				}
+				this.plugin.saveSettings();
+			});
+			const checkBoxText = buttonContainer.createEl('span', { text: 'Don\'t ask again' });
+			checkBoxText.addEventListener('click', () => {
+				checkbox.click();
+			});
+		} else if (Platform.isMobileApp) {
+			const confirmButton = buttonContainer.createEl('button', { text: 'Delete and don\'t ask again' });
+			confirmButton.classList.add('mod-warning', 'fn-confirmation-modal-button');
+			confirmButton.addEventListener('click', async () => {
 				this.plugin.settings.showDeleteConfirmation = false;
-			} else {
-				this.plugin.settings.showDeleteConfirmation = true;
-			}
-			this.plugin.saveSettings();
-		});
-		const checkBoxText = buttonContainer.createEl('span', { text: 'Don\'t ask again' });
-		checkBoxText.addEventListener('click', () => {
-			checkbox.click();
-		});
+				this.plugin.saveSettings();
+				this.close();
+				this.app.vault.delete(this.file);
+			});
+		}
 		const button = buttonContainer.createEl('button', { text: 'Delete' });
 		button.classList.add('mod-warning', 'fn-confirmation-modal-button');
 		button.addEventListener('click', async () => {

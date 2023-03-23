@@ -51,12 +51,12 @@
     padding-bottom: 0;
 }
 
-.fn-confirmation-modal-button {
+:not(.is-phone) .fn-confirmation-modal-button {
     margin-right: 0.7rem;
 
 }
 
-.fn-delete-confirmation-modal-buttons {
+:not(.is-phone) .fn-delete-confirmation-modal-buttons {
     display: flex;
     align-items: center;
     margin-top: 10px;
@@ -67,10 +67,10 @@
     cursor: pointer;
 }
 
-.fn-delete-confirmation-modal-buttons .fn-confirmation-modal-button {
+:not(.is-phone) .fn-delete-confirmation-modal-buttons .fn-confirmation-modal-button {
     margin-left: auto;
-  }
+}
 
-.fn-delete-confirmation-modal-buttons input[type="checkbox"] {
+:not(.is-phone) .fn-delete-confirmation-modal-buttons input[type="checkbox"] {
     margin-right: 5px;
 }
