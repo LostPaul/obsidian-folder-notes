@@ -5,6 +5,7 @@ Create notes within folders that can be accessed without collapsing the folder, 
 
 - [Features](#features)
 - [Credits](#credits)
+- [Showcase](#showcase)
 - [How to install the plugin](#how-to-install-the-plugin)
 
 ## Features
@@ -19,6 +20,10 @@ Create notes within folders that can be accessed without collapsing the folder, 
 - Hide folder notes from file explorer
 #### Soon 
 - Create folder note for every existing folder
+
+## Showcase
+
+
 
 ## How to install the plugin
 
