@@ -49,7 +49,7 @@ export class Commands {
 					item.setTitle('Create folder note')
 						.setIcon('edit')
 						.onClick(() => {
-							this.plugin.createFolderNote(file.path, true);
+							this.plugin.createFolderNote(file.path + "/" + file.name + ".md" , true);
 						});
 				});
 			}
