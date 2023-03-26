@@ -95,7 +95,7 @@ export default class FolderNotesPlugin extends Plugin {
 				});
 				this.saveSettings();
 
-				const oldName = oldPath.substring(oldPath.lastIndexOf('/' || '\\'));
+				const oldName = oldPath.substring(oldPath.lastIndexOf('/' || '\\')).replace('/', '');
 				const newPath = folder?.path + '/' + folder?.name + '.md';
 				if (!(folder instanceof TFolder)) return;
 				const note = this.app.vault.getAbstractFileByPath(oldPath + '/' + oldName + '.md');
