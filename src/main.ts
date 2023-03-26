@@ -107,7 +107,8 @@ export default class FolderNotesPlugin extends Plugin {
 				const folder = this.app.vault.getAbstractFileByPath(oldPath.substring(0,
 					oldPath.lastIndexOf('/' || '\\') >= 0 ? oldPath.lastIndexOf('/') : oldPath.length));
 				if (folder?.name + '.md' === file.name) return;
-				const oldFileName = oldPath.substring(oldPath.lastIndexOf('/' || '\\') >= 0 ? oldPath.lastIndexOf('/') +1 : oldPath.length);
+				const oldFileName = oldPath.substring(oldPath.lastIndexOf('/' || '\\') >= 0 ? oldPath.lastIndexOf('/') + 1 : oldPath.length);
+
 				if (!folder) return;
 
 				const excludedFolder = this.settings.excludeFolders.find(
@@ -129,9 +130,13 @@ export default class FolderNotesPlugin extends Plugin {
 					return new Notice('A folder with the same name already exists');
 				}
 				if (folder instanceof TFolder) {
-					this.app.vault.rename(folder, folder.path.substring(0,
-						folder.path.lastIndexOf('/' || '\\') >= 0 ? folder.path.lastIndexOf('/') : folder.path.length) + '/' +
-						file.name.substring(0, file.name.lastIndexOf('.')));
+					if (folder.path.indexOf('/') >= 0) {
+						this.app.vault.rename(folder, folder.path.substring(0,
+							folder.path.lastIndexOf('/' || '\\') >= 0 ? folder.path.lastIndexOf('/') : folder.path.length) + '/' +
+							file.name.substring(0, file.name.lastIndexOf('.')));
+					} else {
+						this.app.vault.rename(folder, file.name.substring(0, file.name.lastIndexOf('.')));
+					}
 				}
 			}
 		}));
