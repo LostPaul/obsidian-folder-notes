@@ -74,9 +74,9 @@ export default class FolderNotesPlugin extends Plugin {
 				const folder = this.app.vault.getAbstractFileByPath(file?.path);
 				if (!folder) return;
 				const excludedFolder = this.settings.excludeFolders.find(
-					(excludedFolder) => (excludedFolder.path === folder.path) ||
-						(excludedFolder.path === folder.path?.slice(0, folder?.path.lastIndexOf('/') >= 0 ?
-							folder.path?.lastIndexOf('/') : folder.path.length)
+					(excludedFolder) => (excludedFolder.path === oldPath) ||
+						(excludedFolder.path === oldPath?.slice(0, oldPath.lastIndexOf('/') >= 0 ?
+							oldPath.lastIndexOf('/') : oldPath.length)
 							&& excludedFolder.subFolders));
 				if (excludedFolder?.disableSync) return;
 				const excludedFolders = this.settings.excludeFolders.filter(
@@ -89,7 +89,7 @@ export default class FolderNotesPlugin extends Plugin {
 						folders.push(excludedFolder.path);
 					}
 
-					const oldName = oldPath.substring(oldPath.lastIndexOf('/' || '\\'));
+					const oldName = oldPath.substring(0, oldPath.lastIndexOf('/' || '\\') >= 0 ? oldPath.lastIndexOf('/') : oldPath.length);
 					folders[folders.indexOf(oldName.replace('/', ''))] = folder.name;
 					excludedFolder.path = folders.join('/');
 				});
@@ -104,9 +104,10 @@ export default class FolderNotesPlugin extends Plugin {
 				this.app.vault.rename(note, newPath);
 
 			} else if (file instanceof TFile) {
-				const folder = this.app.vault.getAbstractFileByPath(oldPath.substring(0, oldPath.lastIndexOf('/' || '\\')));
+				const folder = this.app.vault.getAbstractFileByPath(oldPath.substring(0,
+					oldPath.lastIndexOf('/' || '\\') >= 0 ? oldPath.lastIndexOf('/') : oldPath.length));
 				if (folder?.name + '.md' === file.name) return;
-				const oldFileName = oldPath.substring(oldPath.lastIndexOf('/' || '\\') + 1);
+				const oldFileName = oldPath.substring(oldPath.lastIndexOf('/' || '\\') >= 0 ? oldPath.lastIndexOf('/') +1 : oldPath.length);
 				if (!folder) return;
 
 				const excludedFolder = this.settings.excludeFolders.find(
@@ -116,7 +117,7 @@ export default class FolderNotesPlugin extends Plugin {
 							&& excludedFolder.subFolders));
 				if (excludedFolder?.disableSync) return;
 				if (oldFileName !== folder?.name + '.md') return;
-				let newFolderPath = file.path.slice(0, file.path.lastIndexOf('/'));
+				let newFolderPath = file.path.slice(0, file.path.lastIndexOf('/') >= 0 ? file.path.lastIndexOf('/') : file.path.length);
 				if (newFolderPath.lastIndexOf('/') > 0) {
 					newFolderPath = newFolderPath.slice(0, newFolderPath.lastIndexOf('/')) + '/';
 				} else {
@@ -128,7 +129,8 @@ export default class FolderNotesPlugin extends Plugin {
 					return new Notice('A folder with the same name already exists');
 				}
 				if (folder instanceof TFolder) {
-					this.app.vault.rename(folder, folder.path.substring(0, folder.path.lastIndexOf('/' || '\\')) + '/' +
+					this.app.vault.rename(folder, folder.path.substring(0,
+						folder.path.lastIndexOf('/' || '\\') >= 0 ? folder.path.lastIndexOf('/') : folder.path.length) + '/' +
 						file.name.substring(0, file.name.lastIndexOf('.')));
 				}
 			}
@@ -211,7 +213,8 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 		if (!this.settings.autoCreate) return;
 		if (!useModal) return;
-		const folder = this.app.vault.getAbstractFileByPath(path.substring(0, path.lastIndexOf('/' || '\\')));
+		const folder = this.app.vault.getAbstractFileByPath(path.substring(0,
+			path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/') : path.length));
 		if (!(folder instanceof TFolder)) return;
 		const modal = new FolderNameModal(this.app, this, folder);
 		modal.open();
