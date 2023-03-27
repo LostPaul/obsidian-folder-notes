@@ -73,27 +73,31 @@ export default class FolderNotesPlugin extends Plugin {
 			if (file instanceof TFolder) {
 				const folder = this.app.vault.getAbstractFileByPath(file?.path);
 				if (!folder) return;
+				const excludedFolders = this.settings.excludeFolders.filter(
+					(excludedFolder) => excludedFolder.path.includes(oldPath)
+				);
+
+				excludedFolders.forEach((excludedFolder) => {
+					if (excludedFolder.path === oldPath) {
+						excludedFolder.path = folder.path;
+						return;
+					}
+					const folders = excludedFolder.path.split('/');
+					if (folders.length < 1) {
+						folders.push(excludedFolder.path);
+					}
+
+					const oldName = oldPath.substring(oldPath.lastIndexOf('/' || '\\') >= 0 ? oldPath.lastIndexOf('/') : 0);
+					folders[folders.indexOf(oldName.replace('/', ''))] = folder.name;
+					excludedFolder.path = folders.join('/');
+				});
+				this.saveSettings();
 				const excludedFolder = this.settings.excludeFolders.find(
 					(excludedFolder) => (excludedFolder.path === oldPath) ||
 						(excludedFolder.path === oldPath?.slice(0, oldPath.lastIndexOf('/') >= 0 ?
 							oldPath.lastIndexOf('/') : oldPath.length)
 							&& excludedFolder.subFolders));
 				if (excludedFolder?.disableSync) return;
-				const excludedFolders = this.settings.excludeFolders.filter(
-					(excludedFolder) => excludedFolder.path.includes(oldPath)
-				);
-
-				excludedFolders.forEach((excludedFolder) => {
-					const folders = excludedFolder.path.split('/');
-					if (folders.length < 1) {
-						folders.push(excludedFolder.path);
-					}
-
-					const oldName = oldPath.substring(0, oldPath.lastIndexOf('/' || '\\') >= 0 ? oldPath.lastIndexOf('/') : oldPath.length);
-					folders[folders.indexOf(oldName.replace('/', ''))] = folder.name;
-					excludedFolder.path = folders.join('/');
-				});
-				this.saveSettings();
 
 				const oldName = oldPath.substring(oldPath.lastIndexOf('/' || '\\')).replace('/', '');
 				const newPath = folder?.path + '/' + folder?.name + '.md';
