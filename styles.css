@@ -1,4 +1,4 @@
-.nav-folder-title-content.has-folder-note {
+.fn-whitespace-collapsing .nav-folder-title-content.has-folder-note {
     flex-grow: 1;
     padding-bottom: 4px;
     padding-top: 4px;
@@ -11,7 +11,7 @@
     text-underline-offset: 1px;
 }
 
-.nav-folder-title:has(.has-folder-note) {
+.fn-whitespace-collapsing .nav-folder-title:has(.has-folder-note) {
     padding-bottom: 0;
     padding-top: 0;
 }
@@ -80,6 +80,7 @@
     flex-direction: column;
     align-items: center;
 }
+
 .is-phone .fn-delete-confirmation-modal-buttons .fn-confirmation-modal-button {
     margin-top: 10px;
 }

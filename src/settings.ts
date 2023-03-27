@@ -15,6 +15,7 @@ export interface FolderNotesSettings {
 	excludeFolders: ExcludedFolder[];
 	showDeleteConfirmation: boolean;
 	underlineFolder: boolean;
+	allowWhitespaceCollapsing: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -27,7 +28,8 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	enableCollapsing: false,
 	excludeFolders: [],
 	showDeleteConfirmation: true,
-	underlineFolder: true
+	underlineFolder: true,
+	allowWhitespaceCollapsing: false,
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -51,6 +53,23 @@ export class SettingsTab extends PluginSettingTab {
 					.setValue(!this.plugin.settings.enableCollapsing)
 					.onChange(async (value) => {
 						this.plugin.settings.enableCollapsing = !value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('Don\'t collapse folder when clicking on the whitespace around the folder name')
+			.setDesc('Disable the ability to collapse folders by clicking on the whitespace around the folder name.')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(!this.plugin.settings.allowWhitespaceCollapsing)
+					.onChange(async (value) => {
+						if (value) {
+							document.body.classList.add('fn-whitespace-collapsing');
+						} else {
+							document.body.classList.remove('fn-whitespace-collapsing');
+						}
+						this.plugin.settings.allowWhitespaceCollapsing = !value;
 						await this.plugin.saveSettings();
 					})
 			);
@@ -153,12 +172,11 @@ export class SettingsTab extends PluginSettingTab {
 		// If you want to try it yourself make a pr
 		// The issue was that it only used the first folder for all of the other folder notes
 		/*
-	new Setting(containerEl)
+		new Setting(containerEl)
 		.setName('Create folder note for every folder')
 		.setDesc('Create a folder note for every folder in the vault')
 		.addButton((cb) => {
 			cb.setIcon('plus');
-
 			cb.setTooltip('Create folder notes');
 			cb.onClick(async () => {
 				new ConfirmationModal(this.app, this.plugin).open();
