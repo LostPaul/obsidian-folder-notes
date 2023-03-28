@@ -1,4 +1,4 @@
-import { Plugin, TFile, TFolder, TAbstractFile, Notice } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, Notice, Keymap } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings';
 import FolderNameModal from './modals/folderName';
 import { applyTemplate } from './template';
@@ -175,7 +175,6 @@ export default class FolderNotesPlugin extends Plugin {
 			event.target.click();
 		}
 		const path = folder + '/' + event.target.innerText + '.md';
-
 		if (this.app.vault.getAbstractFileByPath(path)) {
 			event.target.classList.remove('has-not-folder-note');
 			event.target.classList.add('has-folder-note');
@@ -189,9 +188,11 @@ export default class FolderNotesPlugin extends Plugin {
 					}
 				});
 
-		} else if (event.altKey || event.ctrlKey) {
-			if ((this.settings.altKey && event.altKey) || (this.settings.ctrlKey && event.ctrlKey)) {
+		} else if (event.altKey || Keymap.isModEvent(event) == 'tab') {
+			if ((this.settings.altKey && event.altKey) || (this.settings.ctrlKey && Keymap.isModEvent(event) == 'tab')) {
 				this.createFolderNote(path, true, true);
+				event.target.classList.remove('has-not-folder-note');
+				event.target.classList.add('has-folder-note');
 				if (!this.settings.hideFolderNote) return;
 				event.target.parentElement?.parentElement?.getElementsByClassName('nav-folder-children').item(0)?.querySelectorAll('div.nav-file')
 					.forEach((element: HTMLElement) => {

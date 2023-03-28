@@ -120,16 +120,19 @@ export class SettingsTab extends PluginSettingTab {
 				.setName('Key for creating folder note')
 				.setDesc('The key combination to create a folder note')
 				.addDropdown((dropdown) => {
-					dropdown
-						.addOption('ctrl', 'Ctrl + Click')
-						.addOption('alt', 'Alt + Click')
-						.setValue(this.plugin.settings.ctrlKey ? 'ctrl' : 'alt')
-						.onChange(async (value) => {
-							this.plugin.settings.ctrlKey = value === 'ctrl';
-							this.plugin.settings.altKey = value === 'alt';
-							await this.plugin.saveSettings();
-							this.display();
-						});
+					if(!Platform.isMacOS) {
+					dropdown.addOption('ctrl', 'Ctrl + Click')
+					} else {
+						dropdown.addOption('ctrl', 'Cmd + Click')
+					}
+					dropdown.addOption('alt', 'Alt + Click')
+					dropdown.setValue(this.plugin.settings.ctrlKey ? 'ctrl' : 'alt')
+					dropdown.onChange(async (value) => {
+						this.plugin.settings.ctrlKey = value === 'ctrl';
+						this.plugin.settings.altKey = value === 'alt';
+						await this.plugin.saveSettings();
+						this.display();
+					});
 				});
 		}
 
