@@ -25,6 +25,11 @@ export default class FolderNotesPlugin extends Plugin {
 		} else {
 			document.body.classList.remove('folder-note-underline');
 		}
+		if (this.settings.enableCollapsing) {
+			document.body.classList.add('fn-whitespace-collapsing');
+		} else {
+			document.body.classList.remove('fn-whitespace-collapsing');
+		}
 		new Commands(this.app, this).registerCommands();
 		this.observer = new MutationObserver((mutations: MutationRecord[]) => {
 			mutations.forEach((rec) => {
