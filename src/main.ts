@@ -25,10 +25,10 @@ export default class FolderNotesPlugin extends Plugin {
 		} else {
 			document.body.classList.remove('folder-note-underline');
 		}
-		if (this.settings.enableCollapsing) {
-			document.body.classList.add('fn-whitespace-collapsing');
+		if (!this.settings.allowWhitespaceCollapsing) {
+			document.body.classList.add('fn-whitespace-stop-collapsing');
 		} else {
-			document.body.classList.remove('fn-whitespace-collapsing');
+			document.body.classList.remove('fn-whitespace-stop-collapsing');
 		}
 		new Commands(this.app, this).registerCommands();
 		this.observer = new MutationObserver((mutations: MutationRecord[]) => {
@@ -257,7 +257,7 @@ export default class FolderNotesPlugin extends Plugin {
 		document.body.classList.remove('folder-notes-plugin');
 		document.body.classList.remove('folder-note-underline');
 		document.body.classList.remove('hide-folder-note');
-		document.body.classList.remove('fn-whitespace-collapsing');
+		document.body.classList.remove('fn-whitespace-stop-collapsing');
 	}
 
 	async loadSettings() {

@@ -1,4 +1,4 @@
-.fn-whitespace-collapsing .nav-folder-title-content {
+.fn-whitespace-stop-collapsing .nav-folder-title-content {
     flex-grow: 1;
     padding-bottom: 4px;
     padding-top: 4px;
@@ -11,7 +11,7 @@
     text-underline-offset: 1px;
 }
 
-.fn-whitespace-collapsing .nav-folder-title {
+.fn-whitespace-stop-collapsing .nav-folder-title {
     padding-bottom: 0;
     padding-top: 0;
 }

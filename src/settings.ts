@@ -65,9 +65,9 @@ export class SettingsTab extends PluginSettingTab {
 					.setValue(!this.plugin.settings.allowWhitespaceCollapsing)
 					.onChange(async (value) => {
 						if (value) {
-							document.body.classList.add('fn-whitespace-collapsing');
+							document.body.classList.add('fn-whitespace-stop-collapsing');
 						} else {
-							document.body.classList.remove('fn-whitespace-collapsing');
+							document.body.classList.remove('fn-whitespace-stop-collapsing');
 						}
 						this.plugin.settings.allowWhitespaceCollapsing = !value;
 						await this.plugin.saveSettings();
