@@ -255,6 +255,9 @@ export default class FolderNotesPlugin extends Plugin {
 		console.log('unloading folder notes plugin');
 		this.observer.disconnect();
 		document.body.classList.remove('folder-notes-plugin');
+		document.body.classList.remove('folder-note-underline');
+		document.body.classList.remove('hide-folder-note');
+		document.body.classList.remove('fn-whitespace-collapsing');
 	}
 
 	async loadSettings() {
