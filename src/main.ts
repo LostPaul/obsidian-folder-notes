@@ -4,6 +4,7 @@ import FolderNameModal from './modals/folderName';
 import { applyTemplate } from './template';
 import { Commands } from './commands';
 import DeleteConfirmationModal from './modals/deleteConfirmation';
+import { ExcludedFolder } from './settings';
 
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
@@ -76,7 +77,7 @@ export default class FolderNotesPlugin extends Plugin {
 		event.stopImmediatePropagation();
 
 		const folder = event.target.parentElement?.getAttribute('data-path');
-		if(!folder) { return }
+		if (!folder) { return }
 		const excludedFolder = this.getExcludedFolderByPath(folder);
 		if (excludedFolder?.disableFolderNote) {
 			event.target.onclick = null;
@@ -236,8 +237,8 @@ export default class FolderNotesPlugin extends Plugin {
 
 	getExcludedFolderByPath(path: string): ExcludedFolder | undefined {
 		return this.settings.excludeFolders.find((excludedFolder) => {
-			if(excludedFolder.path === path) { return true }
-			if(!excludedFolder.subFolders) { return false }
+			if (excludedFolder.path === path) { return true }
+			if (!excludedFolder.subFolders) { return false }
 			return this.getPathFromString(path).startsWith(excludedFolder.path)
 		})
 	}
