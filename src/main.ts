@@ -5,7 +5,6 @@ import { applyTemplate } from './template';
 import { Commands } from './commands';
 import DeleteConfirmationModal from './modals/deleteConfirmation';
 import { FileExplorerWorkspaceLeaf } from './globals';
-import { ExcludedFolder } from './settings';
 
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
