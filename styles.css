@@ -4,7 +4,7 @@
     padding-top: 4px;
 }
 
-.folder-note-underline .has-folder-note.nav-folder-title-content {
+.folder-note-underline .has-folder-note .nav-folder-title-content {
     text-decoration-line: underline;
     text-decoration-color: var(--text-faint);
     text-decoration-thickness: 2px;
