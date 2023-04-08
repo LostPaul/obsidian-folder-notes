@@ -1,10 +1,9 @@
 import { Plugin, TFile, TFolder, TAbstractFile, Notice, Keymap } from 'obsidian';
-import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings';
+import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab, ExcludedFolder } from './settings';
 import FolderNameModal from './modals/folderName';
 import { applyTemplate } from './template';
 import { Commands } from './commands';
 import DeleteConfirmationModal from './modals/deleteConfirmation';
-import { ExcludedFolder } from './settings';
 
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
@@ -52,7 +51,7 @@ export default class FolderNotesPlugin extends Plugin {
 			if (!this.settings.autoCreate) return;
 			if (!(folder instanceof TFolder)) return;
 
-			const excludedFolder = this.getExcludedFolderByPath(folder.path)
+			const excludedFolder = this.getExcludedFolderByPath(folder.path);
 			if (excludedFolder?.disableAutoCreate) return;
 
 			const path = folder.path + '/' + folder.name + '.md';
@@ -65,9 +64,9 @@ export default class FolderNotesPlugin extends Plugin {
 		this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
 			if (!this.settings.syncFolderName) return;
 			if (file instanceof TFolder) {
-				this.handleFolderRename(file, oldPath)
+				this.handleFolderRename(file, oldPath);
 			} else if (file instanceof TFile) {
-				this.handleFileRename(file, oldPath)
+				this.handleFileRename(file, oldPath);
 			}
 		}));
 	}
@@ -77,7 +76,7 @@ export default class FolderNotesPlugin extends Plugin {
 		event.stopImmediatePropagation();
 
 		const folder = event.target.parentElement?.getAttribute('data-path');
-		if (!folder) { return }
+		if (!folder) { return; }
 		const excludedFolder = this.getExcludedFolderByPath(folder);
 		if (excludedFolder?.disableFolderNote) {
 			event.target.onclick = null;
@@ -107,8 +106,8 @@ export default class FolderNotesPlugin extends Plugin {
 					}
 				});
 
-		} else if (event.altKey || Keymap.isModEvent(event) == 'tab') {
-			if ((this.settings.altKey && event.altKey) || (this.settings.ctrlKey && Keymap.isModEvent(event) == 'tab')) {
+		} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
+			if ((this.settings.altKey && event.altKey) || (this.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 				this.createFolderNote(path, true, true);
 				event.target.classList.remove('has-not-folder-note');
 				event.target.classList.add('has-folder-note');
@@ -132,7 +131,7 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	handleFolderRename(file: TFolder, oldPath: string) {
-		const oldFileName = this.getNameFromPathString(oldPath)
+		const oldFileName = this.getNameFromPathString(oldPath);
 		const folder = this.app.vault.getAbstractFileByPath(file.path);
 		if (!folder) return;
 		const excludedFolders = this.settings.excludeFolders.filter(
@@ -153,7 +152,7 @@ export default class FolderNotesPlugin extends Plugin {
 			excludedFolder.path = folders.join('/');
 		});
 		this.saveSettings();
-		const excludedFolder = this.getExcludedFolderByPath(oldPath)
+		const excludedFolder = this.getExcludedFolderByPath(oldPath);
 		if (excludedFolder?.disableSync) return;
 
 		const newPath = folder.path + '/' + folder.name + '.md';
@@ -165,13 +164,13 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	handleFileRename(file: TFile, oldPath: string) {
-		const oldFileName = this.getNameFromPathString(oldPath)
-		const oldFilePath = this.getPathFromString(oldPath)
+		const oldFileName = this.getNameFromPathString(oldPath);
+		const oldFilePath = this.getPathFromString(oldPath);
 		const folder = this.app.vault.getAbstractFileByPath(oldFilePath);
 		if (!folder) return;
 		if (folder.name === file.basename) return;
 
-		const excludedFolder = this.getExcludedFolderByPath(folder.path)
+		const excludedFolder = this.getExcludedFolderByPath(folder.path);
 		if (excludedFolder?.disableSync) return;
 		if (oldFileName !== folder.name + '.md') return;
 		let newFolderPath = this.getPathFromString(file.path);
@@ -227,20 +226,20 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	getNameFromPathString(path: string): string {
-		return path.substring(path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/' || '\\') + 1 : 0)
+		return path.substring(path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/' || '\\') + 1 : 0);
 	}
 
 	getPathFromString(path: string): string {
 		const subString = path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/') : path.length;
-		return path.substring(0, subString)
+		return path.substring(0, subString);
 	}
 
 	getExcludedFolderByPath(path: string): ExcludedFolder | undefined {
 		return this.settings.excludeFolders.find((excludedFolder) => {
-			if (excludedFolder.path === path) { return true }
-			if (!excludedFolder.subFolders) { return false }
-			return this.getPathFromString(path).startsWith(excludedFolder.path)
-		})
+			if (excludedFolder.path === path) { return true; }
+			if (!excludedFolder.subFolders) { return false; }
+			return this.getPathFromString(path).startsWith(excludedFolder.path);
+		});
 	}
 
 	onunload() {
