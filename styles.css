@@ -8,6 +8,10 @@
     padding-top: 4px;
 }
 
+.has-folder-note.nav-folder-title-content:hover {
+    cursor: pointer;
+}
+
 .folder-note-underline .has-folder-note.nav-folder-title-content {
     text-decoration-line: underline;
     text-decoration-color: var(--text-faint);
