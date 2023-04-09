@@ -8,7 +8,7 @@
     padding-top: 4px;
 }
 
-.has-folder-note.nav-folder-title-content:hover {
+.has-folder-note .nav-folder-title-content:hover {
     cursor: pointer;
 }
 
