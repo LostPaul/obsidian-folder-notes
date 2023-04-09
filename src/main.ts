@@ -288,8 +288,8 @@ export default class FolderNotesPlugin extends Plugin {
 
 	removeCSSClassFromEL(path: string, cssClass: string) {
 		const fileExplorerItem = this.getEL(path);
-		if(!fileExplorerItem) { return }
-		fileExplorerItem.addClass(cssClass)
+		if(!fileExplorerItem) { return; }
+		fileExplorerItem.removeClass(cssClass);
 	}
 
 	getEL(path: string): HTMLElement | null {
@@ -297,7 +297,7 @@ export default class FolderNotesPlugin extends Plugin {
 		if(!fileExplorer) { return null; }
 		const fileExplorerItem = fileExplorer.view.fileItems[path];
 		if(!fileExplorerItem) { return null; }
-		if(fileExplorerItem.el) return fileExplorerItem.el
+		if(fileExplorerItem.el) return fileExplorerItem.el;
 		return fileExplorerItem.titleEl;
 	}
 
