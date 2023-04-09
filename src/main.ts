@@ -297,7 +297,7 @@ export default class FolderNotesPlugin extends Plugin {
 		if(!fileExplorer) { return null; }
 		const fileExplorerItem = fileExplorer.view.fileItems[path];
 		if(!fileExplorerItem) { return null; }
-		if(fileExplorerItem.el) return fileExplorerItem.el;
+		if(fileExplorerItem.selfEl) return fileExplorerItem.selfEl;
 		return fileExplorerItem.titleEl;
 	}
 
