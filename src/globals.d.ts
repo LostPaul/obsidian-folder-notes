@@ -21,6 +21,7 @@ interface FileExplorerWorkspaceLeaf extends WorkspaceLeaf {
 
 interface FileExplorerViewFileItem extends TAbstractFile {
 	titleEl: HTMLElement
+	el: HTMLElement
 }
 
 interface FileExplorerView extends View {
