@@ -4,6 +4,14 @@
     padding-top: 4px;
 }
 
+.fn-whitespace-stop-collapsing .collapse-icon {
+    padding-top: 4px;
+}
+
+.has-folder-note.nav-folder-title-content:hover {
+    cursor: pointer;
+}
+
 .folder-note-underline .has-folder-note .nav-folder-title-content {
     text-decoration-line: underline;
     text-decoration-color: var(--text-faint);
@@ -14,6 +22,7 @@
 .fn-whitespace-stop-collapsing .nav-folder-title {
     padding-bottom: 0;
     padding-top: 0;
+    padding-right: 0;
 }
 
 .hide-folder-note .is-folder-note {
