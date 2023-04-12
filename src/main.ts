@@ -10,6 +10,7 @@ export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
 	settingsTab: SettingsTab;
+	activeFolderDom: HTMLElement | null;
 	activeFileExplorer: FileExplorerWorkspaceLeaf;
 
 	async onload() {
@@ -66,6 +67,17 @@ export default class FolderNotesPlugin extends Plugin {
 			this.createFolderNote(path, true, true);
 			this.addCSSClassToTitleEL(file.path, 'has-folder-note');
 
+		}));
+
+		this.registerEvent(this.app.workspace.on('file-open', (openFile: TFile | null) => {
+			if(this.activeFolderDom) {
+				this.activeFolderDom.removeClass('is-active');
+				this.activeFolderDom = null;
+			}
+			if(!openFile || !openFile.basename) { return; }
+			if(openFile.basename !== openFile.parent.name) { return; }
+			this.activeFolderDom = this.getEL(openFile.parent.path);
+			if(this.activeFolderDom) this.activeFolderDom.addClass('is-active');
 		}));
 
 		this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
@@ -326,6 +338,7 @@ export default class FolderNotesPlugin extends Plugin {
 		document.body.classList.remove('folder-note-underline');
 		document.body.classList.remove('hide-folder-note');
 		document.body.classList.remove('fn-whitespace-stop-collapsing');
+		if(this.activeFolderDom) { this.activeFolderDom.removeClass('is-active'); }
 	}
 
 	async loadSettings() {
