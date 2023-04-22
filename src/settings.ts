@@ -16,6 +16,8 @@ export interface FolderNotesSettings {
 	showDeleteConfirmation: boolean;
 	underlineFolder: boolean;
 	allowWhitespaceCollapsing: boolean;
+	underlineFolderInPath: boolean;
+	openFolderNoteOnClickInPath: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -30,6 +32,8 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	showDeleteConfirmation: true,
 	underlineFolder: true,
 	allowWhitespaceCollapsing: false,
+	underlineFolderInPath: true,
+	openFolderNoteOnClickInPath: true,
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -120,7 +124,7 @@ export class SettingsTab extends PluginSettingTab {
 				.setName('Key for creating folder note')
 				.setDesc('The key combination to create a folder note')
 				.addDropdown((dropdown) => {
-					if(!Platform.isMacOS) {
+					if (!Platform.isMacOS) {
 						dropdown.addOption('ctrl', 'Ctrl + Click');
 					} else {
 						dropdown.addOption('ctrl', 'Cmd + Click');
@@ -138,7 +142,7 @@ export class SettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Add underline to folders with folder notes')
-			.setDesc('Add an underline to folders that have a folder note')
+			.setDesc('Add an underline to folders that have a folder note in the file explorer')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.underlineFolder)
@@ -149,6 +153,35 @@ export class SettingsTab extends PluginSettingTab {
 						} else {
 							document.body.classList.remove('folder-note-underline');
 						}
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('Underline folders with folder notes in the path')
+			.setDesc('Add an underline to folders that have a folder note in the path')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.underlineFolderInPath)
+					.onChange(async (value) => {
+						this.plugin.settings.underlineFolderInPath = value;
+						if (value) {
+							document.body.classList.add('folder-note-underline-path');
+						} else {
+							document.body.classList.remove('folder-note-underline-path');
+						}
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('Open folder note through path')
+			.setDesc('Open the folder note when clicking on a folder name in the path')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.openFolderNoteOnClickInPath)
+					.onChange(async (value) => {
+						this.plugin.settings.openFolderNoteOnClickInPath = value;
 						await this.plugin.saveSettings();
 					})
 			);

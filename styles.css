@@ -8,7 +8,8 @@
     padding-top: 4px;
 }
 
-.has-folder-note .nav-folder-title-content:hover {
+.has-folder-note .nav-folder-title-content:hover,
+.has-folder-note.view-header-breadcrumb:hover {
     cursor: pointer;
 }
 
@@ -18,6 +19,14 @@
     text-decoration-thickness: 2px;
     text-underline-offset: 1px;
 }
+
+.folder-note-underline-path .has-folder-note.view-header-breadcrumb {
+    text-decoration-line: underline;
+    text-decoration-color: var(--text-faint);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
 
 .fn-whitespace-stop-collapsing .nav-folder-title {
     padding-bottom: 0;

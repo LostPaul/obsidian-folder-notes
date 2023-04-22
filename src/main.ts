@@ -23,6 +23,7 @@ export default class FolderNotesPlugin extends Plugin {
 		document.body.classList.add('folder-notes-plugin');
 		if (this.settings.hideFolderNote) { document.body.classList.add('hide-folder-note'); }
 		if (this.settings.underlineFolder) { document.body.classList.add('folder-note-underline'); }
+		if (this.settings.underlineFolderInPath) { document.body.classList.add('folder-note-underline-path'); }
 		if (!this.settings.allowWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
 
 		new Commands(this.app, this).registerCommands();
@@ -35,6 +36,26 @@ export default class FolderNotesPlugin extends Plugin {
 							if (element.onclick) return;
 							element.onclick = (event: MouseEvent) => this.handleFolderClick(event);
 						});
+					(<Element>rec.target).querySelectorAll('span.view-header-breadcrumb')
+						.forEach((element: HTMLElement) => {
+							const breadcrumbs = element.parentElement?.querySelectorAll('span.view-header-breadcrumb');
+							if (!breadcrumbs) return;
+							let path = '';
+							breadcrumbs.forEach((breadcrumb: HTMLElement) => {
+								path += breadcrumb.innerText.trim() + '/';
+								breadcrumb.setAttribute('data-path', path.slice(0, -1));
+								if (this.app.vault.getAbstractFileByPath(path + this.getNameFromPathString(path.slice(0, -1)) + '.md')) {
+									breadcrumb.classList.add('has-folder-note');
+								}
+							});
+							element.parentElement?.setAttribute('data-path', path.slice(0, -1));
+							if (breadcrumbs.length > 1) {
+								breadcrumbs.forEach((breadcrumb: HTMLElement) => {
+									if (breadcrumb.onclick) return;
+									breadcrumb.onclick = (event: MouseEvent) => this.handleViewHeaderClick(event);
+								});
+							}
+						});
 				}
 			});
 		});
@@ -44,17 +65,17 @@ export default class FolderNotesPlugin extends Plugin {
 		});
 		this.registerEvent(this.app.workspace.on('layout-change', () => { this.loadFileClasses(); }));
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
-			if(!(file instanceof TFile)) { return; }
+			if (!(file instanceof TFile)) { return; }
 			// parent is null here even if the parent exists
 			// not entirely sure why
 			const parentPath = this.getPathFromString(file.path);
 			const parentName = this.getNameFromPathString(parentPath);
-			if(parentName !== file.basename) { return; }
+			if (parentName !== file.basename) { return; }
 			this.removeCSSClassFromEL(parentPath, 'has-folder-note');
 		}));
 		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
 			if (!this.app.workspace.layoutReady) return;
-			if(file instanceof TFile) { return this.handleFileCreate(file); }
+			if (file instanceof TFile) { return this.handleFileCreate(file); }
 			if (!this.settings.autoCreate) return;
 			if (!(file instanceof TFolder)) return;
 
@@ -70,14 +91,14 @@ export default class FolderNotesPlugin extends Plugin {
 		}));
 
 		this.registerEvent(this.app.workspace.on('file-open', (openFile: TFile | null) => {
-			if(this.activeFolderDom) {
+			if (this.activeFolderDom) {
 				this.activeFolderDom.removeClass('is-active');
 				this.activeFolderDom = null;
 			}
-			if(!openFile || !openFile.basename) { return; }
-			if(openFile.basename !== openFile.parent.name) { return; }
+			if (!openFile || !openFile.basename) { return; }
+			if (openFile.basename !== openFile.parent.name) { return; }
 			this.activeFolderDom = this.getEL(openFile.parent.path);
-			if(this.activeFolderDom) this.activeFolderDom.addClass('is-active');
+			if (this.activeFolderDom) this.activeFolderDom.addClass('is-active');
 		}));
 
 		this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
@@ -104,6 +125,37 @@ export default class FolderNotesPlugin extends Plugin {
 		event.stopImmediatePropagation();
 
 		const folder = event.target.parentElement?.getAttribute('data-path');
+		if (!folder) { return; }
+		const excludedFolder = this.getExcludedFolderByPath(folder);
+		if (excludedFolder?.disableFolderNote) {
+			event.target.onclick = null;
+			event.target.click();
+			return;
+		} else if (excludedFolder?.enableCollapsing || this.settings.enableCollapsing) {
+			event.target.onclick = null;
+			event.target.click();
+		}
+		const path = folder + '/' + event.target.innerText + '.md';
+
+		if (this.app.vault.getAbstractFileByPath(path)) {
+			return this.openFolderNote(path);
+		} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
+			if ((this.settings.altKey && event.altKey) || (this.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
+				await this.createFolderNote(path, true, true);
+				this.addCSSClassToTitleEL(folder, 'has-folder-note');
+				this.removeCSSClassFromEL(folder, 'has-not-folder-note');
+				return;
+			}
+		}
+		event.target.onclick = null;
+		event.target.click();
+	}
+
+	async handleViewHeaderClick(event: MouseEvent) {
+		if (!(event.target instanceof HTMLElement)) return;
+		if (!this.settings.openFolderNoteOnClickInPath) return;
+		const folder = event.target.getAttribute('data-path');
+		console.log(folder);
 		if (!folder) { return; }
 		const excludedFolder = this.getExcludedFolderByPath(folder);
 		if (excludedFolder?.disableFolderNote) {
@@ -171,7 +223,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const newFilePath = this.getPathFromString(file.path);
 		const newFolder = this.app.vault.getAbstractFileByPath(newFilePath);
 
-		if(oldFolder) {
+		if (oldFolder) {
 			const excludedFolder = this.getExcludedFolderByPath(oldFolder.path);
 			if (excludedFolder?.disableSync) {
 				this.removeCSSClassFromEL(oldFolder.path, 'has-folder-note');
@@ -183,7 +235,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 			const newExcludedFolder = this.getExcludedFolderByPath(newFolder.path);
 			// Nothing else for us to do
-			if(newExcludedFolder?.disableSync || newExcludedFolder?.disableFolderNote) { return; }
+			if (newExcludedFolder?.disableSync || newExcludedFolder?.disableFolderNote) { return; }
 		}
 
 		// file matched folder name before rename
@@ -202,7 +254,7 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 
 		// file has been moved into position where it can be a folder note!
-		if(newFolder && newFolder.name === file.basename) {
+		if (newFolder && newFolder.name === file.basename) {
 			this.addCSSClassToTitleEL(newFolder.path, 'has-folder-note');
 			this.addCSSClassToTitleEL(file.path, 'is-folder-note', true);
 		}
@@ -218,7 +270,7 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	handleFileCreate(file: TFile) {
-		if(file.basename !== file.parent.name) { return; }
+		if (file.basename !== file.parent.name) { return; }
 		this.addCSSClassToTitleEL(file.parent.path, 'has-folder-note');
 		this.addCSSClassToTitleEL(file.path, 'is-folder-note', true);
 	}
@@ -283,8 +335,8 @@ export default class FolderNotesPlugin extends Plugin {
 
 	async addCSSClassToTitleEL(path: string, cssClass: string, waitForCreate = false, count = 0) {
 		const fileExplorerItem = this.getEL(path);
-		if(!fileExplorerItem) {
-			if(waitForCreate && count < 5) {
+		if (!fileExplorerItem) {
+			if (waitForCreate && count < 5) {
 				// sleep for a second for the file-explorer event to catch up
 				// this is annoying as in most scanarios our plugin recieves the event before file explorer
 				// If we could guarrantee load order it wouldn't be an issue but we can't
@@ -296,32 +348,40 @@ export default class FolderNotesPlugin extends Plugin {
 			return;
 		}
 		fileExplorerItem.addClass(cssClass);
+		const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);
+		viewHeaderItems.forEach((item) => {
+			item.addClass(cssClass);
+		});
 	}
 
 	removeCSSClassFromEL(path: string, cssClass: string) {
 		const fileExplorerItem = this.getEL(path);
-		if(!fileExplorerItem) { return; }
+		const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);
+		viewHeaderItems.forEach((item) => {
+			item.removeClass(cssClass);
+		});
+		if (!fileExplorerItem) { return; }
 		fileExplorerItem.removeClass(cssClass);
 	}
 
 	getEL(path: string): HTMLElement | null {
 		const fileExplorer = this.getFileExplorer();
-		if(!fileExplorer) { return null; }
+		if (!fileExplorer) { return null; }
 		const fileExplorerItem = fileExplorer.view.fileItems[path];
-		if(!fileExplorerItem) { return null; }
-		if(fileExplorerItem.selfEl) return fileExplorerItem.selfEl;
+		if (!fileExplorerItem) { return null; }
+		if (fileExplorerItem.selfEl) return fileExplorerItem.selfEl;
 		return fileExplorerItem.titleEl;
 	}
 
 	loadFileClasses(forceReload = false) {
-		if(this.activeFileExplorer === this.getFileExplorer() && !forceReload) { return; }
+		if (this.activeFileExplorer === this.getFileExplorer() && !forceReload) { return; }
 		this.activeFileExplorer = this.getFileExplorer();
 		this.app.vault.getMarkdownFiles().forEach((file) => {
-			if(file.basename !== file.parent.name) { return; }
+			if (file.basename !== file.parent.name) { return; }
 			const excludedFolder = this.getExcludedFolderByPath(file.parent.path);
 			// cleanup after ourselves
 			// Incase settings have changed
-			if(excludedFolder?.disableFolderNote) {
+			if (excludedFolder?.disableFolderNote) {
 				this.removeCSSClassFromEL(file.path, 'is-folder-note');
 				this.removeCSSClassFromEL(file.parent.path, 'has-folder-note');
 				return;
@@ -338,7 +398,7 @@ export default class FolderNotesPlugin extends Plugin {
 		document.body.classList.remove('folder-note-underline');
 		document.body.classList.remove('hide-folder-note');
 		document.body.classList.remove('fn-whitespace-stop-collapsing');
-		if(this.activeFolderDom) { this.activeFolderDom.removeClass('is-active'); }
+		if (this.activeFolderDom) { this.activeFolderDom.removeClass('is-active'); }
 	}
 
 	async loadSettings() {
