@@ -34,14 +34,14 @@ export class Commands {
 						new Notice('Successfully excluded folder from folder notes');
 					});
 			});
-			if (this.plugin.app.vault.getAbstractFileByPath(file.path + '/' + file.name + '.md')) {
+
+			const folderNote = this.plugin.app.vault.getAbstractFileByPath(file.path + '/' + file.name + '.md');
+			if (folderNote && folderNote instanceof TFile) {
 				menu.addItem((item) => {
 					item.setTitle('Delete folder note')
 						.setIcon('trash')
 						.onClick(() => {
-							file = this.plugin.app.vault.getAbstractFileByPath(file.path + '/' + file.name + '.md') ?? file;
-							if (!(file instanceof TFile)) return;
-							this.plugin.deleteFolderNote(file);
+							this.plugin.deleteFolderNote(folderNote);
 						});
 				});
 			} else {
