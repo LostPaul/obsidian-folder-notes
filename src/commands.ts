@@ -39,7 +39,7 @@ export class Commands {
 					item.setTitle('Delete folder note')
 						.setIcon('trash')
 						.onClick(() => {
-							file = this.plugin.app.vault.getAbstractFileByPath(file?.path + '/' + file?.name + '.md') as TFile;
+							file = this.plugin.app.vault.getAbstractFileByPath(file.path + '/' + file.name + '.md') ?? file;
 							if (!(file instanceof TFile)) return;
 							this.plugin.deleteFolderNote(file);
 						});
@@ -49,7 +49,7 @@ export class Commands {
 					item.setTitle('Create folder note')
 						.setIcon('edit')
 						.onClick(() => {
-							this.plugin.createFolderNote(file.path + '/' + file.name + '.md' , true);
+							this.plugin.createFolderNote(file.path + '/' + file.name + '.md', true);
 						});
 				});
 			}

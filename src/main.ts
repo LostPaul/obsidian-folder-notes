@@ -138,7 +138,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const path = folder + '/' + event.target.innerText + '.md';
 
 		if (this.app.vault.getAbstractFileByPath(path)) {
-			return this.openFolderNote(path);
+			return this.openFolderNote(path, event);
 		} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 			if ((this.settings.altKey && event.altKey) || (this.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 				await this.createFolderNote(path, true, true);
@@ -155,7 +155,6 @@ export default class FolderNotesPlugin extends Plugin {
 		if (!(event.target instanceof HTMLElement)) return;
 		if (!this.settings.openFolderNoteOnClickInPath) return;
 		const folder = event.target.getAttribute('data-path');
-		console.log(folder);
 		if (!folder) { return; }
 		const excludedFolder = this.getExcludedFolderByPath(folder);
 		if (excludedFolder?.disableFolderNote) {
@@ -169,7 +168,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const path = folder + '/' + event.target.innerText + '.md';
 
 		if (this.app.vault.getAbstractFileByPath(path)) {
-			return this.openFolderNote(path);
+			return this.openFolderNote(path, event);
 		} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 			if ((this.settings.altKey && event.altKey) || (this.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 				await this.createFolderNote(path, true, true);
@@ -293,8 +292,8 @@ export default class FolderNotesPlugin extends Plugin {
 		this.addCSSClassToTitleEL(path, 'is-folder-note', true);
 	}
 
-	async openFolderNote(path: string) {
-		const leaf = this.app.workspace.getLeaf(false);
+	async openFolderNote(path: string, evt: MouseEvent) {
+		const leaf = this.app.workspace.getLeaf(Keymap.isModEvent(evt));
 		const file = this.app.vault.getAbstractFileByPath(path);
 		if (file instanceof TFile) {
 			await leaf.openFile(file);
