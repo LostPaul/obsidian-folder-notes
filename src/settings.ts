@@ -187,22 +187,24 @@ export class SettingsTab extends PluginSettingTab {
 			);
 
 
-		new Setting(containerEl)
-			.setName('Template path')
-			.setDesc('The path to the template file')
-			.addSearch((cb) => {
-				new TemplateSuggest(cb.inputEl, this.plugin);
-				cb.setPlaceholder('Template path');
-				cb.setValue(this.plugin.app.vault.getAbstractFileByPath(this.plugin.settings.templatePath)?.name.replace('.md', '') || '');
-				cb.onChange(async (value) => {
-					if (value.trim() === '') {
-						this.plugin.settings.templatePath = '';
-						await this.plugin.saveSettings();
-						this.display();
-						return;
-					}
-				});
+		const setting = new Setting(containerEl);
+		setting.setName('Template path');
+		setting.setDesc('The path to the template file');
+		setting.descEl.createEl('br');
+		setting.descEl.createEl('span', { text: 'If you change the template folder path before this restart obsidian after setting the template path' }).style.color = 'red';
+		setting.addSearch((cb) => {
+			new TemplateSuggest(cb.inputEl, this.plugin);
+			cb.setPlaceholder('Template path');
+			cb.setValue(this.plugin.app.vault.getAbstractFileByPath(this.plugin.settings.templatePath)?.name.replace('.md', '') || '');
+			cb.onChange(async (value) => {
+				if (value.trim() === '') {
+					this.plugin.settings.templatePath = '';
+					await this.plugin.saveSettings();
+					this.display();
+					return;
+				}
 			});
+		});
 
 		// Due to issue with templater it'll be disabled for now
 		// If you want to try it yourself make a pr
