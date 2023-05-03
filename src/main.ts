@@ -49,7 +49,7 @@ export default class FolderNotesPlugin extends Plugin {
 								}
 							});
 							element.parentElement?.setAttribute('data-path', path.slice(0, -1));
-							if (breadcrumbs.length > 1) {
+							if (breadcrumbs.length > 0) {
 								breadcrumbs.forEach((breadcrumb: HTMLElement) => {
 									if (breadcrumb.onclick) return;
 									breadcrumb.onclick = (event: MouseEvent) => this.handleViewHeaderClick(event);
