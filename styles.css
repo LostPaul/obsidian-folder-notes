@@ -4,9 +4,16 @@
     padding-top: 4px;
 }
 
-.fn-whitespace-stop-collapsing .collapse-icon {
-    padding-top: 4px;
+.fn-whitespace-stop-collapsing .nav-folder-title {
+    padding-bottom: 0;
+    padding-top: 0;
+    padding-right: 0;
 }
+
+.fn-whitespace-stop-collapsing .collapse-icon {
+    margin-top: 4px;
+}
+
 
 .has-folder-note .nav-folder-title-content:hover,
 .has-folder-note.view-header-breadcrumb:hover {
@@ -28,11 +35,6 @@
 }
 
 
-.fn-whitespace-stop-collapsing .nav-folder-title {
-    padding-bottom: 0;
-    padding-top: 0;
-    padding-right: 0;
-}
 
 .hide-folder-note .is-folder-note {
     display: none;
