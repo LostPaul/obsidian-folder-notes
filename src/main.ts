@@ -115,7 +115,9 @@ export default class FolderNotesPlugin extends Plugin {
 			}
 		}));
 
-		if (!this.app.workspace.layoutReady) {
+		if (this.app.workspace.layoutReady) {
+			this.loadFileClasses();
+		} else {
 			this.app.workspace.onLayoutReady(async () => this.loadFileClasses());
 		}
 	}

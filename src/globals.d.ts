@@ -12,6 +12,9 @@ declare module 'obsidian' {
 			disablePlugin: (id: string) => Promise<void>;
 		};
 	}
+	interface Vault {
+		getConfig: (config: string) => unknown;
+	}
 }
 
 interface FileExplorerWorkspaceLeaf extends WorkspaceLeaf {
