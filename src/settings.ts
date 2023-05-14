@@ -24,7 +24,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	syncFolderName: true,
 	ctrlKey: true,
 	altKey: false,
-	hideFolderNote: false,
+	hideFolderNote: true,
 	templatePath: '',
 	autoCreate: false,
 	enableCollapsing: false,
@@ -51,7 +51,7 @@ export class SettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Disable folder collapsing')
-			.setDesc('Disable the ability to collapse folders by clicking on the folder name')
+			.setDesc('Disable the ability to collapse folders by clicking exactly on the folder name')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(!this.plugin.settings.enableCollapsing)
@@ -62,18 +62,18 @@ export class SettingsTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('Don\'t collapse folder when clicking on the whitespace around the folder name')
-			.setDesc('Disable the ability to collapse folders by clicking on the whitespace around the folder name.')
+			.setName('Only open folder notes through the name')
+			.setDesc('Only open folder notes in the file explorer by clicking on the folder name')
 			.addToggle((toggle) =>
 				toggle
-					.setValue(!this.plugin.settings.allowWhitespaceCollapsing)
+					.setValue(this.plugin.settings.allowWhitespaceCollapsing)
 					.onChange(async (value) => {
-						if (value) {
+						if (!value) {
 							document.body.classList.add('fn-whitespace-stop-collapsing');
 						} else {
 							document.body.classList.remove('fn-whitespace-stop-collapsing');
 						}
-						this.plugin.settings.allowWhitespaceCollapsing = !value;
+						this.plugin.settings.allowWhitespaceCollapsing = value;
 						await this.plugin.saveSettings();
 					})
 			);
@@ -108,7 +108,7 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 		new Setting(containerEl)
-			.setName('Auto create folder note')
+			.setName('Automatically create folder notes')
 			.setDesc('Automatically create a folder note when a new folder is created')
 			.addToggle((toggle) =>
 				toggle
@@ -158,8 +158,8 @@ export class SettingsTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('Underline folders with folder notes in the path')
-			.setDesc('Add an underline to folders that have a folder note in the path')
+			.setName('Underline folders in the path')
+			.setDesc('Add an underline to folders that have a folder note in the path above a note')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.underlineFolderInPath)
@@ -176,7 +176,7 @@ export class SettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Open folder note through path')
-			.setDesc('Open the folder note when clicking on a folder name in the path')
+			.setDesc('Open a folder note when clicking on a folder name in the path if it is a folder note')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.openFolderNoteOnClickInPath)
@@ -188,10 +188,14 @@ export class SettingsTab extends PluginSettingTab {
 
 
 		const setting = new Setting(containerEl);
+		const desc = document.createDocumentFragment();
+		desc.append(
+			'After setting the template path, restart Obsidian if the template folder path (from templater/templates) had been changed beforehand.',
+			desc.createEl('br'),
+			'Obsidian should also be restarted if the template path was removed.'
+		);
 		setting.setName('Template path');
-		setting.setDesc('The path to the template file');
-		setting.descEl.createEl('br');
-		setting.descEl.createEl('span', { text: 'If you change the template folder path before this restart obsidian after setting the template path' }).style.color = 'red';
+		setting.setDesc(desc).descEl.style.color = 'red';
 		setting.addSearch((cb) => {
 			new TemplateSuggest(cb.inputEl, this.plugin);
 			cb.setPlaceholder('Template path');
