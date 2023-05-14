@@ -295,8 +295,9 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	async openFolderNote(path: string, evt: MouseEvent) {
-		const leaf = this.app.workspace.getLeaf(Keymap.isModEvent(evt));
 		const file = this.app.vault.getAbstractFileByPath(path);
+		if (this.app.workspace.getActiveFile()?.path === path) { return; }
+		const leaf = this.app.workspace.getLeaf(Keymap.isModEvent(evt) || this.settings.openInNewTab);
 		if (file instanceof TFile) {
 			await leaf.openFile(file);
 		}

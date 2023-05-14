@@ -18,6 +18,7 @@ export interface FolderNotesSettings {
 	allowWhitespaceCollapsing: boolean;
 	underlineFolderInPath: boolean;
 	openFolderNoteOnClickInPath: boolean;
+	openInNewTab: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -34,6 +35,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	allowWhitespaceCollapsing: false,
 	underlineFolderInPath: true,
 	openFolderNoteOnClickInPath: true,
+	openInNewTab: false,
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -107,6 +109,20 @@ export class SettingsTab extends PluginSettingTab {
 						this.display();
 					})
 			);
+		if (Platform.isDesktop) {
+			new Setting(containerEl)
+				.setName('Open folder note in a new tab by default')
+				.setDesc('Always open folder notes in a new tab (except when you try to open the same note) instead of having to use ctrl/cmd + click to open in a new tab')
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.openInNewTab)
+						.onChange(async (value) => {
+							this.plugin.settings.openInNewTab = value;
+							await this.plugin.saveSettings();
+							this.display();
+						})
+				);
+		}
 		new Setting(containerEl)
 			.setName('Automatically create folder notes')
 			.setDesc('Automatically create a folder note when a new folder is created')
