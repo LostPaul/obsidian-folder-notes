@@ -44,7 +44,8 @@ export default class FolderNotesPlugin extends Plugin {
 							breadcrumbs.forEach((breadcrumb: HTMLElement) => {
 								path += breadcrumb.innerText.trim() + '/';
 								breadcrumb.setAttribute('data-path', path.slice(0, -1));
-								if (this.app.vault.getAbstractFileByPath(path + this.getNameFromPathString(path.slice(0, -1)) + '.md')) {
+								const folderNotePath = path + this.settings.folderNoteName.replace('{{folder_name}}', this.getNameFromPathString(path.slice(0, -1))) + '.md';
+								if (this.app.vault.getAbstractFileByPath(folderNotePath)) {
 									breadcrumb.classList.add('has-folder-note');
 								}
 							});
@@ -137,7 +138,7 @@ export default class FolderNotesPlugin extends Plugin {
 			event.target.onclick = null;
 			event.target.click();
 		}
-		const path = folder + '/' + event.target.innerText + '.md';
+		const path = folder + '/' + this.settings.folderNoteName.replace('{{folder_name}}', event.target.innerText) + '.md';
 
 		if (this.app.vault.getAbstractFileByPath(path)) {
 			return this.openFolderNote(path, event);
@@ -186,7 +187,7 @@ export default class FolderNotesPlugin extends Plugin {
 	handleFolderRename(file: TFolder, oldPath: string) {
 		const oldFileName = this.getNameFromPathString(oldPath);
 		const folder = this.app.vault.getAbstractFileByPath(file.path);
-		if (!folder) return;
+		if (!(folder instanceof TFolder)) return;
 		const excludedFolders = this.settings.excludeFolders.filter(
 			(excludedFolder) => excludedFolder.path.includes(oldPath)
 		);
@@ -208,11 +209,12 @@ export default class FolderNotesPlugin extends Plugin {
 		const excludedFolder = this.getExcludedFolderByPath(oldPath);
 		if (excludedFolder?.disableSync) return;
 
-		const newPath = folder.path + '/' + folder.name + '.md';
-		if (!(folder instanceof TFolder)) return;
-		const note = this.app.vault.getAbstractFileByPath(oldPath + '/' + oldFileName + '.md');
+		const newPath = folder.path + '/' + this.settings.folderNoteName.replace('{{folder_name}}', folder.name) + '.md';
+		const folderNotePath = oldPath + '/' + this.settings.folderNoteName.replace('{{folder_name}}', oldFileName) + '.md';
+		const note = this.app.vault.getAbstractFileByPath(folderNotePath);
 		if (!note) return;
-		(note as TFile).path = folder.path + '/' + oldFileName + '.md';
+		if (!(note instanceof TFile)) return;
+		note.path = folder.path + '/' + this.settings.folderNoteName.replace('{{folder_name}}', oldFileName) + '.md';
 		this.app.vault.rename(note, newPath);
 	}
 
@@ -223,7 +225,6 @@ export default class FolderNotesPlugin extends Plugin {
 
 		const newFilePath = this.getPathFromString(file.path);
 		const newFolder = this.app.vault.getAbstractFileByPath(newFilePath);
-
 		if (oldFolder) {
 			const excludedFolder = this.getExcludedFolderByPath(oldFolder.path);
 			if (excludedFolder?.disableSync) {
@@ -242,7 +243,7 @@ export default class FolderNotesPlugin extends Plugin {
 		// file matched folder name before rename
 		// file hasnt moved just renamed
 		// Need to rename the folder
-		if (oldFolder && oldFolder.name + '.md' === oldFileName && newFilePath === oldFilePath) {
+		if (oldFolder && this.settings.folderNoteName.replace('{{folder_name}}', oldFolder.name) + '.md' === oldFileName && newFilePath === oldFilePath) {
 			return this.renameFolderOnFileRename(file, oldPath, oldFolder);
 		}
 
@@ -262,12 +263,25 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	async renameFolderOnFileRename(file: TFile, oldPath: string, oldFolder: TAbstractFile) {
-		const newFolderPath = oldFolder.parent.path + '/' + file.basename;
+		const newFolderName = this.extractFolderName(this.settings.folderNoteName, file.basename);
+		if (!newFolderName) return;
+		const newFolderPath = oldFolder.parent.path + '/' + this.extractFolderName(this.settings.folderNoteName, file.basename);
+
 		if (this.app.vault.getAbstractFileByPath(newFolderPath)) {
 			await this.app.vault.rename(file, oldPath);
 			return new Notice('A folder with the same name already exists');
 		}
 		await this.app.vault.rename(oldFolder, newFolderPath);
+	}
+
+	extractFolderName(template: string, changedFileName: string) {
+		const [prefix, suffix] = template.split('{{folder_name}}');
+		if (changedFileName.startsWith(prefix)) {
+			return changedFileName.slice(prefix.length).replace(suffix, '');
+		} else if (changedFileName.endsWith(suffix)) {
+			return changedFileName.slice(prefix.length, -suffix.length);
+		}
+		return null;
 	}
 
 	handleFileCreate(file: TFile) {

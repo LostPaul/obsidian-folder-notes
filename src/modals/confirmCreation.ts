@@ -26,10 +26,11 @@ export default class ConfirmationModal extends Modal {
 				if (folder instanceof TFolder) {
 					const excludedFolder = this.plugin.settings.excludeFolders.find(
 						(excludedFolder) => (excludedFolder.path === folder.path) ||
-                            (excludedFolder.path === folder.path?.slice(0, folder?.path.lastIndexOf('/') >= 0 ? folder.path?.lastIndexOf('/') : folder.path.length)
-                                && excludedFolder.subFolders));
+							(excludedFolder.path === folder.path?.slice(0, folder?.path.lastIndexOf('/') >= 0 ? folder.path?.lastIndexOf('/') : folder.path.length)
+								&& excludedFolder.subFolders));
 					if (excludedFolder) return;
-					if (this.app.vault.getAbstractFileByPath(folder.path + '/' + folder.name + '.md')) return;
+					const path = folder.path + '/' + this.plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name) + '.md';
+					if (this.app.vault.getAbstractFileByPath(path)) return;
 					await this.plugin.createFolderNote(folder.path + '/' + folder.name + '.md', true);
 				}
 			});

@@ -34,8 +34,8 @@ export class Commands {
 						new Notice('Successfully excluded folder from folder notes');
 					});
 			});
-
-			const folderNote = this.plugin.app.vault.getAbstractFileByPath(file.path + '/' + file.name + '.md');
+			const path = file.path + '/' + this.plugin.settings.folderNoteName.replace('{{folder_name}}', file.name) + '.md';
+			const folderNote = this.plugin.app.vault.getAbstractFileByPath(path);
 			if (folderNote && folderNote instanceof TFile) {
 				menu.addItem((item) => {
 					item.setTitle('Delete folder note')
@@ -49,7 +49,7 @@ export class Commands {
 					item.setTitle('Create folder note')
 						.setIcon('edit')
 						.onClick(() => {
-							this.plugin.createFolderNote(file.path + '/' + file.name + '.md', true);
+							this.plugin.createFolderNote(path, true);
 						});
 				});
 			}

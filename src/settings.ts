@@ -19,6 +19,7 @@ export interface FolderNotesSettings {
 	underlineFolderInPath: boolean;
 	openFolderNoteOnClickInPath: boolean;
 	openInNewTab: boolean;
+	folderNoteName: string;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	underlineFolderInPath: true,
 	openFolderNoteOnClickInPath: true,
 	openInNewTab: false,
+	folderNoteName: '{{folder_name}}',
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -50,6 +52,19 @@ export class SettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.createEl('h2', { text: 'Folder notes settings' });
+
+		new Setting(containerEl)
+			.setName('Folder note name')
+			.setDesc('The name of the folder note')
+			.addText((text) =>
+				text
+					.setValue(this.plugin.settings.folderNoteName)
+					.onChange(async (value) => {
+						if (value.trim() === '') { return; }
+						this.plugin.settings.folderNoteName = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
 		new Setting(containerEl)
 			.setName('Disable folder collapsing')
