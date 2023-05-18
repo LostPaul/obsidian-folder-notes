@@ -23,7 +23,7 @@ export default class FolderNameModal extends Modal {
 			.setName('Enter the name of the folder')
 			.addText((text) =>
 				text
-					.setValue(this.folder.name.replace('.md', ''))
+					.setValue(this.folder.name.replace(this.plugin.settings.folderNoteType, ''))
 					.onChange(async (value) => {
 						if (value.trim() !== '') {
 							if (!this.app.vault.getAbstractFileByPath(this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + value.trim())) {

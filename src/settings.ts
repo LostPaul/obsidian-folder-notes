@@ -20,6 +20,8 @@ export interface FolderNotesSettings {
 	openFolderNoteOnClickInPath: boolean;
 	openInNewTab: boolean;
 	folderNoteName: string;
+	folderNoteType: '.md' | '.canvas';
+	disableFolderHighlighting: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -38,6 +40,8 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	openFolderNoteOnClickInPath: true,
 	openInNewTab: false,
 	folderNoteName: '{{folder_name}}',
+	folderNoteType: '.md',
+	disableFolderHighlighting: false,
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -64,19 +68,44 @@ export class SettingsTab extends PluginSettingTab {
 						this.plugin.settings.folderNoteName = value;
 						await this.plugin.saveSettings();
 					})
+			)
+			.addButton((button) =>
+				button
+					.setButtonText('Rename existing folder notes')
+					.setCta()
+					.onClick(async () => {
+					})
 			);
 
 		new Setting(containerEl)
-			.setName('Disable folder collapsing')
-			.setDesc('Disable the ability to collapse folders by clicking exactly on the folder name')
-			.addToggle((toggle) =>
-				toggle
-					.setValue(!this.plugin.settings.enableCollapsing)
-					.onChange(async (value) => {
-						this.plugin.settings.enableCollapsing = !value;
+			.setName('Folder note type')
+			.setDesc('Choose the file type of the folder note (markdown or canvas)')
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption('.md', 'markdown')
+					.addOption('.canvas', 'canvas')
+					.setValue(this.plugin.settings.folderNoteType)
+					.onChange(async (value: '.md' | '.canvas') => {
+						this.plugin.settings.folderNoteType = value;
 						await this.plugin.saveSettings();
 					})
 			);
+
+
+		const disableSetting = new Setting(containerEl);
+		disableSetting.setName('Disable folder collapsing');
+		disableSetting.setDesc('Disable the ability to collapse folders by clicking exactly on the folder name');
+		disableSetting.addToggle((toggle) =>
+			toggle
+				.setValue(!this.plugin.settings.enableCollapsing)
+				.onChange(async (value) => {
+					this.plugin.settings.enableCollapsing = !value;
+					await this.plugin.saveSettings();
+				})
+		);
+		disableSetting.infoEl.appendText('Requires a restart to take effect');
+		disableSetting.infoEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
+
 
 		new Setting(containerEl)
 			.setName('Only open folder notes through the name')
@@ -125,18 +154,20 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 		if (Platform.isDesktop) {
-			new Setting(containerEl)
-				.setName('Open folder note in a new tab by default')
-				.setDesc('Always open folder notes in a new tab (except when you try to open the same note) instead of having to use ctrl/cmd + click to open in a new tab')
-				.addToggle((toggle) =>
-					toggle
-						.setValue(this.plugin.settings.openInNewTab)
-						.onChange(async (value) => {
-							this.plugin.settings.openInNewTab = value;
-							await this.plugin.saveSettings();
-							this.display();
-						})
-				);
+			const setting3 = new Setting(containerEl);
+			setting3.setName('Open folder note in a new tab by default');
+			setting3.setDesc('Always open folder notes in a new tab (except when you try to open the same note) instead of having to use ctrl/cmd + click to open in a new tab');
+			setting3.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.openInNewTab)
+					.onChange(async (value) => {
+						this.plugin.settings.openInNewTab = value;
+						await this.plugin.saveSettings();
+						this.display();
+					})
+			);
+			setting3.infoEl.appendText('Requires a restart to take effect');
+			setting3.infoEl.style.color = '#7d5bed';
 		}
 		new Setting(containerEl)
 			.setName('Automatically create folder notes')
@@ -216,7 +247,19 @@ export class SettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
-
+		/*
+		new Setting(containerEl)
+			.setName('Disable folder highlighting through path')
+			.setDesc('Disable the highlighting of folders in the path that have a folder note when you click on a folder name in the path')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.disableFolderHighlighting)
+					.onChange(async (value) => {
+						this.plugin.settings.disableFolderHighlighting = value;
+						await this.plugin.saveSettings();
+					})
+			);
+		*/
 
 		const setting = new Setting(containerEl);
 		const desc = document.createDocumentFragment();
@@ -226,7 +269,7 @@ export class SettingsTab extends PluginSettingTab {
 			'Obsidian should also be restarted if the template path was removed.'
 		);
 		setting.setName('Template path');
-		setting.setDesc(desc).descEl.style.color = 'red';
+		setting.setDesc(desc).descEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
 		setting.addSearch((cb) => {
 			new TemplateSuggest(cb.inputEl, this.plugin);
 			cb.setPlaceholder('Template path');
