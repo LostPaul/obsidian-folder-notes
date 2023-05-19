@@ -170,7 +170,7 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 			setting3.infoEl.appendText('Requires a restart to take effect');
-			setting3.infoEl.style.color = '#7d5bed';
+			setting3.infoEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
 		}
 		new Setting(containerEl)
 			.setName('Automatically create folder notes')
