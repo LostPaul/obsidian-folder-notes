@@ -18,6 +18,8 @@ export default class FolderNotesPlugin extends Plugin {
 		await this.loadSettings();
 		this.settingsTab = new SettingsTab(this.app, this);
 		this.addSettingTab(this.settingsTab);
+		this.settings.oldFolderNoteName = this.settings.folderNoteName;
+		this.saveSettings();
 
 		// Add CSS Classes
 		document.body.classList.add('folder-notes-plugin');
@@ -69,7 +71,7 @@ export default class FolderNotesPlugin extends Plugin {
 			if (!(file instanceof TFile)) { return; }
 			// parent is null here even if the parent exists
 			// not entirely sure why
-			const parentPath = this.getPathFromString(file.path);
+			const parentPath = this.getFolderPathFromString(file.path);
 			const parentName = this.getNameFromPathString(parentPath);
 			if (parentName !== file.basename) { return; }
 			this.removeCSSClassFromEL(parentPath, 'has-folder-note');
@@ -236,10 +238,10 @@ export default class FolderNotesPlugin extends Plugin {
 
 	handleFileRename(file: TFile, oldPath: string) {
 		const oldFileName = this.getNameFromPathString(oldPath);
-		const oldFilePath = this.getPathFromString(oldPath);
+		const oldFilePath = this.getFolderPathFromString(oldPath);
 		const fileExtension = this.getExtensionFromPathString(oldPath);
 		const oldFolder = this.app.vault.getAbstractFileByPath(oldFilePath);
-		const newFilePath = this.getPathFromString(file.path);
+		const newFilePath = this.getFolderPathFromString(file.path);
 		const newFolder = this.app.vault.getAbstractFileByPath(newFilePath);
 		const excludedFolder = this.getExcludedFolderByPath(newFolder?.path || '');
 
@@ -299,6 +301,9 @@ export default class FolderNotesPlugin extends Plugin {
 
 	extractFolderName(template: string, changedFileName: string) {
 		const [prefix, suffix] = template.split('{{folder_name}}');
+		if (prefix.trim() === '' && suffix.trim() === '') {
+			return changedFileName;
+		}
 		if (!changedFileName.startsWith(prefix) || !changedFileName.endsWith(suffix)) {
 			return null;
 		}
@@ -325,13 +330,14 @@ export default class FolderNotesPlugin extends Plugin {
 		if (file) {
 			applyTemplate(this, file, this.settings.templatePath);
 		}
+		this.addCSSClassToTitleEL(path, 'is-folder-note', true);
+		this.addCSSClassToTitleEL(file.parent.path, 'has-folder-note');
 		if (!this.settings.autoCreate) return;
 		if (!useModal) return;
-		const folder = this.app.vault.getAbstractFileByPath(this.getPathFromString(path));
+		const folder = this.app.vault.getAbstractFileByPath(this.getFolderPathFromString(path));
 		if (!(folder instanceof TFolder)) return;
 		const modal = new FolderNameModal(this.app, this, folder);
 		modal.open();
-		this.addCSSClassToTitleEL(path, 'is-folder-note', true);
 	}
 
 	async openFolderNote(file: TAbstractFile, evt: MouseEvent) {
@@ -347,6 +353,7 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.settings.showDeleteConfirmation) {
 			return new DeleteConfirmationModal(this.app, this, file).open();
 		}
+		this.removeCSSClassFromEL(file.parent.path, 'has-folder-note');
 		await this.app.vault.delete(file);
 	}
 
@@ -362,7 +369,7 @@ export default class FolderNotesPlugin extends Plugin {
 		return path.slice(path.lastIndexOf('.') >= 0 ? path.lastIndexOf('.') : 0);
 	}
 
-	getPathFromString(path: string): string {
+	getFolderPathFromString(path: string): string {
 		const subString = path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/') : path.length;
 		return path.substring(0, subString);
 	}
@@ -371,7 +378,7 @@ export default class FolderNotesPlugin extends Plugin {
 		return this.settings.excludeFolders.find((excludedFolder) => {
 			if (excludedFolder.path === path) { return true; }
 			if (!excludedFolder.subFolders) { return false; }
-			return this.getPathFromString(path).startsWith(excludedFolder.path);
+			return this.getFolderPathFromString(path).startsWith(excludedFolder.path);
 		});
 	}
 

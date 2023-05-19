@@ -34,6 +34,7 @@ export class Commands {
 						new Notice('Successfully excluded folder from folder notes');
 					});
 			});
+			if (!(file instanceof TFolder)) return;
 			const path = file.path + '/' + this.plugin.settings.folderNoteName.replace('{{folder_name}}', file.name) + this.plugin.settings.folderNoteType;
 			let folderNote = this.plugin.app.vault.getAbstractFileByPath(path.slice(0, -this.plugin.settings.folderNoteType.length) + '.md') || this.plugin.app.vault.getAbstractFileByPath(path);
 			if (!folderNote) {

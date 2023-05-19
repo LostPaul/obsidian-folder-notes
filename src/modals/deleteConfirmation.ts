@@ -28,6 +28,7 @@ export default class DeleteConfirmationModal extends Modal {
 				this.plugin.settings.showDeleteConfirmation = false;
 				this.plugin.saveSettings();
 				this.close();
+				this.plugin.removeCSSClassFromEL(this.file.parent.path, 'has-folder-note');
 				this.app.vault.delete(this.file);
 			});
 		} else {
@@ -50,6 +51,7 @@ export default class DeleteConfirmationModal extends Modal {
 		button.classList.add('mod-warning', 'fn-confirmation-modal-button');
 		button.addEventListener('click', async () => {
 			this.close();
+			this.plugin.removeCSSClassFromEL(this.file.parent.path, 'has-folder-note');
 			this.app.vault.delete(this.file);
 		});
 		button.focus();

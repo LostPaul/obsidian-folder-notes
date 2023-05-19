@@ -1,4 +1,4 @@
-import { App, Platform, PluginSettingTab, Setting } from 'obsidian';
+import { App, Notice, Platform, PluginSettingTab, Setting, TFile, TFolder } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { FolderSuggest } from './suggesters/FolderSuggester';
 import ExcludedFolderSettings from './modals/exludeFolderSettings';
@@ -20,6 +20,7 @@ export interface FolderNotesSettings {
 	openFolderNoteOnClickInPath: boolean;
 	openInNewTab: boolean;
 	folderNoteName: string;
+	oldFolderNoteName: string;
 	folderNoteType: '.md' | '.canvas';
 	disableFolderHighlighting: boolean;
 }
@@ -42,6 +43,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	folderNoteName: '{{folder_name}}',
 	folderNoteType: '.md',
 	disableFolderHighlighting: false,
+	oldFolderNoteName: '{{folder_name}}',
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -59,7 +61,7 @@ export class SettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Folder note name')
-			.setDesc('The name of the folder note')
+			.setDesc('{{folder_name}} will be replaced with the name of the folder')
 			.addText((text) =>
 				text
 					.setValue(this.plugin.settings.folderNoteName)
@@ -74,6 +76,7 @@ export class SettingsTab extends PluginSettingTab {
 					.setButtonText('Rename existing folder notes')
 					.setCta()
 					.onClick(async () => {
+						this.updateFolderNotes(this.plugin.settings.oldFolderNoteName, this.plugin.settings.folderNoteName);
 					})
 			);
 
@@ -388,17 +391,42 @@ export class SettingsTab extends PluginSettingTab {
 			});
 		});
 	}
+
 	addExcludedFolder(excludedFolder: ExcludedFolder) {
 		this.plugin.settings.excludeFolders.push(excludedFolder);
 		this.plugin.saveSettings();
 	}
+
 	deleteExcludedFolder(excludedFolder: ExcludedFolder) {
 		this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter((folder) => folder.path !== excludedFolder.path);
 		this.plugin.saveSettings();
 	}
+
 	updateExcludedFolder(excludedFolder: ExcludedFolder, newExcludeFolder: ExcludedFolder) {
 		this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter((folder) => folder.path !== excludedFolder.path);
 		this.addExcludedFolder(newExcludeFolder);
+	}
+
+	updateFolderNotes(oldTemplate: string, newTemplate: string) {
+		this.plugin.settings.oldFolderNoteName = newTemplate;
+		this.plugin.saveSettings();
+		new Notice('Starting to update folder notes...');
+		this.app.vault.getFiles().forEach((file) => {
+			if (file instanceof TFile) {
+				const folder = this.app.vault.getAbstractFileByPath(this.plugin.getFolderPathFromString(file.path));
+				if (!(folder instanceof TFolder)) return;
+				let fileName = file.name.slice(0, -file.extension.length - 1);
+				fileName = this.plugin.extractFolderName(oldTemplate, fileName) || '';
+				if (fileName === folder?.name) {
+					const newPath = `${folder?.path}/${this.plugin.settings.folderNoteName.replace('{{folder_name}}', fileName)}.${file.extension}`;
+					this.app.vault.rename(file, newPath);
+				} else if (folder?.name === file.name.slice(0, -file.extension.length - 1) || '') {
+					const newPath = `${folder?.path}/${this.plugin.settings.folderNoteName.replace('{{folder_name}}', file.name.slice(0, -file.extension.length - 1) || '')}.${file.extension}`;
+					this.app.vault.rename(file, newPath);
+				}
+			}
+		});
+		new Notice('Finished updating folder notes');
 	}
 
 }
