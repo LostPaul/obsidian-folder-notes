@@ -1,6 +1,7 @@
 import { App, TFolder, Menu, TAbstractFile, Notice, TFile } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { ExcludedFolder } from './settings';
+import { getFolderNote, createFolderNote, deleteFolderNote } from './folderNoteFunctions';
 export class Commands {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -35,18 +36,13 @@ export class Commands {
 					});
 			});
 			if (!(file instanceof TFolder)) return;
-			const path = file.path + '/' + this.plugin.settings.folderNoteName.replace('{{folder_name}}', file.name) + this.plugin.settings.folderNoteType;
-			let folderNote = this.plugin.app.vault.getAbstractFileByPath(path.slice(0, -this.plugin.settings.folderNoteType.length) + '.md') || this.plugin.app.vault.getAbstractFileByPath(path);
-			if (!folderNote) {
-				folderNote = this.plugin.app.vault.getAbstractFileByPath(`${file.path}/${file.name}.md`) || this.plugin.app.vault.getAbstractFileByPath(`${file.path}/${file.name}.md`);
-			}
+			const folderNote = getFolderNote(this.plugin, file.path);
 			if (folderNote instanceof TFile) {
 				menu.addItem((item) => {
 					item.setTitle('Delete folder note')
 						.setIcon('trash')
 						.onClick(() => {
-							// @ts-ignore
-							this.plugin.deleteFolderNote(folderNote);
+							deleteFolderNote(this.plugin, folderNote);
 						});
 				});
 			} else {
@@ -54,7 +50,7 @@ export class Commands {
 					item.setTitle('Create folder note')
 						.setIcon('edit')
 						.onClick(() => {
-							this.plugin.createFolderNote(path, true);
+							createFolderNote(this.plugin, file.path, true);
 						});
 				});
 			}

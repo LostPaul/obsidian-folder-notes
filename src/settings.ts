@@ -3,6 +3,7 @@ import FolderNotesPlugin from './main';
 import { FolderSuggest } from './suggesters/FolderSuggester';
 import ExcludedFolderSettings from './modals/exludeFolderSettings';
 import { TemplateSuggest } from './suggesters/templateSuggester';
+import { extractFolderName } from './folderNoteFunctions';
 // import ConfirmationModal from "./modals/confirmCreation";
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
@@ -416,7 +417,7 @@ export class SettingsTab extends PluginSettingTab {
 				const folder = this.app.vault.getAbstractFileByPath(this.plugin.getFolderPathFromString(file.path));
 				if (!(folder instanceof TFolder)) return;
 				let fileName = file.name.slice(0, -file.extension.length - 1);
-				fileName = this.plugin.extractFolderName(oldTemplate, fileName) || '';
+				fileName = extractFolderName(oldTemplate, fileName) || '';
 				if (fileName === folder?.name) {
 					const newPath = `${folder?.path}/${this.plugin.settings.folderNoteName.replace('{{folder_name}}', fileName)}.${file.extension}`;
 					this.app.vault.rename(file, newPath);

@@ -1,5 +1,6 @@
 import { App, Modal, Setting, TFolder } from 'obsidian';
 import FolderNotesPlugin from '../main';
+import { createFolderNote } from 'src/folderNoteFunctions';
 export default class ConfirmationModal extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -31,7 +32,7 @@ export default class ConfirmationModal extends Modal {
 					if (excludedFolder) return;
 					const path = folder.path + '/' + this.plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name) + '.md';
 					if (this.app.vault.getAbstractFileByPath(path)) return;
-					await this.plugin.createFolderNote(folder.path + '/' + folder.name + '.md', true);
+					await createFolderNote(this.plugin, folder.path, true);
 				}
 			});
 		});
