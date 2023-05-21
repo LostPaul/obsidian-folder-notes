@@ -83,7 +83,7 @@ export class SettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Folder note type')
-			.setDesc('Choose the file type of the folder note (markdown or canvas)')
+			.setDesc('Choose the file type for creating new folder notes (markdown or canvas) old folder notes will not be changed and you can also create canvas/markdown files and change the name manually to the custom folder note name or to the name of the folder.')
 			.addDropdown((dropdown) =>
 				dropdown
 					.addOption('.md', 'markdown')
