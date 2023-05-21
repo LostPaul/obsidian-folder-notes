@@ -17,7 +17,6 @@ export default class FolderNotesPlugin extends Plugin {
 		await this.loadSettings();
 		this.settingsTab = new SettingsTab(this.app, this);
 		this.addSettingTab(this.settingsTab);
-		this.settings.oldFolderNoteName = this.settings.folderNoteName;
 		this.saveSettings();
 
 		// Add CSS Classes

@@ -21,7 +21,7 @@ export interface FolderNotesSettings {
 	openFolderNoteOnClickInPath: boolean;
 	openInNewTab: boolean;
 	folderNoteName: string;
-	oldFolderNoteName: string;
+	newFolderNoteName: string;
 	folderNoteType: '.md' | '.canvas';
 	disableFolderHighlighting: boolean;
 }
@@ -44,7 +44,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	folderNoteName: '{{folder_name}}',
 	folderNoteType: '.md',
 	disableFolderHighlighting: false,
-	oldFolderNoteName: '{{folder_name}}',
+	newFolderNoteName: '{{folder_name}}',
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -65,10 +65,10 @@ export class SettingsTab extends PluginSettingTab {
 			.setDesc('{{folder_name}} will be replaced with the name of the folder')
 			.addText((text) =>
 				text
-					.setValue(this.plugin.settings.folderNoteName)
+					.setValue(this.plugin.settings.newFolderNoteName)
 					.onChange(async (value) => {
 						if (value.trim() === '') { return; }
-						this.plugin.settings.folderNoteName = value;
+						this.plugin.settings.newFolderNoteName = value;
 						await this.plugin.saveSettings();
 					})
 			)
@@ -77,7 +77,7 @@ export class SettingsTab extends PluginSettingTab {
 					.setButtonText('Rename existing folder notes')
 					.setCta()
 					.onClick(async () => {
-						this.updateFolderNotes(this.plugin.settings.oldFolderNoteName, this.plugin.settings.folderNoteName);
+						this.updateFolderNotes(this.plugin.settings.folderNoteName, this.plugin.settings.newFolderNoteName);
 					})
 			);
 
@@ -409,7 +409,7 @@ export class SettingsTab extends PluginSettingTab {
 	}
 
 	updateFolderNotes(oldTemplate: string, newTemplate: string) {
-		this.plugin.settings.oldFolderNoteName = newTemplate;
+		this.plugin.settings.folderNoteName = newTemplate;
 		this.plugin.saveSettings();
 		new Notice('Starting to update folder notes...');
 		this.app.vault.getFiles().forEach((file) => {
