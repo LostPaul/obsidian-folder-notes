@@ -115,6 +115,15 @@ export default class FolderNotesPlugin extends Plugin {
 			}
 		}));
 
+		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
+			if (!(file instanceof TFolder)) { return; }
+			const folderNote = getFolderNote(this, file.path);
+			if (!folderNote) { return; }
+			this.removeCSSClassFromEL(folderNote.path, 'is-folder-note');
+			if (!this.settings.syncDelete) { return; }
+			this.app.vault.delete(folderNote);
+		}));
+
 		if (this.app.workspace.layoutReady) {
 			this.loadFileClasses();
 		} else {
@@ -140,12 +149,16 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 	}
 
+	getParentFolderPathFromPathString(path: string): string {
+		return path.substring(0, path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/' || '\\') : 0);
+	}
+
 	getExtensionFromPathString(path: string): string {
 		return path.slice(path.lastIndexOf('.') >= 0 ? path.lastIndexOf('.') : 0);
 	}
 
 	getFolderPathFromString(path: string): string {
-		const subString = path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/') : path.length;
+		const subString = path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/') : 0;
 		return path.substring(0, subString);
 	}
 
@@ -209,16 +222,43 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.activeFileExplorer === this.getFileExplorer() && !forceReload) { return; }
 		this.activeFileExplorer = this.getFileExplorer();
 		this.app.vault.getFiles().forEach((file) => {
-			if (extractFolderName(this.settings.folderNoteName, file.basename) !== file.parent.name) { return; }
+			let folder: TFolder | TAbstractFile | null;
+			const folderName = extractFolderName(this.settings.folderNoteName, file.basename);
+			if (!folderName) { return; }
+			if (this.settings.storageLocation === 'parentFolder') {
+				let folderPath = this.getFolderPathFromString(file.path);
+				if (folderPath.trim() === '') {
+					folderPath = folderName;
+				} else {
+					folderPath = `${folderPath}/${folderName}`;
+				}
+				folder = this.app.vault.getAbstractFileByPath(folderPath);
+				if (!folder) {
+					folder = this.app.vault.getAbstractFileByPath(file.parent.path);
+				}
+			} else {
+				folder = this.app.vault.getAbstractFileByPath(file.parent.path);
+				if (!(folder instanceof TFolder) || extractFolderName(this.settings.folderNoteName, file.basename) !== folder.name) {
+					let folderPath = this.getFolderPathFromString(file.path);
+					if (folderPath.trim() === '') {
+						folderPath = folderName;
+					} else {
+						folderPath = `${folderPath}/${folderName}`;
+					}
+					folder = this.app.vault.getAbstractFileByPath(folderPath);
+				}
+			}
+			if (!(folder instanceof TFolder)) { return; }
+
 			const excludedFolder = this.getExcludedFolderByPath(file.parent.path);
 			// cleanup after ourselves
 			// Incase settings have changed
 			if (excludedFolder?.disableFolderNote) {
 				this.removeCSSClassFromEL(file.path, 'is-folder-note');
-				this.removeCSSClassFromEL(file.parent.path, 'has-folder-note');
+				this.removeCSSClassFromEL(folder.path, 'has-folder-note');
 				return;
 			}
-			this.addCSSClassToTitleEL(file.parent.path, 'has-folder-note');
+			this.addCSSClassToTitleEL(folder.path, 'has-folder-note');
 			this.addCSSClassToTitleEL(file.path, 'is-folder-note');
 		});
 	}

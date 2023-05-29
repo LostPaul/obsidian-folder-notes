@@ -24,6 +24,8 @@ export interface FolderNotesSettings {
 	newFolderNoteName: string;
 	folderNoteType: '.md' | '.canvas';
 	disableFolderHighlighting: boolean;
+	storageLocation: 'insideFolder' | 'parentFolder' | 'vaultFolder';
+	syncDelete: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -45,6 +47,8 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	folderNoteType: '.md',
 	disableFolderHighlighting: false,
 	newFolderNoteName: '{{folder_name}}',
+	storageLocation: 'insideFolder',
+	syncDelete: false,
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -95,6 +99,35 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 
+		new Setting(containerEl)
+			.setName('Storage location')
+			.setDesc('Choose where to store the folder notes')
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption('insideFolder', 'Inside the folder')
+					.addOption('parentFolder', 'In the parent folder')
+					.setValue(this.plugin.settings.storageLocation)
+					.onChange(async (value: 'insideFolder' | 'parentFolder' | 'vaultFolder') => {
+						this.plugin.settings.storageLocation = value;
+						await this.plugin.saveSettings();
+						this.display();
+					})
+			);
+
+		if (this.plugin.settings.storageLocation === 'parentFolder') {
+			new Setting(containerEl)
+				.setName('Delete folder notes when deleting the folder')
+				.setDesc('Delete the folder note when deleting the folder')
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.syncDelete)
+						.onChange(async (value) => {
+							this.plugin.settings.syncDelete = value;
+							await this.plugin.saveSettings();
+						}
+						)
+				);
+		}
 
 		const disableSetting = new Setting(containerEl);
 		disableSetting.setName('Disable folder collapsing');

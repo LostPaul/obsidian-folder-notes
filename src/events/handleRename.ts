@@ -1,6 +1,6 @@
 import { TFile, TFolder, TAbstractFile, Notice } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
-import { extractFolderName } from '../folderNoteFunctions';
+import { extractFolderName, getFolderNote } from '../folderNoteFunctions';
 export function handleFolderRename(file: TFolder, oldPath: string, plugin: FolderNotesPlugin) {
 	const oldFileName = plugin.getFileNameFromPathString(oldPath);
 	const folder = plugin.app.vault.getAbstractFileByPath(file.path);
@@ -24,23 +24,14 @@ export function handleFolderRename(file: TFolder, oldPath: string, plugin: Folde
 	});
 	plugin.saveSettings();
 	const excludedFolder = plugin.getExcludedFolderByPath(file.path);
-
-	const folderNotePath = oldPath + '/' + plugin.settings.folderNoteName.replace('{{folder_name}}', oldFileName) + '.md';
-	let note = plugin.app.vault.getAbstractFileByPath(folderNotePath) || plugin.app.vault.getAbstractFileByPath(folderNotePath.slice(0, -3) + '.canvas');
-	if (!(note instanceof TFile)) {
-		note = plugin.app.vault.getAbstractFileByPath(`${oldPath}/${oldFileName}.md`) || plugin.app.vault.getAbstractFileByPath(`${oldPath}/${oldFileName}.canvas`);
-		if (!(note instanceof TFile)) { return; }
-		note.path = folder.path + '/' + oldFileName + plugin.getExtensionFromPathString(note.path);
-	} else {
-		note.path = folder.path + '/' + plugin.settings.folderNoteName.replace('{{folder_name}}', oldFileName) + plugin.getExtensionFromPathString(note.path);
-	}
-
-	const newPath = folder.path + '/' + plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name) + plugin.getExtensionFromPathString(note.path);
-	if (excludedFolder?.disableSync && !plugin.app.vault.getAbstractFileByPath(newPath)) {
+	const folderNote = getFolderNote(plugin, oldPath);
+	if (excludedFolder?.disableSync && !folderNote) {
 		return plugin.removeCSSClassFromEL(file.path, 'has-folder-note');
 	}
 
-	plugin.app.vault.rename(note, newPath);
+	if (!(folderNote instanceof TFile)) return;
+	const newPath = folder.path + '/' + plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name) + '.' + folderNote.extension;
+	plugin.app.vault.rename(folderNote, newPath);
 }
 
 export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNotesPlugin) {
