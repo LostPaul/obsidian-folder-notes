@@ -449,12 +449,20 @@ export class SettingsTab extends PluginSettingTab {
 		new Notice('Starting to update folder notes...');
 		this.app.vault.getFiles().forEach((file) => {
 			if (file instanceof TFile) {
-				const folder = this.app.vault.getAbstractFileByPath(this.plugin.getFolderPathFromString(file.path));
-				if (!(folder instanceof TFolder)) return;
-				let fileName = file.name.slice(0, -file.extension.length - 1);
-				fileName = extractFolderName(oldTemplate, fileName) || '';
-				if (fileName === folder?.name) {
-					const newPath = `${folder?.path}/${this.plugin.settings.folderNoteName.replace('{{folder_name}}', fileName)}.${file.extension}`;
+				const folderPath = this.plugin.getFolderPathFromString(file.path);
+				let folder = this.app.vault.getAbstractFileByPath(folderPath);
+				let folderName = file.name.slice(0, -file.extension.length - 1);
+				folderName = extractFolderName(oldTemplate, folderName) || '';
+				if (!(folder instanceof TFolder) || folderName !== folder?.name) {
+					if (folderPath.trim() === '') {
+						folder = this.app.vault.getAbstractFileByPath(folderName);
+					} else {
+						folder = this.app.vault.getAbstractFileByPath(folderPath + '/' + folderName);
+					}
+				}
+				if (!(folder instanceof TFolder)) { return; }
+				if (folderName === folder?.name) {
+					const newPath = `${folder?.path}/${this.plugin.settings.folderNoteName.replace('{{folder_name}}', folderName)}.${file.extension}`;
 					this.app.vault.rename(file, newPath);
 				} else if (folder?.name === file.name.slice(0, -file.extension.length - 1) || '') {
 					const newPath = `${folder?.path}/${this.plugin.settings.folderNoteName.replace('{{folder_name}}', file.name.slice(0, -file.extension.length - 1) || '')}.${file.extension}`;
