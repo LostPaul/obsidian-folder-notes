@@ -4,7 +4,7 @@ import { Commands } from './commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
 import { handleViewHeaderClick, handleFolderClick } from './events/handleClick';
 import { handleFileRename, handleFolderRename } from './events/handleRename';
-import { createFolderNote, extractFolderName, getFolderNote } from './folderNoteFunctions';
+import { createFolderNote, extractFolderName, getFolderNote, getFolder } from './folderNoteFunctions';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -116,6 +116,11 @@ export default class FolderNotesPlugin extends Plugin {
 		}));
 
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
+			if (file instanceof TFile) {
+				const folder = getFolder(this, file);
+				if (!folder) { return; }
+				this.removeCSSClassFromEL(folder.path, 'has-folder-note');
+			}
 			if (!(file instanceof TFolder)) { return; }
 			const folderNote = getFolderNote(this, file.path);
 			if (!folderNote) { return; }

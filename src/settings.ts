@@ -99,7 +99,7 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl)
+		const storageLocation = new Setting(containerEl)
 			.setName('Storage location')
 			.setDesc('Choose where to store the folder notes')
 			.addDropdown((dropdown) =>
@@ -113,6 +113,8 @@ export class SettingsTab extends PluginSettingTab {
 						this.display();
 					})
 			);
+		storageLocation.infoEl.appendText('Requires a restart to take effect');
+		storageLocation.infoEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
 		if (this.plugin.settings.storageLocation === 'parentFolder') {
 			new Setting(containerEl)

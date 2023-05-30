@@ -116,3 +116,30 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string) {
 		return folderNote;
 	}
 }
+
+export function getFolder(plugin: FolderNotesPlugin, file: TFile) {
+	if (!file) return null;
+	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename);
+	if (!folderName) return null;
+	let folderPath = plugin.getFolderPathFromString(file.path);
+	let folder: TFolder | TAbstractFile | null = null;
+	if (plugin.settings.storageLocation === 'parentFolder') {
+		if (folderPath.trim() === '') {
+			folderPath = folderName;
+		} else {
+			folderPath = `${folderPath}/${folderName}`;
+		}
+		folder = plugin.app.vault.getAbstractFileByPath(folderPath);
+		if (!(folder instanceof TFolder)) {
+			folder = plugin.app.vault.getAbstractFileByPath(plugin.getFolderPathFromString(file.path));
+			if (folderName !== folder?.name) { return null; }
+		}
+	} else {
+		if (folderPath.trim() === '') {
+			folderPath = folderName;
+		}
+		folder = plugin.app.vault.getAbstractFileByPath(folderPath);
+	}
+	if (!folder) { return null; }
+	return folder;
+}
