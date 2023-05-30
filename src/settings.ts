@@ -471,6 +471,7 @@ export class SettingsTab extends PluginSettingTab {
 			}
 		});
 		new Notice('Finished updating folder notes');
+		this.plugin.reloadHandlers();
 	}
 
 }

@@ -61,6 +61,7 @@ export default class FolderNotesPlugin extends Plugin {
 				}
 			});
 		});
+
 		this.observer.observe(document.body, {
 			childList: true,
 			subtree: true,
@@ -268,6 +269,14 @@ export default class FolderNotesPlugin extends Plugin {
 			this.addCSSClassToTitleEL(folder.path, 'has-folder-note');
 			this.addCSSClassToTitleEL(file.path, 'is-folder-note');
 		});
+	}
+
+	reloadHandlers() {
+		document.querySelectorAll('div.nav-folder-title-content')
+			.forEach((element: HTMLElement) => {
+				if (element.onclick) return;
+				element.onclick = (event: MouseEvent) => handleFolderClick(event, this);
+			});
 	}
 
 	onunload() {
