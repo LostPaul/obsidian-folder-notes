@@ -10,7 +10,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
 	let path = `${folderPath}/${fileName}${plugin.settings.folderNoteType}`;
 	if (plugin.settings.storageLocation === 'parentFolder') {
-		const parentFolderPath = plugin.getParentFolderPathFromPathString(folderPath);
+		const parentFolderPath = plugin.getFolderPathFromString(folderPath);
 		if (parentFolderPath.trim() === '') {
 			path = `${fileName}${plugin.settings.folderNoteType}`;
 		} else {
@@ -71,20 +71,23 @@ export function extractFolderName(template: string, changedFileName: string) {
 	return null;
 }
 
-export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string) {
+export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, storageLocation?: string) {
 	if (!folderPath) return null;
 	const folder = {
 		path: folderPath,
 		name: plugin.getFolderNameFromPathString(folderPath),
 	};
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name);
-	if (plugin.settings.storageLocation === 'parentFolder') {
-		folder.path = plugin.getParentFolderPathFromPathString(folderPath);
+
+	if ((plugin.settings.storageLocation === 'parentFolder' || storageLocation === 'parentFolder') && storageLocation !== 'insideFolder') {
+		folder.path = plugin.getFolderPathFromString(folderPath);
 	}
 	let path = `${folder.path}/${fileName}`;
 	if (folder.path.trim() === '') {
-		path = fileName;
+		folder.path = fileName;
+		path = `${fileName}`;
 	}
+
 	let folderNote = plugin.app.vault.getAbstractFileByPath(path + plugin.settings.folderNoteType);
 	if (folderNote instanceof TFile) {
 		return folderNote;
@@ -94,50 +97,24 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string) {
 		} else {
 			folderNote = plugin.app.vault.getAbstractFileByPath(path + '.canvas');
 		}
-		if (!folderNote && plugin.settings.storageLocation === 'parentFolder') {
-			folderNote = plugin.app.vault.getAbstractFileByPath(`${folderPath}/${fileName}.md`);
-			if (!folderNote && plugin.settings.folderNoteType === '.canvas') {
-				folderNote = plugin.app.vault.getAbstractFileByPath(`${folderPath}/${fileName}.canvas`);
-			}
-		} else if (!folderNote) {
-			folder.path = plugin.getParentFolderPathFromPathString(folderPath);
-			path = `${folder.path}/${fileName}`;
-			if (folder.path.trim() === '') {
-				path = fileName;
-			}
-			folderNote = plugin.app.vault.getAbstractFileByPath(path + plugin.settings.folderNoteType);
-			if (!folderNote && plugin.settings.folderNoteType === '.canvas') {
-				folderNote = plugin.app.vault.getAbstractFileByPath(path + '.md');
-			} else if (!folderNote) {
-				folderNote = plugin.app.vault.getAbstractFileByPath(path + '.canvas');
-			}
-		}
-
 		return folderNote;
 	}
 }
 
-export function getFolder(plugin: FolderNotesPlugin, file: TFile) {
+export function getFolder(plugin: FolderNotesPlugin, file: TFile, storageLocation?: string) {
 	if (!file) return null;
 	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename);
 	if (!folderName) return null;
 	let folderPath = plugin.getFolderPathFromString(file.path);
 	let folder: TFolder | TAbstractFile | null = null;
-	if (plugin.settings.storageLocation === 'parentFolder') {
+	if ((plugin.settings.storageLocation === 'parentFolder' || storageLocation === 'parentFolder') && storageLocation !== 'insideFolder') {
 		if (folderPath.trim() === '') {
 			folderPath = folderName;
 		} else {
 			folderPath = `${folderPath}/${folderName}`;
 		}
 		folder = plugin.app.vault.getAbstractFileByPath(folderPath);
-		if (!(folder instanceof TFolder)) {
-			folder = plugin.app.vault.getAbstractFileByPath(plugin.getFolderPathFromString(file.path));
-			if (folderName !== folder?.name) { return null; }
-		}
 	} else {
-		if (folderPath.trim() === '') {
-			folderPath = folderName;
-		}
 		folder = plugin.app.vault.getAbstractFileByPath(folderPath);
 	}
 	if (!folder) { return null; }

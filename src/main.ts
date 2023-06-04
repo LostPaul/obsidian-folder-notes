@@ -36,6 +36,7 @@ export default class FolderNotesPlugin extends Plugin {
 							if (element.onclick) return;
 							element.onclick = (event: MouseEvent) => handleFolderClick(event, this);
 						});
+					if (!this.settings.openFolderNoteOnClickInPath) { return; }
 					(<Element>rec.target).querySelectorAll('span.view-header-breadcrumb')
 						.forEach((element: HTMLElement) => {
 							const breadcrumbs = element.parentElement?.querySelectorAll('span.view-header-breadcrumb');
@@ -78,7 +79,6 @@ export default class FolderNotesPlugin extends Plugin {
 		}));
 		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
 			if (!this.app.workspace.layoutReady) return;
-			if (file instanceof TFile) { return this.handleFileCreate(file); }
 			if (!this.settings.autoCreate) return;
 			if (!(file instanceof TFolder)) return;
 
@@ -139,12 +139,6 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 	}
 
-	handleFileCreate(file: TFile) {
-		if (file.basename !== file.parent.name) { return; }
-		this.addCSSClassToTitleEL(file.parent.path, 'has-folder-note');
-		this.addCSSClassToTitleEL(file.path, 'is-folder-note', true);
-	}
-
 	getFileNameFromPathString(path: string): string {
 		return path.substring(path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/' || '\\') + 1 : 0);
 	}
@@ -157,10 +151,6 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 	}
 
-	getParentFolderPathFromPathString(path: string): string {
-		return path.substring(0, path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/' || '\\') : 0);
-	}
-
 	getExtensionFromPathString(path: string): string {
 		return path.slice(path.lastIndexOf('.') >= 0 ? path.lastIndexOf('.') : 0);
 	}
@@ -168,6 +158,10 @@ export default class FolderNotesPlugin extends Plugin {
 	getFolderPathFromString(path: string): string {
 		const subString = path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/') : 0;
 		return path.substring(0, subString);
+	}
+
+	getParentFolderPath(path: string): string {
+		return this.getFolderPathFromString(this.getFolderPathFromString(path));
 	}
 
 	getExcludedFolderByPath(path: string): ExcludedFolder | undefined {
@@ -229,45 +223,24 @@ export default class FolderNotesPlugin extends Plugin {
 	loadFileClasses(forceReload = false) {
 		if (this.activeFileExplorer === this.getFileExplorer() && !forceReload) { return; }
 		this.activeFileExplorer = this.getFileExplorer();
-		this.app.vault.getFiles().forEach((file) => {
-			let folder: TFolder | TAbstractFile | null;
-			const folderName = extractFolderName(this.settings.folderNoteName, file.basename);
-			if (!folderName) { return; }
-			if (this.settings.storageLocation === 'parentFolder') {
-				let folderPath = this.getFolderPathFromString(file.path);
-				if (folderPath.trim() === '') {
-					folderPath = folderName;
-				} else {
-					folderPath = `${folderPath}/${folderName}`;
-				}
-				folder = this.app.vault.getAbstractFileByPath(folderPath);
-				if (!folder) {
-					folder = this.app.vault.getAbstractFileByPath(file.parent.path);
-				}
-			} else {
-				folder = this.app.vault.getAbstractFileByPath(file.parent.path);
-				if (!(folder instanceof TFolder) || extractFolderName(this.settings.folderNoteName, file.basename) !== folder.name) {
-					let folderPath = this.getFolderPathFromString(file.path);
-					if (folderPath.trim() === '') {
-						folderPath = folderName;
-					} else {
-						folderPath = `${folderPath}/${folderName}`;
-					}
-					folder = this.app.vault.getAbstractFileByPath(folderPath);
-				}
+		this.app.vault.getAllLoadedFiles().forEach((file) => {
+			if (!(file instanceof TFolder)) { return; }
+			const folderNote = getFolderNote(this, file.path);
+			if (!folderNote) {
+				this.removeCSSClassFromEL(file?.path, 'has-folder-note');
+				return;
 			}
-			if (!(folder instanceof TFolder)) { return; }
 
-			const excludedFolder = this.getExcludedFolderByPath(file.parent.path);
+			const excludedFolder = this.getExcludedFolderByPath(file.path);
 			// cleanup after ourselves
 			// Incase settings have changed
 			if (excludedFolder?.disableFolderNote) {
-				this.removeCSSClassFromEL(file.path, 'is-folder-note');
-				this.removeCSSClassFromEL(folder.path, 'has-folder-note');
-				return;
+				this.removeCSSClassFromEL(folderNote.path, 'is-folder-note');
+				this.removeCSSClassFromEL(file.path, 'has-folder-note');
+			} else {
+				this.addCSSClassToTitleEL(folderNote.path, 'is-folder-note');
+				this.addCSSClassToTitleEL(file.path, 'has-folder-note');
 			}
-			this.addCSSClassToTitleEL(folder.path, 'has-folder-note');
-			this.addCSSClassToTitleEL(file.path, 'is-folder-note');
 		});
 	}
 

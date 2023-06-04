@@ -3,7 +3,7 @@ import FolderNotesPlugin from './main';
 import { FolderSuggest } from './suggesters/FolderSuggester';
 import ExcludedFolderSettings from './modals/exludeFolderSettings';
 import { TemplateSuggest } from './suggesters/templateSuggester';
-import { extractFolderName } from './folderNoteFunctions';
+import { extractFolderName, getFolderNote } from './folderNoteFunctions';
 // import ConfirmationModal from "./modals/confirmCreation";
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
@@ -64,7 +64,7 @@ export class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl('h2', { text: 'Folder notes settings' });
 
-		new Setting(containerEl)
+		const nameSetting = new Setting(containerEl)
 			.setName('Folder note name')
 			.setDesc('{{folder_name}} will be replaced with the name of the folder')
 			.addText((text) =>
@@ -84,6 +84,8 @@ export class SettingsTab extends PluginSettingTab {
 						this.updateFolderNotes(this.plugin.settings.folderNoteName, this.plugin.settings.newFolderNoteName);
 					})
 			);
+		nameSetting.infoEl.appendText('Make sure to back up your vault before renaming all folder notes and restart Obsidian after renaming them');
+		nameSetting.infoEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
 		new Setting(containerEl)
 			.setName('Folder note type')
@@ -111,10 +113,31 @@ export class SettingsTab extends PluginSettingTab {
 						this.plugin.settings.storageLocation = value;
 						await this.plugin.saveSettings();
 						this.display();
+						this.plugin.loadFileClasses();
 					})
 			);
 		storageLocation.infoEl.appendText('Requires a restart to take effect');
 		storageLocation.infoEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
+
+		const switchLocation = new Setting(containerEl)
+			.setName('Switch to new storage location')
+			.setDesc('Move all folder notes to the new storage location')
+			.addButton((button) =>
+				button
+					.setButtonText('Switch')
+					.setCta()
+					.onClick(async () => {
+						let oldStorageLocation = this.plugin.settings.storageLocation;
+						if (this.plugin.settings.storageLocation === 'parentFolder') {
+							oldStorageLocation = 'insideFolder';
+						} else if (this.plugin.settings.storageLocation === 'insideFolder') {
+							oldStorageLocation = 'parentFolder';
+						}
+						this.switchStorageLocation(oldStorageLocation);
+					})
+			);
+		switchLocation.infoEl.appendText('Requires a restart to take effect');
+		switchLocation.infoEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
 		if (this.plugin.settings.storageLocation === 'parentFolder') {
 			new Setting(containerEl)
@@ -258,22 +281,6 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl)
-			.setName('Underline folders in the path')
-			.setDesc('Add an underline to folders that have a folder note in the path above a note')
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.underlineFolderInPath)
-					.onChange(async (value) => {
-						this.plugin.settings.underlineFolderInPath = value;
-						if (value) {
-							document.body.classList.add('folder-note-underline-path');
-						} else {
-							document.body.classList.remove('folder-note-underline-path');
-						}
-						await this.plugin.saveSettings();
-					})
-			);
 
 		new Setting(containerEl)
 			.setName('Open folder note through path')
@@ -284,21 +291,28 @@ export class SettingsTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.openFolderNoteOnClickInPath = value;
 						await this.plugin.saveSettings();
+						this.display();
 					})
 			);
-		/*
-		new Setting(containerEl)
-			.setName('Disable folder highlighting through path')
-			.setDesc('Disable the highlighting of folders in the path that have a folder note when you click on a folder name in the path')
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.disableFolderHighlighting)
-					.onChange(async (value) => {
-						this.plugin.settings.disableFolderHighlighting = value;
-						await this.plugin.saveSettings();
-					})
-			);
-		*/
+
+		if (this.plugin.settings.openFolderNoteOnClickInPath) {
+			new Setting(containerEl)
+				.setName('Underline folders in the path')
+				.setDesc('Add an underline to folders that have a folder note in the path above a note')
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.underlineFolderInPath)
+						.onChange(async (value) => {
+							this.plugin.settings.underlineFolderInPath = value;
+							if (value) {
+								document.body.classList.add('folder-note-underline-path');
+							} else {
+								document.body.classList.remove('folder-note-underline-path');
+							}
+							await this.plugin.saveSettings();
+						})
+				);
+		}
 
 		const setting = new Setting(containerEl);
 		const desc = document.createDocumentFragment();
@@ -323,7 +337,7 @@ export class SettingsTab extends PluginSettingTab {
 			});
 		});
 
-		// Due to issue with templater it'll be disabled for now
+		// Due to an issue with templater it has been disabled for now
 		// If you want to try it yourself make a pr
 		// The issue was that it only used the first folder for all of the other folder notes
 		/*
@@ -471,7 +485,34 @@ export class SettingsTab extends PluginSettingTab {
 			}
 		});
 		new Notice('Finished updating folder notes');
-		this.plugin.reloadHandlers();
+	}
+
+	switchStorageLocation(oldMethod: string) {
+		new Notice('Starting to switch storage location...');
+		this.app.vault.getAllLoadedFiles().forEach((file) => {
+			if (file instanceof TFolder) {
+				const folderNote = getFolderNote(this.plugin, file.path, oldMethod);
+				if (folderNote instanceof TFile) {
+					if (this.plugin.settings.storageLocation === 'parentFolder') {
+						let newPath = '';
+						if (this.plugin.getFolderPathFromString(file.path).trim() === '') {
+							newPath = `${folderNote.name}`;
+						} else {
+							newPath = `${this.plugin.getFolderPathFromString(file.path)}/${folderNote.name}`;
+						}
+						this.app.vault.rename(folderNote, newPath);
+					} else if (this.plugin.settings.storageLocation === 'insideFolder') {
+						if (this.plugin.getFolderPathFromString(folderNote.path) === file.path) {
+							return;
+						} else {
+							const newPath = `${file.path}/${folderNote.name}`;
+							this.app.vault.rename(folderNote, newPath);
+						}
+					}
+				}
+			}
+		});
+		new Notice('Finished switching storage location');
 	}
 
 }
