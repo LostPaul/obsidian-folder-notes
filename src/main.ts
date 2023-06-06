@@ -1,10 +1,11 @@
 import { Plugin, TFile, TFolder, TAbstractFile } from 'obsidian';
-import { DEFAULT_SETTINGS, ExcludedFolder, FolderNotesSettings, SettingsTab } from './settings';
+import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings';
 import { Commands } from './commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
 import { handleViewHeaderClick, handleFolderClick } from './events/handleClick';
 import { handleFileRename, handleFolderRename } from './events/handleRename';
 import { createFolderNote, extractFolderName, getFolderNote, getFolder } from './folderNoteFunctions';
+import { getExcludedFolder } from './excludedFolder';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -81,8 +82,7 @@ export default class FolderNotesPlugin extends Plugin {
 			if (!this.app.workspace.layoutReady) return;
 			if (!this.settings.autoCreate) return;
 			if (!(file instanceof TFolder)) return;
-
-			const excludedFolder = this.getExcludedFolderByPath(file.path);
+			const excludedFolder = getExcludedFolder(this, file.path);
 			if (excludedFolder?.disableAutoCreate) return;
 			const folderNote = getFolderNote(this, file.path);
 			if (folderNote) return;
@@ -164,14 +164,6 @@ export default class FolderNotesPlugin extends Plugin {
 		return this.getFolderPathFromString(this.getFolderPathFromString(path));
 	}
 
-	getExcludedFolderByPath(path: string): ExcludedFolder | undefined {
-		return this.settings.excludeFolders.find((excludedFolder) => {
-			if (excludedFolder.path === path) { return true; }
-			if (!excludedFolder.subFolders) { return false; }
-			return this.getFolderPathFromString(path).startsWith(excludedFolder.path);
-		});
-	}
-
 	getFileExplorer() {
 		return this.app.workspace.getLeavesOfType('file-explorer')[0] as FileExplorerWorkspaceLeaf;
 	}
@@ -231,7 +223,7 @@ export default class FolderNotesPlugin extends Plugin {
 				return;
 			}
 
-			const excludedFolder = this.getExcludedFolderByPath(file.path);
+			const excludedFolder = getExcludedFolder(this, file.path);
 			// cleanup after ourselves
 			// Incase settings have changed
 			if (excludedFolder?.disableFolderNote) {

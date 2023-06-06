@@ -1,6 +1,7 @@
 import { TFile, TFolder, TAbstractFile, Notice } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { extractFolderName, getFolderNote } from '../folderNoteFunctions';
+import { getExcludedFolder } from '../excludedFolder';
 export function handleFolderRename(file: TFolder, oldPath: string, plugin: FolderNotesPlugin) {
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', file.name);
 	const folder = plugin.app.vault.getAbstractFileByPath(file.path);
@@ -27,7 +28,7 @@ export function handleFolderRename(file: TFolder, oldPath: string, plugin: Folde
 	});
 	plugin.saveSettings();
 
-	const excludedFolder = plugin.getExcludedFolderByPath(file.path);
+	const excludedFolder = getExcludedFolder(plugin, file.path);
 	if (excludedFolder?.disableSync && !folderNote) {
 		return plugin.removeCSSClassFromEL(file.path, 'has-folder-note');
 	}
@@ -56,7 +57,7 @@ export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNot
 	const oldFolder = plugin.app.vault.getAbstractFileByPath(oldFilePath);
 	const newFilePath = plugin.getFolderPathFromString(file.path);
 	const newFolder = plugin.app.vault.getAbstractFileByPath(newFilePath);
-	const excludedFolder = plugin.getExcludedFolderByPath(newFolder?.path || '');
+	const excludedFolder = getExcludedFolder(plugin,newFolder?.path || '');
 
 	if (excludedFolder?.disableSync && extractFolderName(plugin.settings.folderNoteName, file.name.slice(0, file.name.lastIndexOf('.'))) === newFolder?.name) {
 		plugin.addCSSClassToTitleEL(file.path, 'is-folder-note');

@@ -1,9 +1,8 @@
 import { App, Notice, Platform, PluginSettingTab, Setting, TFile, TFolder } from 'obsidian';
 import FolderNotesPlugin from './main';
-import { FolderSuggest } from './suggesters/FolderSuggester';
-import ExcludedFolderSettings from './modals/exludeFolderSettings';
 import { TemplateSuggest } from './suggesters/templateSuggester';
 import { extractFolderName, getFolderNote } from './folderNoteFunctions';
+import { addExcludeFolderListItem, ExcludedFolder, addExcludedFolder, ExcludePattern, addExcludePatternListItem } from './excludedFolder';
 // import ConfirmationModal from "./modals/confirmCreation";
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
@@ -13,7 +12,7 @@ export interface FolderNotesSettings {
 	templatePath: string;
 	autoCreate: boolean;
 	enableCollapsing: boolean;
-	excludeFolders: ExcludedFolder[];
+	excludeFolders: (ExcludePattern | ExcludedFolder)[];
 	showDeleteConfirmation: boolean;
 	underlineFolder: boolean;
 	allowWhitespaceCollapsing: boolean;
@@ -354,9 +353,21 @@ export class SettingsTab extends PluginSettingTab {
 		*/
 
 
-		new Setting(containerEl)
+		const manageExcluded = new Setting(containerEl)
 			.setHeading()
 			.setName('Manage excluded folders');
+		const desc3 = document.createDocumentFragment();
+		desc3.append(
+			'Add {regex} at the beginning of the folder name to use a regex pattern.',
+			desc.createEl('br'),
+			'Use * before and after to exclude folders that include the name between the *s.',
+			desc.createEl('br'),
+			'Use * before the folder name to exclude folders that end with the folder name.',
+			desc.createEl('br'),
+			'Use * after the folder name to exclude folders that start with the folder name.',
+		);
+		manageExcluded.setDesc(desc3);
+
 		new Setting(containerEl)
 			.setName('Add excluded folder')
 			.addButton((cb) => {
@@ -365,96 +376,18 @@ export class SettingsTab extends PluginSettingTab {
 				cb.setTooltip('Add excluded folder');
 				cb.onClick(() => {
 					const excludedFolder = new ExcludedFolder('', this.plugin.settings.excludeFolders.length);
-					this.addExcludeFolderListItem(containerEl, excludedFolder);
-					this.addExcludedFolder(excludedFolder);
+					addExcludeFolderListItem(this, containerEl, excludedFolder);
+					addExcludedFolder(this.plugin, excludedFolder);
 					this.display();
 				});
 			});
 		this.plugin.settings.excludeFolders.sort((a, b) => a.position - b.position).forEach((excludedFolder) => {
-			this.addExcludeFolderListItem(containerEl, excludedFolder);
+			if (excludedFolder.string?.trim() !== '' && excludedFolder.path?.trim() === '') {
+				addExcludePatternListItem(this, containerEl, excludedFolder);
+			} else {
+				addExcludeFolderListItem(this, containerEl, excludedFolder);
+			}
 		});
-	}
-	addExcludeFolderListItem(containerEl: HTMLElement, excludedFolder: ExcludedFolder) {
-		const setting = new Setting(containerEl);
-		setting.setClass('fn-exclude-folder-list-item');
-		setting.addSearch((cb) => {
-			new FolderSuggest(
-				cb.inputEl,
-				this.plugin
-			);
-			// @ts-ignore
-			cb.containerEl.addClass('fn-exclude-folder-path');
-			cb.setPlaceholder('Folder path');
-			cb.setValue(excludedFolder.path);
-			cb.onChange((value) => {
-				if (!this.app.vault.getAbstractFileByPath(value)) return;
-				excludedFolder.path = value;
-				this.updateExcludedFolder(excludedFolder, excludedFolder);
-			});
-		});
-		setting.addButton((cb) => {
-			cb.setIcon('edit');
-			cb.setTooltip('Edit folder note');
-			cb.onClick(() => {
-				new ExcludedFolderSettings(this.app, this.plugin, excludedFolder).open();
-			});
-		});
-
-		setting.addButton((cb) => {
-			cb.setIcon('up-chevron-glyph');
-			cb.setTooltip('Move up');
-			cb.onClick(() => {
-				if (excludedFolder.position === 0) return;
-				excludedFolder.position -= 1;
-				this.updateExcludedFolder(excludedFolder, excludedFolder);
-				const oldExcludedFolder = this.plugin.settings.excludeFolders.find((folder) => folder.position === excludedFolder.position);
-				if (oldExcludedFolder) {
-
-					oldExcludedFolder.position += 1;
-					this.updateExcludedFolder(oldExcludedFolder, oldExcludedFolder);
-				}
-				this.display();
-			});
-		});
-		setting.addButton((cb) => {
-			cb.setIcon('down-chevron-glyph');
-			cb.setTooltip('Move down');
-			cb.onClick(() => {
-				if (excludedFolder.position === this.plugin.settings.excludeFolders.length - 1) return;
-				excludedFolder.position += 1;
-				this.updateExcludedFolder(excludedFolder, excludedFolder);
-				const oldExcludedFolder = this.plugin.settings.excludeFolders.find((folder) => folder.position === excludedFolder.position);
-				if (oldExcludedFolder) {
-					oldExcludedFolder.position -= 1;
-					this.updateExcludedFolder(oldExcludedFolder, oldExcludedFolder);
-				}
-				this.display();
-			});
-		});
-		setting.addButton((cb) => {
-			cb.setIcon('trash-2');
-			cb.setTooltip('Delete excluded folder');
-			cb.onClick(() => {
-				this.deleteExcludedFolder(excludedFolder);
-				setting.clear();
-				setting.settingEl.remove();
-			});
-		});
-	}
-
-	addExcludedFolder(excludedFolder: ExcludedFolder) {
-		this.plugin.settings.excludeFolders.push(excludedFolder);
-		this.plugin.saveSettings();
-	}
-
-	deleteExcludedFolder(excludedFolder: ExcludedFolder) {
-		this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter((folder) => folder.path !== excludedFolder.path);
-		this.plugin.saveSettings();
-	}
-
-	updateExcludedFolder(excludedFolder: ExcludedFolder, newExcludeFolder: ExcludedFolder) {
-		this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter((folder) => folder.path !== excludedFolder.path);
-		this.addExcludedFolder(newExcludeFolder);
 	}
 
 	updateFolderNotes(oldTemplate: string, newTemplate: string) {
@@ -515,22 +448,4 @@ export class SettingsTab extends PluginSettingTab {
 		new Notice('Finished switching storage location');
 	}
 
-}
-export class ExcludedFolder {
-	path: string;
-	subFolders: boolean;
-	disableSync: boolean;
-	disableAutoCreate: boolean;
-	disableFolderNote: boolean;
-	enableCollapsing: boolean;
-	position: number;
-	constructor(path: string, position: number) {
-		this.path = path;
-		this.subFolders = true;
-		this.disableSync = true;
-		this.disableAutoCreate = true;
-		this.disableFolderNote = false;
-		this.enableCollapsing = false;
-		this.position = position;
-	}
 }

@@ -1,13 +1,14 @@
 import { Keymap } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { openFolderNote, createFolderNote, getFolderNote } from 'src/folderNoteFunctions';
+import { getExcludedFolder } from 'src/excludedFolder';
 export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNotesPlugin) {
 	if (!(event.target instanceof HTMLElement)) return;
 	if (!plugin.settings.openFolderNoteOnClickInPath) return;
 
 	const folderPath = event.target.getAttribute('data-path');
 	if (!folderPath) { return; }
-	const excludedFolder = plugin.getExcludedFolderByPath(folderPath);
+	const excludedFolder = getExcludedFolder(plugin, folderPath);
 	if (excludedFolder?.disableFolderNote) {
 		event.target.onclick = null;
 		event.target.click();
@@ -37,7 +38,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 
 	const folderPath = event.target.parentElement?.getAttribute('data-path');
 	if (!folderPath) { return; }
-	const excludedFolder = plugin.getExcludedFolderByPath(folderPath);
+	const excludedFolder = getExcludedFolder(plugin, folderPath);
 	if (excludedFolder?.disableFolderNote) {
 		event.target.onclick = null;
 		event.target.click();
