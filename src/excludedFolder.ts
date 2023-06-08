@@ -101,14 +101,16 @@ export function addExcludedFolder(plugin: FolderNotesPlugin, excludedFolder: Exc
 export function deleteExcludedFolder(plugin: FolderNotesPlugin, excludedFolder: ExcludedFolder) {
 	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter((folder) => folder.path !== excludedFolder.path || folder.type === 'pattern');
 	plugin.saveSettings();
+	resyncArray(plugin);
 }
 
 export function deletePattern(plugin: FolderNotesPlugin, pattern: ExcludePattern) {
 	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter((folder) => folder.string !== pattern.string || folder.type === 'folder');
 	plugin.saveSettings();
+	resyncArray(plugin);
 }
 
-export function updateExcludedFolder(plugin: FolderNotesPlugin, excludedFolder: ExcludedFolder | ExcludePattern, newExcludeFolder: ExcludedFolder | ExcludePattern) {
+export function updateExcludedFolder(plugin: FolderNotesPlugin, excludedFolder: ExcludePattern, newExcludeFolder: ExcludePattern) {
 	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter((folder) => folder.path !== excludedFolder.path);
 	addExcludedFolder(plugin, newExcludeFolder);
 }
@@ -116,6 +118,14 @@ export function updateExcludedFolder(plugin: FolderNotesPlugin, excludedFolder: 
 export function updatePattern(plugin: FolderNotesPlugin, pattern: ExcludePattern, newPattern: ExcludePattern) {
 	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter((folder) => folder.string !== pattern.string);
 	addExcludedFolder(plugin, newPattern);
+}
+
+function resyncArray(plugin: FolderNotesPlugin) {
+	plugin.settings.excludeFolders = plugin.settings.excludeFolders.sort((a, b) => a.position - b.position);
+	plugin.settings.excludeFolders.forEach((folder, index) => {
+		folder.position = index;
+	});
+	plugin.saveSettings();
 }
 
 export function addExcludePatternListItem(settings: SettingsTab, containerEl: HTMLElement, pattern: ExcludePattern) {
@@ -145,13 +155,17 @@ export function addExcludePatternListItem(settings: SettingsTab, containerEl: HT
 		cb.setIcon('up-chevron-glyph');
 		cb.setTooltip('Move up');
 		cb.onClick(() => {
-			if (pattern.position === 0) return;
+			if (pattern.position === 0) { return; }
 			pattern.position -= 1;
-			updateExcludedFolder(plugin, pattern, pattern);
+			updatePattern(plugin, pattern, pattern);
 			const oldPattern = plugin.settings.excludeFolders.find((folder) => folder.position === pattern.position);
 			if (oldPattern) {
 				oldPattern.position += 1;
-				updateExcludedFolder(plugin, oldPattern, oldPattern);
+				if (oldPattern.type === 'pattern') {
+					updatePattern(plugin, oldPattern, oldPattern);
+				} else {
+					updateExcludedFolder(plugin, oldPattern, oldPattern);
+				}
 			}
 			settings.display();
 		});
@@ -160,13 +174,20 @@ export function addExcludePatternListItem(settings: SettingsTab, containerEl: HT
 		cb.setIcon('down-chevron-glyph');
 		cb.setTooltip('Move down');
 		cb.onClick(() => {
-			if (pattern.position === plugin.settings.excludeFolders.length - 1) return;
+			if (pattern.position === plugin.settings.excludeFolders.length - 1) {
+				return;
+			}
 			pattern.position += 1;
-			updateExcludedFolder(plugin, pattern, pattern);
+
+			updatePattern(plugin, pattern, pattern);
 			const oldPattern = plugin.settings.excludeFolders.find((folder) => folder.position === pattern.position);
 			if (oldPattern) {
 				oldPattern.position -= 1;
-				updateExcludedFolder(plugin, oldPattern, oldPattern);
+				if (oldPattern.type === 'pattern') {
+					updatePattern(plugin, oldPattern, oldPattern);
+				} else {
+					updateExcludedFolder(plugin, oldPattern, oldPattern);
+				}
 			}
 			settings.display();
 		});
@@ -175,7 +196,7 @@ export function addExcludePatternListItem(settings: SettingsTab, containerEl: HT
 		cb.setIcon('trash-2');
 		cb.setTooltip('Delete pattern');
 		cb.onClick(() => {
-			deleteExcludedFolder(plugin, pattern);
+			deletePattern(plugin, pattern);
 			setting.clear();
 			setting.settingEl.remove();
 		});
@@ -221,13 +242,17 @@ export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTM
 		cb.setIcon('up-chevron-glyph');
 		cb.setTooltip('Move up');
 		cb.onClick(() => {
-			if (excludedFolder.position === 0) return;
+			if (excludedFolder.position === 0) { return; }
 			excludedFolder.position -= 1;
 			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
 			const oldExcludedFolder = plugin.settings.excludeFolders.find((folder) => folder.position === excludedFolder.position);
 			if (oldExcludedFolder) {
 				oldExcludedFolder.position += 1;
-				updateExcludedFolder(plugin, oldExcludedFolder, oldExcludedFolder);
+				if (oldExcludedFolder.type === 'pattern') {
+					updatePattern(plugin, oldExcludedFolder, oldExcludedFolder);
+				} else {
+					updateExcludedFolder(plugin, oldExcludedFolder, oldExcludedFolder);
+				}
 			}
 			settings.display();
 		});
@@ -236,14 +261,22 @@ export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTM
 		cb.setIcon('down-chevron-glyph');
 		cb.setTooltip('Move down');
 		cb.onClick(() => {
-			if (excludedFolder.position === plugin.settings.excludeFolders.length - 1) return;
+			if (excludedFolder.position === plugin.settings.excludeFolders.length - 1) {
+				return;
+			}
 			excludedFolder.position += 1;
+
 			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
 			const oldExcludedFolder = plugin.settings.excludeFolders.find((folder) => folder.position === excludedFolder.position);
 			if (oldExcludedFolder) {
 				oldExcludedFolder.position -= 1;
-				updateExcludedFolder(plugin, oldExcludedFolder, oldExcludedFolder);
+				if (oldExcludedFolder.type === 'pattern') {
+					updatePattern(plugin, oldExcludedFolder, oldExcludedFolder);
+				} else {
+					updateExcludedFolder(plugin, oldExcludedFolder, oldExcludedFolder);
+				}
 			}
+
 			settings.display();
 		});
 	});
