@@ -54,7 +54,9 @@ export default class DeleteConfirmationModal extends Modal {
 		button.classList.add('mod-warning', 'fn-confirmation-modal-button');
 		button.addEventListener('click', async () => {
 			this.close();
-			this.plugin.removeCSSClassFromEL(this.file.parent.path, 'has-folder-note');
+			const folder = getFolder(this.plugin, this.file);
+			if (!folder) return;
+			this.plugin.removeCSSClassFromEL(folder.path, 'has-folder-note');
 			this.app.vault.delete(this.file);
 		});
 		button.focus();
