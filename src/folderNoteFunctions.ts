@@ -90,9 +90,11 @@ export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractF
 
 export async function deleteFolderNote(plugin: FolderNotesPlugin, file: TFile) {
 	if (plugin.settings.showDeleteConfirmation) {
-		return new DeleteConfirmationModal(plugin.app, this, file).open();
+		return new DeleteConfirmationModal(plugin.app, plugin, file).open();
 	}
-	plugin.removeCSSClassFromEL(file.parent.path, 'has-folder-note');
+	const folder = getFolder(plugin, file);
+	if (!folder) return;
+	plugin.removeCSSClassFromEL(folder.path, 'has-folder-note');
 	await plugin.app.vault.delete(file);
 }
 
