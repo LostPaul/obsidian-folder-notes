@@ -1,6 +1,6 @@
-import { App, TFolder, Menu, TAbstractFile, Notice, TFile } from 'obsidian';
+import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView } from 'obsidian';
 import FolderNotesPlugin from './main';
-import { getFolderNote, createFolderNote, deleteFolderNote } from './folderNoteFunctions';
+import { getFolderNote, createFolderNote, deleteFolderNote, getFolder, turnIntoFolderNote, openFolderNote } from './folderNoteFunctions';
 import { ExcludedFolder } from './excludedFolder';
 export class Commands {
 	plugin: FolderNotesPlugin;
@@ -10,7 +10,62 @@ export class Commands {
 		this.app = app;
 	}
 	registerCommands() {
+		this.plugin.registerEvent(this.plugin.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
+			const text = editor.getSelection();
+			if (!text || text.trim() === '') return;
+			menu.addItem((item) => {
+				item.setTitle('Create folder note')
+					.setIcon('edit')
+					.onClick(() => {
+						const file = view.file;
+						if (!(file instanceof TFile)) return;
+						const blacklist = ['*', '\\', '"', '/', '<', '>', '?', '|', ':'];
+						for (const char of blacklist) {
+							if (text.includes(char)) {
+								new Notice('File name cannot contain any of the following characters: * " \\ / < > : | ?');
+								return;
+							}
+						}
+						let folder: TAbstractFile | null;
+						const folderPath = this.plugin.getFolderPathFromString(file.path);
+						if (folderPath === '') {
+							folder = this.plugin.app.vault.getAbstractFileByPath(text);
+							if (folder instanceof TFolder) {
+								return new Notice('Folder note already exists');
+							} else {
+								this.plugin.app.vault.createFolder(text);
+								createFolderNote(this.plugin, text, false);
+							}
+						} else {
+							folder = this.plugin.app.vault.getAbstractFileByPath(folderPath + '/' + text);
+							if (folder instanceof TFolder) {
+								return new Notice('Folder note already exists');
+							}
+							if (this.plugin.settings.storageLocation === 'parentFolder') {
+								if (this.app.vault.getAbstractFileByPath(folderPath + '/' + text + this.plugin.settings.folderNoteType)) {
+									return new Notice('File already exists');
+								}
+							}
+							this.plugin.app.vault.createFolder(folderPath + '/' + text);
+							createFolderNote(this.plugin, folderPath + '/' + text, false);
+						}
+						editor.replaceSelection(`[[${text}]]`);
+					});
+			});
+		}));
 		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
+			if (file instanceof TFile) {
+				const folder = getFolder(this.plugin, file, this.plugin.settings.storageLocation);
+				if (!(folder instanceof TFolder)) return;
+				const folderNote = getFolderNote(this.plugin, folder.path);
+				menu.addItem((item) => {
+					item.setTitle('Turn into folder note')
+						.setIcon('edit')
+						.onClick(() => {
+							turnIntoFolderNote(this.plugin, file, folder, folderNote);
+						});
+				});
+			}
 			if (!(file instanceof TFolder)) return;
 			if (this.plugin.settings.excludeFolders.find((folder) => folder.path === file.path)) {
 				menu.addItem((item) => {
@@ -43,6 +98,13 @@ export class Commands {
 						.setIcon('trash')
 						.onClick(() => {
 							deleteFolderNote(this.plugin, folderNote);
+						});
+				});
+				menu.addItem((item) => {
+					item.setTitle('Open folder note')
+						.setIcon('chevron-right-square')
+						.onClick(() => {
+							openFolderNote(this.plugin, folderNote);
 						});
 				});
 			} else {

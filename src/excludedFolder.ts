@@ -53,7 +53,6 @@ export class ExcludePattern {
 
 export function getExcludedFolder(plugin: FolderNotesPlugin, path: string) {
 	const folderName = plugin.getFolderNameFromPathString(path);
-
 	const matchedPattern = getExcludedFolderByPattern(plugin, folderName);
 	if (matchedPattern) { return matchedPattern; }
 

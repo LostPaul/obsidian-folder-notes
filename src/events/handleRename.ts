@@ -57,7 +57,7 @@ export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNot
 	const oldFolder = plugin.app.vault.getAbstractFileByPath(oldFilePath);
 	const newFilePath = plugin.getFolderPathFromString(file.path);
 	const newFolder = plugin.app.vault.getAbstractFileByPath(newFilePath);
-	const excludedFolder = getExcludedFolder(plugin,newFolder?.path || '');
+	const excludedFolder = getExcludedFolder(plugin, newFolder?.path || '');
 
 	if (excludedFolder?.disableSync && extractFolderName(plugin.settings.folderNoteName, file.name.slice(0, file.name.lastIndexOf('.'))) === newFolder?.name) {
 		plugin.addCSSClassToTitleEL(file.path, 'is-folder-note');

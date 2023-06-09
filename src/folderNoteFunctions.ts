@@ -3,6 +3,7 @@ import FolderNameModal from './modals/folderName';
 import { applyTemplate } from './template';
 import { TFolder, TFile, TAbstractFile, Keymap } from 'obsidian';
 import DeleteConfirmationModal from './modals/deleteConfirmation';
+import { addExcludedFolder, deleteExcludedFolder, getExcludedFolder, ExcludedFolder, updateExcludedFolder } from './excludedFolder';
 
 export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, useModal?: boolean) {
 	const leaf = plugin.app.workspace.getLeaf(false);
@@ -38,7 +39,47 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	modal.open();
 }
 
-export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractFile, evt: MouseEvent) {
+export function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile) {
+	if (folderNote) {
+		let excludedFolder = getExcludedFolder(plugin, folder.path);
+		let excludedFolderExisted = true;
+		let disabledSync = false;
+
+		if (!excludedFolder) {
+			excludedFolderExisted = false;
+			excludedFolder = new ExcludedFolder(folder.path, plugin.settings.excludeFolders.length);
+			addExcludedFolder(plugin, excludedFolder);
+		} else if (!excludedFolder.disableSync) {
+			disabledSync = false;
+			excludedFolder.disableSync = true;
+			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
+		}
+		const newPath = `${folder.path}/${file.basename} (2)${plugin.settings.folderNoteType}`;
+		plugin.app.vault.rename(folderNote, newPath).then(() => {
+			if (!excludedFolder) { return; }
+			if (!excludedFolderExisted) {
+				deleteExcludedFolder(plugin, excludedFolder);
+			} else if (!disabledSync) {
+				excludedFolder.disableSync = false;
+				updateExcludedFolder(plugin, excludedFolder, excludedFolder);
+			}
+		});
+	}
+	const folderName = folder.name;
+	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
+	let path = `${folder.path}/${fileName}${plugin.settings.folderNoteType}`;
+	if (plugin.settings.storageLocation === 'parentFolder') {
+		const parentFolderPath = folder.parent.path;
+		if (parentFolderPath.trim() === '') {
+			path = `${fileName}${plugin.settings.folderNoteType}`;
+		} else {
+			path = `${parentFolderPath}/${fileName}${plugin.settings.folderNoteType}`;
+		}
+	}
+	plugin.app.vault.rename(file, path);
+}
+
+export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractFile, evt?: MouseEvent) {
 	const path = file.path;
 	if (plugin.app.workspace.getActiveFile()?.path === path) { return; }
 	const leaf = plugin.app.workspace.getLeaf(Keymap.isModEvent(evt) || plugin.settings.openInNewTab);
