@@ -1,6 +1,6 @@
 import { Setting } from 'obsidian';
 import FolderNotesPlugin from './main';
-import ExcludedFolderSettings from './modals/exludeFolderSettings';
+import ExcludedFolderSettings from './modals/excludeFolderSettings';
 import { FolderSuggest } from './suggesters/FolderSuggester';
 import { SettingsTab } from './settings';
 import PatternSettings from './modals/patternSettings';

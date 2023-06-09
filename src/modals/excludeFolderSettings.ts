@@ -17,7 +17,7 @@ export default class ExcludedFolderSettings extends Modal {
 	display() {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl('h2', { text: 'Exluded folder settings' });
+		contentEl.createEl('h2', { text: 'Excluded folder settings' });
 		new Setting(contentEl)
 			.setName('Include subfolders')
 			.setDesc('Choose if the subfolders of the folder should also be excluded')

@@ -20,7 +20,7 @@ export default class PatternSettings extends Modal {
 		contentEl.createEl('h2', { text: 'Pattern settings' });
 		new Setting(contentEl)
 			.setName('Disable folder name sync')
-			.setDesc('Choose if the folder note should be renamed when the folder name is changed')
+			.setDesc('Choose if the folder name should be renamed when the file name has been changed')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.pattern.disableSync)
@@ -32,7 +32,7 @@ export default class PatternSettings extends Modal {
 
 		new Setting(contentEl)
 			.setName('Disable auto creation of folder notes in this folder')
-			.setDesc('Choose if a folder note should be created when a new folder is created')
+			.setDesc('Choose if a folder note should be created when a new folder is created that matches this pattern')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.pattern.disableAutoCreate)

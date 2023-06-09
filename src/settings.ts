@@ -367,6 +367,10 @@ export class SettingsTab extends PluginSettingTab {
 			'Use * after the folder name to exclude folders that start with the folder name.',
 		);
 		manageExcluded.setDesc(desc3);
+		manageExcluded.infoEl.appendText('The regexes and wildcards are only for the folder name, not the path.');
+		manageExcluded.infoEl.createEl('br');
+		manageExcluded.infoEl.appendText('If you want to switch to a folder path delete the pattern first.');
+		manageExcluded.infoEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
 		new Setting(containerEl)
 			.setName('Add excluded folder')
