@@ -54,7 +54,7 @@ export function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folde
 			excludedFolder.disableSync = true;
 			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
 		}
-		const newPath = `${folder.path}/${folder.name} (2)${plugin.settings.folderNoteType}`;
+		const newPath = `${folder.path}/${folder.name} (${file.stat.ctime.toString().slice(10) + Math.floor(Math.random() * 1000)})${plugin.settings.folderNoteType}`;
 		plugin.app.vault.rename(folderNote, newPath).then(() => {
 			if (!excludedFolder) { return; }
 			if (!excludedFolderExisted) {
