@@ -39,8 +39,9 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	modal.open();
 }
 
-export function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile) {
+export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile) {
 	if (folderNote) {
+		plugin.removeCSSClassFromEL(folderNote.path, 'is-folder-note');
 		let excludedFolder = getExcludedFolder(plugin, folder.path);
 		let excludedFolderExisted = true;
 		let disabledSync = false;
@@ -76,7 +77,9 @@ export function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folde
 			path = `${parentFolderPath}/${fileName}${plugin.settings.folderNoteType}`;
 		}
 	}
-	plugin.app.vault.rename(file, path);
+	await plugin.app.vault.rename(file, path);
+	plugin.addCSSClassToTitleEL(path, 'is-folder-note', true);
+	plugin.addCSSClassToTitleEL(folder.path, 'has-folder-note');
 }
 
 export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractFile, evt?: MouseEvent) {
