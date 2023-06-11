@@ -1,6 +1,6 @@
 import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView } from 'obsidian';
 import FolderNotesPlugin from './main';
-import { getFolderNote, createFolderNote, deleteFolderNote, getFolder, turnIntoFolderNote, openFolderNote } from './folderNoteFunctions';
+import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote } from './folderNoteFunctions';
 import { ExcludedFolder } from './excludedFolder';
 export class Commands {
 	plugin: FolderNotesPlugin;
@@ -11,7 +11,7 @@ export class Commands {
 	}
 	registerCommands() {
 		this.plugin.registerEvent(this.plugin.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
-			const text = editor.getSelection();
+			const text = editor.getSelection().trim();
 			if (!text || text.trim() === '') return;
 			menu.addItem((item) => {
 				item.setTitle('Create folder note')
@@ -49,15 +49,22 @@ export class Commands {
 							this.plugin.app.vault.createFolder(folderPath + '/' + text);
 							createFolderNote(this.plugin, folderPath + '/' + text, false);
 						}
-						editor.replaceSelection(`[[${text}]]`);
+						const fileName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', text);
+						if (fileName === text) {
+							editor.replaceSelection(`[[${fileName}]]`);
+						} else {
+							editor.replaceSelection(`[[${fileName}|${text}]]`);
+						}
 					});
 			});
 		}));
 		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
 			if (file instanceof TFile) {
-				const folder = getFolder(this.plugin, file, this.plugin.settings.storageLocation);
+				if (this.plugin.getFolderPathFromString(file.path) === '') return;
+				const folder = file.parent;
 				if (!(folder instanceof TFolder)) return;
 				const folderNote = getFolderNote(this.plugin, folder.path);
+				if (folderNote?.path === file.path) { return; }
 				menu.addItem((item) => {
 					item.setTitle('Turn into folder note')
 						.setIcon('edit')
