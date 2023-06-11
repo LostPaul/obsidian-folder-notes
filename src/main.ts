@@ -79,6 +79,14 @@ export default class FolderNotesPlugin extends Plugin {
 			this.removeCSSClassFromEL(parentPath, 'has-folder-note');
 		}));
 		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
+			if (file instanceof TFile) {
+				const folderName = extractFolderName(this.settings.folderNoteName, file.basename);
+				const folder = getFolder(this, file);
+				if (!folder) { return; }
+				if (folderName !== folder.name) { return; }
+				this.addCSSClassToTitleEL(folder.path, 'has-folder-note');
+				this.addCSSClassToTitleEL(file.path, 'is-folder-note');
+			}
 			if (!this.app.workspace.layoutReady) return;
 			if (!this.settings.autoCreate) return;
 			if (!(file instanceof TFolder)) return;
