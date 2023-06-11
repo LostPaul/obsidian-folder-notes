@@ -26,6 +26,10 @@ export class Commands {
 								return;
 							}
 						}
+						if (text.endsWith('.')) {
+							new Notice('File name cannot end with a dot');
+							return;
+						}
 						let folder: TAbstractFile | null;
 						const folderPath = this.plugin.getFolderPathFromString(file.path);
 						if (folderPath === '') {
