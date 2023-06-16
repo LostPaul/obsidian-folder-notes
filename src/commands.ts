@@ -64,6 +64,9 @@ export class Commands {
 		}));
 		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
 			if (file instanceof TFile) {
+				const folder = file.parent;
+				const folderNote = getFolderNote(this.plugin, folder.path);
+				if (folderNote?.path === file.path) { return; }
 				menu.addItem((item) => {
 					item.setTitle('Create folder note')
 						.setIcon('edit')
@@ -82,10 +85,7 @@ export class Commands {
 						});
 				});
 				if (this.plugin.getFolderPathFromString(file.path) === '') return;
-				const folder = file.parent;
 				if (!(folder instanceof TFolder)) return;
-				const folderNote = getFolderNote(this.plugin, folder.path);
-				if (folderNote?.path === file.path) { return; }
 				menu.addItem((item) => {
 					item.setTitle('Turn into folder note')
 						.setIcon('edit')
