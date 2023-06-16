@@ -64,6 +64,23 @@ export class Commands {
 		}));
 		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
 			if (file instanceof TFile) {
+				menu.addItem((item) => {
+					item.setTitle('Create folder note')
+						.setIcon('edit')
+						.onClick(async () => {
+							let newPath = file.parent.path + '/' + file.basename;
+							if (file.parent.path === '' || file.parent.path === '/') {
+								newPath = file.basename;
+							}
+							if (this.plugin.app.vault.getAbstractFileByPath(newPath)) {
+								return new Notice('Folder already exists');
+							}
+							await this.plugin.app.vault.createFolder(newPath);
+							const newFolder = this.plugin.app.vault.getAbstractFileByPath(newPath);
+							if (!(newFolder instanceof TFolder)) return;
+							createFolderNote(this.plugin, newFolder.path, true, false, file);
+						});
+				});
 				if (this.plugin.getFolderPathFromString(file.path) === '') return;
 				const folder = file.parent;
 				if (!(folder instanceof TFolder)) return;
@@ -74,16 +91,6 @@ export class Commands {
 						.setIcon('edit')
 						.onClick(() => {
 							turnIntoFolderNote(this.plugin, file, folder, folderNote);
-						});
-				});
-				menu.addItem((item) => {
-					item.setTitle('Create folder note')
-						.setIcon('edit')
-						.onClick(async () => {
-							await this.plugin.app.vault.createFolder(folder.path + '/' + file.basename);
-							const newFolder = this.plugin.app.vault.getAbstractFileByPath(folder.path + '/' + file.basename);
-							if (!(newFolder instanceof TFolder)) return;
-							createFolderNote(this.plugin, newFolder.path, true, false, file);
 						});
 				});
 			}
