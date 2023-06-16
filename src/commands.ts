@@ -76,6 +76,16 @@ export class Commands {
 							turnIntoFolderNote(this.plugin, file, folder, folderNote);
 						});
 				});
+				menu.addItem((item) => {
+					item.setTitle('Create folder note')
+						.setIcon('edit')
+						.onClick(async () => {
+							await this.plugin.app.vault.createFolder(folder.path + '/' + file.basename);
+							const newFolder = this.plugin.app.vault.getAbstractFileByPath(folder.path + '/' + file.basename);
+							if (!(newFolder instanceof TFolder)) return;
+							createFolderNote(this.plugin, newFolder.path, true, false, file);
+						});
+				});
 			}
 			if (!(file instanceof TFolder)) return;
 			if (this.plugin.settings.excludeFolders.find((folder) => folder.path === file.path)) {

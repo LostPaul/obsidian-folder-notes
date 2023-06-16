@@ -14,6 +14,7 @@ export interface FolderNotesSettings {
 	enableCollapsing: boolean;
 	excludeFolders: (ExcludePattern | ExcludedFolder)[];
 	showDeleteConfirmation: boolean;
+	showRenameConfirmation: boolean;
 	underlineFolder: boolean;
 	allowWhitespaceCollapsing: boolean;
 	underlineFolderInPath: boolean;
@@ -48,6 +49,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	newFolderNoteName: '{{folder_name}}',
 	storageLocation: 'insideFolder',
 	syncDelete: false,
+	showRenameConfirmation: true,
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
