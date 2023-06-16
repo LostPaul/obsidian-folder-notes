@@ -1,11 +1,12 @@
 import FolderNotesPlugin from './main';
 import FolderNameModal from './modals/folderName';
+import ExistingFolderNoteModal from './modals/existingNote';
 import { applyTemplate } from './template';
 import { TFolder, TFile, TAbstractFile, Keymap } from 'obsidian';
 import DeleteConfirmationModal from './modals/deleteConfirmation';
 import { addExcludedFolder, deleteExcludedFolder, getExcludedFolder, ExcludedFolder, updateExcludedFolder } from './excludedFolder';
 
-export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, useModal?: boolean) {
+export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, useModal?: boolean, existingNote?: TFile) {
 	const leaf = plugin.app.workspace.getLeaf(false);
 	const folderName = plugin.getFolderNameFromPathString(folderPath);
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
@@ -20,11 +21,17 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	} else if (plugin.settings.storageLocation === 'vaultFolder') {
 		path = `${fileName}${plugin.settings.folderNoteType}`;
 	}
-	const file = await plugin.app.vault.create(path, '');
+	let file: TFile;
+	if (!existingNote) {
+		file = await plugin.app.vault.create(path, '');
+	} else {
+		file = existingNote;
+		plugin.app.vault.rename(existingNote, path);
+	}
 	if (openFile) {
 		await leaf.openFile(file);
 	}
-	if (file) {
+	if (file && !existingNote) {
 		applyTemplate(this, file, plugin.settings.templatePath);
 	}
 
@@ -39,8 +46,11 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	modal.open();
 }
 
-export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile) {
+export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile, skipConfirmation?: boolean) {
 	if (folderNote) {
+		if (plugin.settings.showRenameConfirmation && !skipConfirmation) {
+			return new ExistingFolderNoteModal(plugin.app, plugin, file, folder, folderNote).open();
+		}
 		plugin.removeCSSClassFromEL(folderNote.path, 'is-folder-note');
 		let excludedFolder = getExcludedFolder(plugin, folder.path);
 		let excludedFolderExisted = true;
