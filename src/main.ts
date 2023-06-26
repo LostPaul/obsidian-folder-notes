@@ -1,4 +1,4 @@
-import { Plugin, TFile, TFolder, TAbstractFile } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings';
 import { Commands } from './commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
@@ -6,6 +6,8 @@ import { handleViewHeaderClick, handleFolderClick } from './events/handleClick';
 import { handleFileRename, handleFolderRename } from './events/handleRename';
 import { createFolderNote, extractFolderName, getFolderNote, getFolder } from './folderNoteFunctions';
 import { getExcludedFolder } from './excludedFolder';
+// import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
+import { createOverview as createFolderOverview } from './folderOverview';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -28,6 +30,8 @@ export default class FolderNotesPlugin extends Plugin {
 		if (!this.settings.allowWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
 
 		new Commands(this.app, this).registerCommands();
+
+		// new FrontMatterTitlePluginHandler(this.app, this);
 
 		this.observer = new MutationObserver((mutations: MutationRecord[]) => {
 			mutations.forEach((rec) => {
@@ -140,6 +144,9 @@ export default class FolderNotesPlugin extends Plugin {
 			this.app.vault.delete(folderNote);
 		}));
 
+		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+			createFolderOverview(this, source, el, ctx);
+		});
 		if (this.app.workspace.layoutReady) {
 			this.loadFileClasses();
 		} else {

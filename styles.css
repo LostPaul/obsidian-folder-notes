@@ -104,3 +104,18 @@
 .is-phone .fn-delete-confirmation-modal-buttons .fn-confirmation-modal-button {
     margin-top: 10px;
 }
+
+.folder-overview-list {
+    margin-top : 0;
+    margin-bottom: 0;
+    padding-bottom: 1.200;
+    padding-top: 1.200;
+}
+
+.folder-overview-list::marker {
+    color: var(--text-faint);
+}
+
+.folder-list::marker {
+    color: var(--text-normal) !important;
+}

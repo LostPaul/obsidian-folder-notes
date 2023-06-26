@@ -80,7 +80,8 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
 	let path = `${folder.path}/${fileName}${plugin.settings.folderNoteType}`;
 	if (plugin.settings.storageLocation === 'parentFolder') {
-		const parentFolderPath = folder.parent.path;
+		const parentFolderPath = folder.parent?.path;
+		if (!parentFolderPath) return;
 		if (parentFolderPath.trim() === '') {
 			path = `${fileName}${plugin.settings.folderNoteType}`;
 		} else {
