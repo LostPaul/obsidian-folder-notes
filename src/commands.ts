@@ -1,6 +1,6 @@
 import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView } from 'obsidian';
 import FolderNotesPlugin from './main';
-import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote } from './folderNoteFunctions';
+import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './excludedFolder';
 export class Commands {
 	plugin: FolderNotesPlugin;
@@ -65,14 +65,15 @@ export class Commands {
 		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
 			if (file instanceof TFile) {
 				const folder = file.parent;
+				if (folder === null) return;
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				if (folderNote?.path === file.path) { return; }
 				menu.addItem((item) => {
 					item.setTitle('Create folder note')
 						.setIcon('edit')
 						.onClick(async () => {
-							let newPath = file.parent.path + '/' + file.basename;
-							if (file.parent.path === '' || file.parent.path === '/') {
+							let newPath = file.parent?.path + '/' + file.basename;
+							if (!(file.parent instanceof TFolder) || file.parent.path === '' || file.parent.path === '/') {
 								newPath = file.basename;
 							}
 							if (this.plugin.app.vault.getAbstractFileByPath(newPath)) {

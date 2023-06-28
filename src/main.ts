@@ -1,13 +1,15 @@
-import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings';
 import { Commands } from './commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
 import { handleViewHeaderClick, handleFolderClick } from './events/handleClick';
 import { handleFileRename, handleFolderRename } from './events/handleRename';
-import { createFolderNote, extractFolderName, getFolderNote, getFolder } from './folderNoteFunctions';
+import { createFolderNote, extractFolderName, getFolderNote, getFolder } from './functions/folderNoteFunctions';
 import { getExcludedFolder } from './excludedFolder';
 // import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
 import { createOverview as createFolderOverview } from './folderOverview';
+import { FolderOverviewSettings } from './modals/folderOverview';
+import './functions/ListComponent';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -143,8 +145,22 @@ export default class FolderNotesPlugin extends Plugin {
 			if (!this.settings.syncDelete) { return; }
 			this.app.vault.delete(folderNote);
 		}));
-
 		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+			const observer = new MutationObserver(() => {
+				const editButton = el.parentElement?.childNodes.item(1);
+				if (editButton) {
+					editButton.addEventListener('click', (e) => {
+						e.stopImmediatePropagation();
+						e.preventDefault();
+						e.stopPropagation();
+						new FolderOverviewSettings(this.app, this, parseYaml(source), ctx, el).open();
+					}, { capture: true });
+				}
+			});
+			observer.observe(el, {
+				childList: true,
+				subtree: true,
+			});
 			createFolderOverview(this, source, el, ctx);
 		});
 		if (this.app.workspace.layoutReady) {

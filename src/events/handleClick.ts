@@ -1,6 +1,6 @@
 import { Keymap } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
-import { openFolderNote, createFolderNote, getFolderNote } from 'src/folderNoteFunctions';
+import { openFolderNote, createFolderNote, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getExcludedFolder } from 'src/excludedFolder';
 export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNotesPlugin) {
 	if (!(event.target instanceof HTMLElement)) return;

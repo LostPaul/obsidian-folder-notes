@@ -40,6 +40,10 @@
     display: none;
 }
 
+.hide-folder .folder-name {
+    display: none;
+}
+
 .nav-folder-collapse-indicator:hover {
     cursor: pointer;
 }
@@ -106,11 +110,16 @@
 }
 
 .folder-overview-list {
-    margin-top : 0;
-    margin-bottom: 0;
-    padding-bottom: 1.200;
-    padding-top: 1.200;
+    margin-top : 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 1.200 !important;
+    padding-top: 1.200  !important;
 }
+
+.folder-overview-list-item {
+    display: flex;
+}
+
 
 .folder-overview-list::marker {
     color: var(--text-faint);

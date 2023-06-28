@@ -1,6 +1,6 @@
 import { TFile, TFolder, TAbstractFile, Notice } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
-import { extractFolderName, getFolderNote } from '../folderNoteFunctions';
+import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctions';
 import { getExcludedFolder } from '../excludedFolder';
 export function handleFolderRename(file: TFolder, oldPath: string, plugin: FolderNotesPlugin) {
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', file.name);

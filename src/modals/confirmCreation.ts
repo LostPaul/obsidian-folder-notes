@@ -1,6 +1,6 @@
 import { App, Modal, Setting, TFolder } from 'obsidian';
 import FolderNotesPlugin from '../main';
-import { createFolderNote } from 'src/folderNoteFunctions';
+import { createFolderNote } from 'src/functions/folderNoteFunctions';
 export default class ConfirmationModal extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;

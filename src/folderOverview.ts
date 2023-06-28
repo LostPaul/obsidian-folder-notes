@@ -1,6 +1,16 @@
 import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile } from 'obsidian';
-import { getFolderNote } from './folderNoteFunctions';
+import { getFolderNote } from './functions/folderNoteFunctions';
 import FolderNotesPlugin from './main';
+export type yamlSettings = {
+	title?: string;
+	disableTitle?: boolean;
+	depth?: number;
+	type?: 'folder' | 'markdown' | 'canvas';
+	includeTypes?: string[];
+	style?: 'list' | 'grid';
+	disableCanvasTag?: boolean;
+};
+
 export function createCanvasOverview() {
 	// console.log('test');
 }
@@ -9,9 +19,20 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 	// parse source to yaml
 	const yaml = parseYaml(source);
 	const depth = yaml?.depth || 1;
-	const title = yaml?.title || 'Overview';
-	const type: 'folder' | 'markdown' | 'canvas' = yaml?.type.trim() || 'markdown';
-	const style: 'list' | 'grid' = yaml?.style || 'grid';
+	const title = yaml?.title || plugin.settings.defaultOverview.title || 'Folder overview';
+	const disableTitle = yaml?.disableTitle || plugin.settings.defaultOverview.disableTitle || false;
+	let includeTypes: string[] = yaml?.includeTypes || plugin.settings.defaultOverview.includeTypes || ['folder', 'markdown'];
+	includeTypes = includeTypes.map((type) => type.toLowerCase());
+	const style: 'list' | 'grid' = yaml?.style || 'list';
+	const disableCanvasTag = yaml?.disableCanvasTag || plugin.settings.defaultOverview.disableCanvasTag || false;
+
+	const root = el.createEl('div', { cls: 'folder-overview' });
+	const titleEl = root.createEl('h1', { cls: 'folder-overview-title' });
+	const ul = root.createEl('ul', { cls: 'folder-overview-list' });
+	if (!disableTitle) {
+		titleEl.innerText = title;
+	}
+	if (includeTypes.length === 0) { return; }
 	let files: TAbstractFile[] = [];
 	const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
 	if (!sourceFile) return;
@@ -25,13 +46,6 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 	}
 
 	files = sourceFolder.children;
-	if (type === 'folder') {
-		files = files.filter((file) => file instanceof TFolder);
-	} else if (type === 'canvas') {
-		files = files.filter((file) => file instanceof TFolder || file.name.endsWith('.canvas'));
-	} else if (type === 'markdown') {
-		files = files.filter((file) => file instanceof TFolder || file.name.endsWith('.md'));
-	}
 
 	files = files.filter((file) => {
 		const folderPath = plugin.getFolderPathFromString(file.path);
@@ -41,13 +55,11 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 			return true;
 		}
 	});
+	if (!includeTypes.includes('folder')) {
+		files = getAllFiles(files, sourceFolderPath, depth);
+	}
 	files = sortFiles(files);
 
-
-	const root = el.createEl('div', { cls: 'folder-overview' });
-	const titleEl = root.createEl('h1', { cls: 'folder-overview-title' });
-	const ul = root.createEl('ul', { cls: 'folder-overview-list' });
-	titleEl.innerText = title;
 	if (style === 'grid') {
 		const grid = root.createEl('div', { cls: 'folder-overview-grid' });
 		files.forEach((file) => {
@@ -61,23 +73,10 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 		const pathBlacklist: string[] = [];
 		files.forEach((file) => {
 			if (file instanceof TFolder) {
-				const folderItem = ul.createEl('li', { cls: 'folder-overview-list folder-list' });
-				const folderNote = getFolderNote(plugin, file.path);
-				if (folderNote instanceof TFile) {
-					const folderNoteLink = folderItem.createEl('a', { cls: 'folder-overview-list-item folder-name-item internal-link', href: folderNote.path });
-					folderNoteLink.innerText = file.name;
-					pathBlacklist.push(folderNote.path);
-				} else {
-					const folderName = folderItem.createEl('span', { cls: 'folder-overview-list-item folder-name-item' });
-					folderName.innerText = file.name;
-				}
-				goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist);
+				const folderItem = addFolderList(plugin, ul, pathBlacklist, file);
+				goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist, includeTypes, disableCanvasTag);
 			} else if (file instanceof TFile) {
-				if (type === 'canvas' && !file.name.endsWith('.canvas')) return;
-				if (pathBlacklist.includes(file.path)) return;
-				const listItem = root.createEl('li', { cls: 'folder-overview-list' });
-				const link = listItem.createEl('a', { cls: 'internal-link', href: file.path });
-				link.innerText = file.name.replace('.md', '').replace('.canvas', '');
+				addFileList(plugin, ul, pathBlacklist, file, includeTypes, disableCanvasTag);
 			}
 		});
 	} else if (style === 'explorer') {
@@ -93,11 +92,13 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 		root.appendChild(folderElement);
 		*/
 	}
-	removeEmptyFolders(ul);
+	if (includeTypes.length > 1) {
+		removeEmptyFolders(ul);
+	}
 }
 
-function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement, folder: TFolder,
-	depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: any = {}, pathBlacklist: string[]) {
+function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLUListElement, folder: TFolder,
+	depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: yamlSettings, pathBlacklist: string[], includeTypes: string[], disableCanvasTag: boolean) {
 	let files = folder.children.filter((file) => {
 		const folderPath = plugin.getFolderPathFromString(file.path);
 		if (!folderPath.startsWith(sourceFolderPath)) { return false; }
@@ -105,36 +106,14 @@ function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement, folder
 			return true;
 		}
 	});
-
-	const type: 'folder' | 'markdown' | 'canvas' = yaml?.type || 'markdown';
-	if (type === 'folder') {
-		files = files.filter((file) => file instanceof TFolder);
-	} else if (type === 'canvas') {
-		files = files.filter((file) => file instanceof TFolder || file.name.endsWith('.canvas'));
-	} else if (type === 'markdown') {
-		files = files.filter((file) => file instanceof TFolder || file.name.endsWith('.md'));
-	}
 	files = sortFiles(files);
 	const ul = list.createEl('ul', { cls: 'folder-overview-list' });
 	files.forEach((file) => {
 		if (file instanceof TFolder) {
-			const folderItem = ul.createEl('li', { cls: 'folder-overview-list folder-list' });
-			const folderNote = getFolderNote(plugin, file.path);
-			if (folderNote instanceof TFile) {
-				const folderNoteLink = folderItem.createEl('a', { cls: 'folder-overview-list-item folder-name-item internal-link', href: folderNote.path });
-				folderNoteLink.innerText = file.name;
-				pathBlacklist.push(folderNote.path);
-			} else {
-				const folderName = folderItem.createEl('span', { cls: 'folder-overview-list-item folder-name-item' });
-				folderName.innerText = file.name;
-			}
-			goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist);
+			const folderItem = addFolderList(plugin, ul, pathBlacklist, file);
+			goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist, includeTypes, disableCanvasTag);
 		} else if (file instanceof TFile) {
-			if (type === 'canvas' && !file.name.endsWith('.canvas')) return;
-			if (pathBlacklist.includes(file.path)) return;
-			const listItem = ul.createEl('li', { cls: 'folder-overview-list' });
-			const link = listItem.createEl('a', { cls: 'internal-link', href: file.path });
-			link.innerText = file.name.replace('.md', '').replace('.canvas', '');
+			addFileList(plugin, ul, pathBlacklist, file, includeTypes, disableCanvasTag);
 		}
 	});
 }
@@ -173,4 +152,47 @@ function removeEmptyFolders(ul: HTMLUListElement | HTMLLIElement) {
 	childrensToRemove.forEach((el) => {
 		el.remove();
 	});
+}
+
+function addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], folder: TFolder) {
+	const folderItem = list.createEl('li', { cls: 'folder-overview-list folder-list' });
+	const folderNote = getFolderNote(plugin, folder.path);
+	if (folderNote instanceof TFile) {
+		const folderNoteLink = folderItem.createEl('a', { cls: 'folder-overview-list-item folder-name-item internal-link', href: folderNote.path });
+		folderNoteLink.innerText = folder.name;
+		pathBlacklist.push(folderNote.path);
+	} else {
+		const folderName = folderItem.createEl('span', { cls: 'folder-overview-list-item folder-name-item' });
+		folderName.innerText = folder.name;
+	}
+	return folderItem;
+}
+
+function addFileList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], file: TFile, includeTypes: string[], disableCanvasTag: boolean) {
+	if (includeTypes.length > 0) {
+		if (file.extension === 'md' && !includeTypes.includes('markdown')) return;
+		if (file.extension === 'canvas' && !includeTypes.includes('canvas')) return;
+	}
+	if (pathBlacklist.includes(file.path)) return;
+	const listItem = list.createEl('li', { cls: 'folder-overview-list file-link' });
+	const nameItem = listItem.createEl('div', { cls: 'folder-overview-list-item' });
+	const link = nameItem.createEl('a', { cls: 'internal-link', href: file.path });
+	link.innerText = file.name.replace('.md', '').replace('.canvas', '');
+	if (file.extension === 'canvas' && !disableCanvasTag) {
+		nameItem.createDiv({ cls: 'nav-file-tag' }).innerText = 'canvas';
+	}
+}
+
+function getAllFiles(files: TAbstractFile[], sourceFolderPath: string, depth: number) {
+	const allFiles: TAbstractFile[] = [];
+	files.forEach((file) => {
+		if (file instanceof TFolder) {
+			if ((file.path.split('/').length - sourceFolderPath.split('/').length) - 1 < depth -1) {
+				allFiles.push(...getAllFiles(file.children, sourceFolderPath, depth));
+			}
+		} else {
+			allFiles.push(file);
+		}
+	});
+	return allFiles;
 }

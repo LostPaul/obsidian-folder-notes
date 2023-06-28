@@ -1,10 +1,10 @@
-import FolderNotesPlugin from './main';
-import FolderNameModal from './modals/folderName';
-import ExistingFolderNoteModal from './modals/existingNote';
-import { applyTemplate } from './template';
+import FolderNotesPlugin from '../main';
+import FolderNameModal from '../modals/folderName';
+import ExistingFolderNoteModal from '../modals/existingNote';
+import { applyTemplate } from '../template';
 import { TFolder, TFile, TAbstractFile, Keymap } from 'obsidian';
-import DeleteConfirmationModal from './modals/deleteConfirmation';
-import { addExcludedFolder, deleteExcludedFolder, getExcludedFolder, ExcludedFolder, updateExcludedFolder } from './excludedFolder';
+import DeleteConfirmationModal from '../modals/deleteConfirmation';
+import { addExcludedFolder, deleteExcludedFolder, getExcludedFolder, ExcludedFolder, updateExcludedFolder } from '../excludedFolder';
 
 export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, useModal?: boolean, existingNote?: TFile) {
 	const leaf = plugin.app.workspace.getLeaf(false);
