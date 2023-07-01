@@ -15,11 +15,22 @@ declare module 'obsidian' {
 	interface Vault {
 		getConfig: (config: string) => unknown;
 	}
+	interface Setting {
+		createList: (list: ListComponent | ((list: ListComponent) => void)) => ListComponent;
+	}
+
+	class ListComponent {
+		containerEl: HTMLElement;
+		emptyStateEl: HTMLElement;
+		listEl: HTMLElement;
+		values: string[];
+		constructor(containerEl: HTMLElement);
+	}
 }
 
 interface FileExplorerWorkspaceLeaf extends WorkspaceLeaf {
-  containerEl: HTMLElement;
-  view: FileExplorerView;
+	containerEl: HTMLElement;
+	view: FileExplorerView;
 }
 
 interface FileExplorerViewFileItem extends TAbstractFile {
@@ -28,5 +39,5 @@ interface FileExplorerViewFileItem extends TAbstractFile {
 }
 
 interface FileExplorerView extends View {
-  fileItems: { [path: string]: FileExplorerViewFileItem };
+	fileItems: { [path: string]: FileExplorerViewFileItem };
 }

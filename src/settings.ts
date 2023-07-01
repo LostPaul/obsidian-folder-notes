@@ -1,9 +1,10 @@
 import { App, Notice, Platform, PluginSettingTab, Setting, TFile, TFolder } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { TemplateSuggest } from './suggesters/templateSuggester';
-import { extractFolderName, getFolderNote } from './folderNoteFunctions';
+import { extractFolderName, getFolderNote } from './functions/folderNoteFunctions';
 import { addExcludeFolderListItem, ExcludedFolder, addExcludedFolder, ExcludePattern, addExcludePatternListItem } from './excludedFolder';
 // import ConfirmationModal from "./modals/confirmCreation";
+import { yamlSettings } from './folderOverview';
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
 	ctrlKey: boolean;
@@ -26,6 +27,7 @@ export interface FolderNotesSettings {
 	disableFolderHighlighting: boolean;
 	storageLocation: 'insideFolder' | 'parentFolder' | 'vaultFolder';
 	syncDelete: boolean;
+	defaultOverview: yamlSettings;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -50,6 +52,14 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	storageLocation: 'insideFolder',
 	syncDelete: false,
 	showRenameConfirmation: true,
+	defaultOverview: {
+		title: 'Folder overview',
+		disableTitle: false,
+		depth: 3,
+		includeTypes: ['folder', 'markdown'],
+		style: 'list',
+		disableCanvasTag: false,
+	},
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
