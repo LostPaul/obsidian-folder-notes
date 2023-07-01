@@ -1,6 +1,6 @@
-import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView } from 'obsidian';
+import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform } from 'obsidian';
 import FolderNotesPlugin from './main';
-import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote } from './folderNoteFunctions';
+import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName } from './folderNoteFunctions';
 import { ExcludedFolder } from './excludedFolder';
 export class Commands {
 	plugin: FolderNotesPlugin;
@@ -63,22 +63,50 @@ export class Commands {
 			});
 		}));
 		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
-			menu.addItem((item) => {
-				item
-					.setTitle('Folder Note')
-					.setIcon('folder-edit');
-				// @ts-ignore
-				const subMenu = item.setSubmenu() as Menu;
-				if (file instanceof TFile) {
-					const folder = file.parent;
+			let folder: TAbstractFile | TFolder | null = file.parent;
+			if (file instanceof TFile) {
+				if (this.plugin.settings.storageLocation === 'insideFolder') {
+					folder = file.parent;
+				} else {
+					const fileName = extractFolderName(this.plugin.settings.folderNoteName, file.basename);
+					if (fileName) {
+						if (file.parent?.path === '' || file.parent?.path === '/') {
+							folder = this.plugin.app.vault.getAbstractFileByPath(fileName);
+						} else {
+							folder = this.plugin.app.vault.getAbstractFileByPath(file.parent?.path + '/' + fileName);
+						}
+					}
+				}
+				if (folder instanceof TFolder) {
 					const folderNote = getFolderNote(this.plugin, folder.path);
 					if (folderNote?.path === file.path) { return; }
+				} else if (file.parent instanceof TFolder) {
+					folder = file.parent;
+				}
+			}
+			menu.addItem((item) => {
+				if (Platform.isDesktop && !Platform.isTablet) {
+					item
+						.setTitle('Folder Note Commands')
+						.setIcon('folder-edit');
+				}
+				let subMenu: Menu;
+				if (!Platform.isDesktopApp || !Platform.isDesktop || Platform.isTablet) {
+					subMenu = menu;
+					item.setDisabled(true);
+				} else {
+					// @ts-ignore
+					subMenu = item.setSubmenu() as Menu;
+				}
+				if (file instanceof TFile) {
+					// @ts-ignore
 					subMenu.addItem((item) => {
 						item.setTitle('Create folder note')
 							.setIcon('edit')
 							.onClick(async () => {
-								let newPath = file.parent.path + '/' + file.basename;
-								if (file.parent.path === '' || file.parent.path === '/') {
+								if (!folder) return;
+								let newPath = folder.path + '/' + file.basename;
+								if (folder.path === '' || folder.path === '/') {
 									newPath = file.basename;
 								}
 								if (this.plugin.app.vault.getAbstractFileByPath(newPath)) {
@@ -96,6 +124,8 @@ export class Commands {
 						item.setTitle('Turn into folder note')
 							.setIcon('edit')
 							.onClick(() => {
+								if (!folder || !(folder instanceof TFolder)) return;
+								const folderNote = getFolderNote(this.plugin, folder.path);
 								turnIntoFolderNote(this.plugin, file, folder, folderNote);
 							});
 					});
