@@ -62,12 +62,27 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 
 	if (style === 'grid') {
 		const grid = root.createEl('div', { cls: 'folder-overview-grid' });
-		files.forEach((file) => {
+		files.forEach(async (file) => {
 			const gridItem = grid.createEl('div', { cls: 'folder-overview-grid-item' });
-			const link = gridItem.createEl('a', { cls: 'folder-overview-grid-item-link' });
-			link.innerText = file.name.replace('.md', '').replace('.canvas', '');
-			if (!(file instanceof TFile)) return;
-			link.href = plugin.app.fileManager.generateMarkdownLink(file, '', ctx.sourcePath);
+			const gridArticle = gridItem.createEl('article', { cls: 'folder-overview-grid-item-article' });
+			if (file instanceof TFile) {
+				const fileContent = await plugin.app.vault.read(file);
+				// skip --- yaml
+				const descriptionEl = gridArticle.createEl('p', { cls: 'folder-overview-grid-item-description' });
+				let description = fileContent.split('\n')[0];
+				if (description.length > 64) {
+					description = description.slice(0, 64) + '...';
+				}
+				descriptionEl.innerText = description;
+				const link = gridArticle.createEl('a', { cls: 'folder-overview-grid-item-link internal-link' });
+				const title = link.createEl('h1', { cls: 'folder-overview-grid-item-link-title' });
+				title.innerText = file.name.replace('.md', '').replace('.canvas', '');
+				link.href = file.path;
+			} else if (file instanceof TFolder) {
+				const folderItem = gridArticle.createEl('div', { cls: 'folder-overview-grid-item-folder' });
+				const folderName = folderItem.createEl('h1', { cls: 'folder-overview-grid-item-folder-name' });
+				folderName.innerText = file.name;
+			}
 		});
 	} else if (style === 'list') {
 		const pathBlacklist: string[] = [];
@@ -92,7 +107,7 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 		root.appendChild(folderElement);
 		*/
 	}
-	if (includeTypes.length > 1) {
+	if (includeTypes.length > 1 && style !== 'grid') {
 		removeEmptyFolders(ul);
 	}
 }
@@ -187,7 +202,7 @@ function getAllFiles(files: TAbstractFile[], sourceFolderPath: string, depth: nu
 	const allFiles: TAbstractFile[] = [];
 	files.forEach((file) => {
 		if (file instanceof TFolder) {
-			if ((file.path.split('/').length - sourceFolderPath.split('/').length) - 1 < depth -1) {
+			if ((file.path.split('/').length - sourceFolderPath.split('/').length) - 1 < depth - 1) {
 				allFiles.push(...getAllFiles(file.children, sourceFolderPath, depth));
 			}
 		} else {

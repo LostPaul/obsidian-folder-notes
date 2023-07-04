@@ -118,7 +118,6 @@ export class FolderOverviewSettings extends Modal {
 			.addDropdown((dropdown) =>
 				dropdown
 					.addOption('list', 'List')
-					.addOption('grid', 'Grid')
 					.setValue(this.yaml?.style || 'list')
 					.onChange(async (value: 'list') => {
 						this.yaml.style = value;
