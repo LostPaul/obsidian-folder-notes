@@ -1,6 +1,6 @@
 import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform } from 'obsidian';
 import FolderNotesPlugin from './main';
-import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName } from './folderNoteFunctions';
+import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './excludedFolder';
 export class Commands {
 	plugin: FolderNotesPlugin;
@@ -85,13 +85,13 @@ export class Commands {
 				}
 			}
 			menu.addItem((item) => {
-				if (Platform.isDesktop && !Platform.isTablet) {
+				if (Platform.isDesktop && !Platform.isTablet && this.plugin.settings.useSubmenus) {
 					item
 						.setTitle('Folder Note Commands')
 						.setIcon('folder-edit');
 				}
 				let subMenu: Menu;
-				if (!Platform.isDesktopApp || !Platform.isDesktop || Platform.isTablet) {
+				if (!Platform.isDesktopApp || !Platform.isDesktop || Platform.isTablet || !this.plugin.settings.useSubmenus) {
 					subMenu = menu;
 					item.setDisabled(true);
 				} else {

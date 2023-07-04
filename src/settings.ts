@@ -28,6 +28,7 @@ export interface FolderNotesSettings {
 	storageLocation: 'insideFolder' | 'parentFolder' | 'vaultFolder';
 	syncDelete: boolean;
 	defaultOverview: yamlSettings;
+	useSubmenus: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -60,6 +61,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		style: 'list',
 		disableCanvasTag: false,
 	},
+	useSubmenus: true,
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -254,6 +256,20 @@ export class SettingsTab extends PluginSettingTab {
 						this.display();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName('Use submenus')
+			.setDesc('Use submenus for file/folder commands')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.useSubmenus)
+					.onChange(async (value) => {
+						this.plugin.settings.useSubmenus = value;
+						await this.plugin.saveSettings();
+						this.display();
+					})
+			);
+
 		if (Platform.isDesktopApp) {
 			new Setting(containerEl)
 				.setName('Key for creating folder note')
