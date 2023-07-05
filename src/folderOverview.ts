@@ -9,6 +9,7 @@ export type yamlSettings = {
 	includeTypes?: string[];
 	style?: 'list' | 'grid';
 	disableCanvasTag?: boolean;
+	sortBy?: 'name' | 'created' | 'modified' | 'nameAsc' | 'createdAsc' | 'modifiedAsc';
 };
 
 export function createCanvasOverview() {
@@ -17,7 +18,19 @@ export function createCanvasOverview() {
 
 export function createOverview(plugin: FolderNotesPlugin, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 	// parse source to yaml
-	const yaml = parseYaml(source);
+	let yaml = parseYaml(source);
+	if (!yaml) {
+		yaml = {
+			title: plugin.settings.defaultOverview.title,
+			disableTitle: plugin.settings.defaultOverview.disableTitle,
+			depth: plugin.settings.defaultOverview.depth,
+			type: plugin.settings.defaultOverview.type,
+			includeTypes: plugin.settings.defaultOverview.includeTypes,
+			style: plugin.settings.defaultOverview.style,
+			disableCanvasTag: plugin.settings.defaultOverview.disableCanvasTag,
+			sortBy: plugin.settings.defaultOverview.sortBy,
+		};
+	}
 	const depth = yaml?.depth || 1;
 	const title = yaml?.title || plugin.settings.defaultOverview.title || 'Folder overview';
 	const disableTitle = yaml?.disableTitle || plugin.settings.defaultOverview.disableTitle || false;
@@ -58,7 +71,7 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 	if (!includeTypes.includes('folder')) {
 		files = getAllFiles(files, sourceFolderPath, depth);
 	}
-	files = sortFiles(files);
+	files = sortFiles(files, yaml, plugin);
 
 	if (style === 'grid') {
 		const grid = root.createEl('div', { cls: 'folder-overview-grid' });
@@ -121,7 +134,7 @@ function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLU
 			return true;
 		}
 	});
-	files = sortFiles(files);
+	files = sortFiles(files, yaml, plugin);
 	const ul = list.createEl('ul', { cls: 'folder-overview-list' });
 	files.forEach((file) => {
 		if (file instanceof TFolder) {
@@ -133,7 +146,10 @@ function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLU
 	});
 }
 
-function sortFiles(files: TAbstractFile[]) {
+function sortFiles(files: TAbstractFile[], yaml: yamlSettings, plugin: FolderNotesPlugin) {
+	if (!yaml?.sortBy) {
+		yaml.sortBy = plugin.settings.defaultOverview.sortBy || 'name';
+	}
 	return files.sort((a, b) => {
 		// sort by folder first
 		if (a instanceof TFolder && !(b instanceof TFolder)) {
@@ -142,11 +158,42 @@ function sortFiles(files: TAbstractFile[]) {
 		if (!(a instanceof TFolder) && b instanceof TFolder) {
 			return 1;
 		}
+		if (!(a instanceof TFile) || !(b instanceof TFile)) { return -1; }
+		if (yaml.sortBy === 'created') {
+			if (a.stat.ctime < b.stat.ctime) {
+				return -1;
+			} else if (a.stat.ctime > b.stat.ctime) {
+				return 1;
+			}
+		} else if (yaml.sortBy === 'createdAsc') {
+			if (a.stat.ctime > b.stat.ctime) {
+				return -1;
+			} else if (a.stat.ctime < b.stat.ctime) {
+				return 1;
+			}
+		} else if (yaml.sortBy === 'modified') {
+			if (a.stat.mtime < b.stat.mtime) {
+				return -1;
+			} else if (a.stat.mtime > b.stat.mtime) {
+				return 1;
+			}
+		} else if (yaml.sortBy === 'modifiedAsc') {
+			if (a.stat.mtime > b.stat.mtime) {
+				return -1;
+			} else if (a.stat.mtime < b.stat.mtime) {
+				return 1;
+			}
+		}
 		// sort by name
-		if (a.name < b.name) {
+		if (a.name < b.name && yaml.sortBy === 'name') {
+			return -1;
+		} else if (a.name > b.name && yaml.sortBy === 'nameAsc') {
 			return -1;
 		}
-		if (a.name > b.name) {
+
+		if (a.name > b.name && yaml.sortBy === 'name') {
+			return 1;
+		} else if (a.name < b.name && yaml.sortBy === 'nameAsc') {
 			return 1;
 		}
 		return 0;
