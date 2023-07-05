@@ -10,7 +10,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	const leaf = plugin.app.workspace.getLeaf(false);
 	const folderName = plugin.getFolderNameFromPathString(folderPath);
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
-	let path = `${folderPath}/${fileName}${plugin.settings.folderNoteType}`;
+	let path = '';
 	if (plugin.settings.storageLocation === 'parentFolder') {
 		const parentFolderPath = plugin.getFolderPathFromString(folderPath);
 		if (parentFolderPath.trim() === '') {
@@ -20,6 +20,8 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		}
 	} else if (plugin.settings.storageLocation === 'vaultFolder') {
 		path = `${fileName}${plugin.settings.folderNoteType}`;
+	} else {
+		path = `${folderPath}/${fileName}${plugin.settings.folderNoteType}`;
 	}
 	let file: TFile;
 	if (!existingNote) {
@@ -128,13 +130,16 @@ export function extractFolderName(template: string, changedFileName: string) {
 	return null;
 }
 
-export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, storageLocation?: string) {
+export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, storageLocation?: string, file?: TFile) {
 	if (!folderPath) return null;
 	const folder = {
 		path: folderPath,
 		name: plugin.getFolderNameFromPathString(folderPath),
 	};
-	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name);
+	let fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name);
+	if (file) {
+		fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', file.basename);
+	}
 
 	if ((plugin.settings.storageLocation === 'parentFolder' || storageLocation === 'parentFolder') && storageLocation !== 'insideFolder') {
 		folder.path = plugin.getFolderPathFromString(folderPath);
@@ -144,7 +149,6 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, sto
 		folder.path = fileName;
 		path = `${fileName}`;
 	}
-
 	let folderNote = plugin.app.vault.getAbstractFileByPath(path + plugin.settings.folderNoteType);
 	if (folderNote instanceof TFile) {
 		return folderNote;
@@ -174,6 +178,32 @@ export function getFolder(plugin: FolderNotesPlugin, file: TFile, storageLocatio
 	} else {
 		folder = plugin.app.vault.getAbstractFileByPath(folderPath);
 	}
+	if (!folder) { return null; }
+	return folder;
+}
+
+export function getFolderNoteFolder(plugin: FolderNotesPlugin, folderNote: TFile | string, fileName: string) {
+	if (!folderNote) return null;
+	let filePath = '';
+	if (typeof folderNote === 'string') {
+		filePath = folderNote;
+	} else {
+		fileName = folderNote.basename;
+		filePath = folderNote.path;
+	}
+	const folderName = extractFolderName(plugin.settings.folderNoteName, fileName);
+	if (!folderName) return null;
+	let folderPath = plugin.getFolderPathFromString(filePath);
+	if (plugin.settings.storageLocation === 'parentFolder') {
+		if (folderPath.trim() === '') {
+			folderPath = folderName;
+		} else {
+			folderPath = `${folderPath}/${folderName}`;
+		}
+	} else {
+		folderPath = plugin.getFolderPathFromString(filePath);
+	}
+	const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
 	if (!folder) { return null; }
 	return folder;
 }

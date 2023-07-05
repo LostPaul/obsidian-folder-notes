@@ -1,7 +1,7 @@
 import { TFile, TFolder, TAbstractFile, Notice } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
-import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctions';
-import { getExcludedFolder } from '../excludedFolder';
+import { extractFolderName, getFolderNote, getFolderNoteFolder } from '../functions/folderNoteFunctions';
+import { getExcludedFolder, ExcludedFolder, addExcludedFolder, updateExcludedFolder, deleteExcludedFolder } from '../excludedFolder';
 export function handleFolderRename(file: TFolder, oldPath: string, plugin: FolderNotesPlugin) {
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', file.name);
 	const folder = plugin.app.vault.getAbstractFileByPath(file.path);
@@ -36,7 +36,11 @@ export function handleFolderRename(file: TFolder, oldPath: string, plugin: Folde
 	let newPath = '';
 	if (plugin.settings.storageLocation === 'parentFolder') {
 		const parentFolderPath = plugin.getFolderPathFromString(file.path);
-		if (parentFolderPath.trim() === '') {
+		const oldParentFolderPath = plugin.getFolderPathFromString(oldPath);
+		if (parentFolderPath !== oldParentFolderPath) {
+			if (!plugin.settings.syncMove) { return; }
+			newPath = `${parentFolderPath}/${fileName}.${folderNote.extension}`;
+		} else if (parentFolderPath.trim() === '') {
 			folderNote.path = `${folderNote.name}`;
 			newPath = `${fileName}.${folderNote.extension}`;
 		} else {
@@ -51,15 +55,15 @@ export function handleFolderRename(file: TFolder, oldPath: string, plugin: Folde
 }
 
 export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNotesPlugin) {
-	const oldFileName = plugin.getFileNameFromPathString(oldPath);
-	const oldFilePath = plugin.getFolderPathFromString(oldPath);
-	const fileExtension = plugin.getExtensionFromPathString(oldPath);
-	const oldFolder = plugin.app.vault.getAbstractFileByPath(oldFilePath);
-	const newFilePath = plugin.getFolderPathFromString(file.path);
-	const newFolder = plugin.app.vault.getAbstractFileByPath(newFilePath);
-	const excludedFolder = getExcludedFolder(plugin, newFolder?.path || '');
+	const oldFileName = plugin.removeExtension(plugin.getFileNameFromPathString(oldPath));
+	const oldFolder = getFolderNoteFolder(plugin, oldPath, oldFileName);
+	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename) || file.basename;
+	const oldFolderName = extractFolderName(plugin.settings.folderNoteName, oldFileName) || oldFileName;
+	const newFolder = getFolderNoteFolder(plugin, file, file.basename);
+	let excludedFolder = getExcludedFolder(plugin, newFolder?.path || '');
+	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
 
-	if (excludedFolder?.disableSync && extractFolderName(plugin.settings.folderNoteName, file.name.slice(0, file.name.lastIndexOf('.'))) === newFolder?.name) {
+	if (excludedFolder?.disableSync && folderName === newFolder?.name) {
 		plugin.addCSSClassToTitleEL(file.path, 'is-folder-note');
 		plugin.addCSSClassToTitleEL(newFolder.path, 'has-folder-note');
 		return;
@@ -70,9 +74,34 @@ export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNot
 	}
 
 	// file has been moved into position where it can be a folder note!
-	if (extractFolderName(plugin.settings.folderNoteName, file.name.slice(0, file.name.lastIndexOf('.'))) === newFolder?.name) {
+	if (folderName === newFolder?.name && folderNote) {
+		new Notice('Folder with same name already exists!');
+		let excludedFolderExisted = true;
+		let disabledSync = false;
+
+		if (!excludedFolder) {
+			excludedFolderExisted = false;
+			excludedFolder = new ExcludedFolder(oldFolder?.path || '', plugin.settings.excludeFolders.length);
+			addExcludedFolder(plugin, excludedFolder);
+		} else if (!excludedFolder.disableSync) {
+			disabledSync = false;
+			excludedFolder.disableSync = true;
+			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
+		}
+		return plugin.app.vault.rename(file, oldPath).then(() => {
+			if (!excludedFolder) { return; }
+			if (!excludedFolderExisted) {
+				deleteExcludedFolder(plugin, excludedFolder);
+			} else if (!disabledSync) {
+				excludedFolder.disableSync = false;
+				updateExcludedFolder(plugin, excludedFolder, excludedFolder);
+			}
+		});
+	}
+	if (folderName === newFolder?.name) {
 		plugin.addCSSClassToTitleEL(file.path, 'is-folder-note');
 		plugin.addCSSClassToTitleEL(newFolder.path, 'has-folder-note');
+		plugin.removeCSSClassFromEL(oldFolder?.path, 'has-folder-note');
 		return;
 	}
 
@@ -80,15 +109,15 @@ export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNot
 	// file hasnt moved just renamed
 	// Need to rename the folder
 	if (!oldFolder) return;
-	if (plugin.settings.folderNoteName.replace('{{folder_name}}', oldFolder.name) + fileExtension === oldFileName && newFilePath === oldFilePath) {
+	if (oldFolderName === oldFolder.name && newFolder?.path === oldFolder.path) {
 		return renameFolderOnFileRename(file, oldPath, oldFolder, plugin);
-	} else if (plugin.settings.folderNoteName.replace('{{folder_name}}', oldFolder.name) + fileExtension === file.name && newFilePath === oldFilePath) {
+	} else if (folderNote && oldFolderName === oldFolder.name) {
 		return renameFolderOnFileRename(file, oldPath, oldFolder, plugin);
 	}
 
 	// the note has been moved somewhere and is no longer a folder note
 	// cleanup css on the folder and note
-	if (oldFolder.name + plugin.getExtensionFromPathString(oldFilePath) === oldFileName && newFilePath !== oldFilePath) {
+	if (oldFolder.name === oldFileName && newFolder?.path !== oldFolder.path) {
 		plugin.removeCSSClassFromEL(oldFolder.path, 'has-folder-note');
 		plugin.removeCSSClassFromEL(file.path, 'is-folder-note');
 		plugin.removeCSSClassFromEL(oldPath, 'is-folder-note');
@@ -106,7 +135,17 @@ async function renameFolderOnFileRename(file: TFile, oldPath: string, oldFolder:
 		plugin.addCSSClassToTitleEL(file.path, 'is-folder-note');
 		return;
 	}
-	const newFolderPath = oldFolder.parent.path + '/' + extractFolderName(plugin.settings.folderNoteName, file.basename);
+	let newFolderPath = '';
+	if (plugin.settings.storageLocation === 'insideFolder') {
+		newFolderPath = oldFolder.parent?.path + '/' + newFolderName;
+	} else {
+		const parentFolderPath = plugin.getFolderPathFromString(file.path);
+		if (parentFolderPath.trim() === '') {
+			newFolderPath = `${newFolderName}`;
+		} else {
+			newFolderPath = `${parentFolderPath}/${newFolderName}`;
+		}
+	}
 	if (plugin.app.vault.getAbstractFileByPath(newFolderPath) || plugin.app.vault.getAbstractFileByPath(newFolderName || '')) {
 		await plugin.app.vault.rename(file, oldPath);
 		return new Notice('A folder with the same name already exists');

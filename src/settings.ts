@@ -29,6 +29,7 @@ export interface FolderNotesSettings {
 	syncDelete: boolean;
 	defaultOverview: yamlSettings;
 	useSubmenus: boolean;
+	syncMove: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -62,6 +63,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		disableCanvasTag: false,
 	},
 	useSubmenus: true,
+	syncMove: true,
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -161,6 +163,18 @@ export class SettingsTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.syncDelete)
 						.onChange(async (value) => {
 							this.plugin.settings.syncDelete = value;
+							await this.plugin.saveSettings();
+						}
+						)
+				);
+			new Setting(containerEl)
+				.setName('Move folder notes when moving the folder')
+				.setDesc('Move the folder note when moving the folder')
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.syncMove)
+						.onChange(async (value) => {
+							this.plugin.settings.syncMove = value;
 							await this.plugin.saveSettings();
 						}
 						)

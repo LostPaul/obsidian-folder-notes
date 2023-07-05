@@ -182,6 +182,10 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 	}
 
+	removeExtension(name: string): string {
+		return name.replace(/\.[^/.]+$/, '');
+	}
+
 	getExtensionFromPathString(path: string): string {
 		return path.slice(path.lastIndexOf('.') >= 0 ? path.lastIndexOf('.') : 0);
 	}
@@ -224,7 +228,8 @@ export default class FolderNotesPlugin extends Plugin {
 		});
 	}
 
-	removeCSSClassFromEL(path: string, cssClass: string) {
+	removeCSSClassFromEL(path: string | undefined, cssClass: string) {
+		if (!path) return;
 		const fileExplorerItem = this.getEL(path);
 		const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);
 		viewHeaderItems.forEach((item) => {
