@@ -1,5 +1,4 @@
 import FolderNotesPlugin from '../main';
-import FolderNameModal from '../modals/folderName';
 import ExistingFolderNoteModal from '../modals/existingNote';
 import { applyTemplate } from '../template';
 import { TFolder, TFile, TAbstractFile, Keymap } from 'obsidian';
@@ -41,11 +40,6 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	if (!(folder instanceof TFolder)) return;
 	plugin.addCSSClassToTitleEL(path, 'is-folder-note', true);
 	plugin.addCSSClassToTitleEL(folder.path, 'has-folder-note');
-
-	if (!plugin.settings.autoCreate) return;
-	if (!useModal) return;
-	const modal = new FolderNameModal(plugin.app, plugin, folder);
-	modal.open();
 }
 
 export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile, skipConfirmation?: boolean) {
