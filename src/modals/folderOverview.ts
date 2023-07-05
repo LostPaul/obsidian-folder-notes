@@ -15,6 +15,18 @@ export class FolderOverviewSettings extends Modal {
 		this.yaml = yaml;
 		this.ctx = ctx;
 		this.el = el;
+		if (!this.yaml) {
+			this.yaml = {
+				title: this.plugin.settings.defaultOverview.title,
+				disableTitle: this.plugin.settings.defaultOverview.disableTitle,
+				depth: this.plugin.settings.defaultOverview.depth,
+				type: this.plugin.settings.defaultOverview.type,
+				includeTypes: this.plugin.settings.defaultOverview.includeTypes,
+				style: this.plugin.settings.defaultOverview.style,
+				disableCanvasTag: this.plugin.settings.defaultOverview.disableCanvasTag,
+				sortBy: this.plugin.settings.defaultOverview.sortBy,
+			};
+		}
 	}
 	onOpen() {
 		this.display();
@@ -121,6 +133,24 @@ export class FolderOverviewSettings extends Modal {
 					.setValue(this.yaml?.style || 'list')
 					.onChange(async (value: 'list') => {
 						this.yaml.style = value;
+						await this.updateYaml();
+					})
+			);
+
+		new Setting(contentEl)
+			.setName('Sort files by')
+			.setDesc('Choose how the files should be sorted')
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption('name', 'Name descending')
+					.addOption('created', 'Created descending')
+					.addOption('modified', 'Modified descending')
+					.addOption('nameAsc', 'Name ascending')
+					.addOption('createdAsc', 'Created ascending')
+					.addOption('modifiedAsc', 'Modified ascending')
+					.setValue(this.yaml?.sortBy || 'name')
+					.onChange(async (value: 'name' | 'created' | 'modified' | 'nameAsc' | 'createdAsc' | 'modifiedAsc') => {
+						this.yaml.sortBy = value;
 						await this.updateYaml();
 					})
 			);
