@@ -163,27 +163,27 @@ function sortFiles(files: TAbstractFile[], yaml: yamlSettings, plugin: FolderNot
 		}
 		if (!(a instanceof TFile) || !(b instanceof TFile)) { return -1; }
 		if (yaml.sortBy === 'created') {
-			if (a.stat.ctime < b.stat.ctime) {
-				return -1;
-			} else if (a.stat.ctime > b.stat.ctime) {
-				return 1;
-			}
-		} else if (yaml.sortBy === 'createdAsc') {
 			if (a.stat.ctime > b.stat.ctime) {
 				return -1;
 			} else if (a.stat.ctime < b.stat.ctime) {
 				return 1;
 			}
-		} else if (yaml.sortBy === 'modified') {
-			if (a.stat.mtime < b.stat.mtime) {
+		} else if (yaml.sortBy === 'createdAsc') {
+			if (a.stat.ctime < b.stat.ctime) {
 				return -1;
-			} else if (a.stat.mtime > b.stat.mtime) {
+			} else if (a.stat.ctime > b.stat.ctime) {
 				return 1;
 			}
-		} else if (yaml.sortBy === 'modifiedAsc') {
+		} else if (yaml.sortBy === 'modified') {
 			if (a.stat.mtime > b.stat.mtime) {
 				return -1;
 			} else if (a.stat.mtime < b.stat.mtime) {
+				return 1;
+			}
+		} else if (yaml.sortBy === 'modifiedAsc') {
+			if (a.stat.mtime < b.stat.mtime) {
+				return -1;
+			} else if (a.stat.mtime > b.stat.mtime) {
 				return 1;
 			}
 		}
