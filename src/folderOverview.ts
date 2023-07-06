@@ -127,6 +127,9 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 
 function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLUListElement, folder: TFolder,
 	depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: yamlSettings, pathBlacklist: string[], includeTypes: string[], disableCanvasTag: boolean) {
+	if (sourceFolderPath === '') {
+		depth--;
+	}
 	let files = folder.children.filter((file) => {
 		const folderPath = plugin.getFolderPathFromString(file.path);
 		if (!folderPath.startsWith(sourceFolderPath)) { return false; }

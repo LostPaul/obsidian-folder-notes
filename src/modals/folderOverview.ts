@@ -116,7 +116,7 @@ export class FolderOverviewSettings extends Modal {
 			.setDesc('File & folder = +1 depth')
 			.addSlider((slider) =>
 				slider
-					.setValue(this.yaml?.depth || 1)
+					.setValue(this.yaml?.depth || 2)
 					.setLimits(1, 10, 1)
 					.onChange(async (value) => {
 						this.yaml.depth = value;
