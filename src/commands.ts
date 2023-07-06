@@ -12,6 +12,13 @@ export class Commands {
 	registerCommands() {
 		this.plugin.registerEvent(this.plugin.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
 			const text = editor.getSelection().trim();
+			menu.addItem((item) => {
+				item.setTitle('Create folder overview')
+					.setIcon('edit')
+					.onClick(() => {
+						editor.replaceSelection('```folder-overview\n```\n');
+					});
+			});
 			if (!text || text.trim() === '') return;
 			menu.addItem((item) => {
 				item.setTitle('Create folder note')
