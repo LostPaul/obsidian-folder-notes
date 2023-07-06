@@ -1,17 +1,17 @@
 .fn-whitespace-stop-collapsing .nav-folder-title-content {
-    flex-grow: 1;
-    padding-bottom: 4px;
-    padding-top: 4px;
+    flex-grow: 1 !important;
+    padding-bottom: 4px !important;
+    padding-top: 4px !important;
 }
 
 .fn-whitespace-stop-collapsing .nav-folder-title {
-    padding-bottom: 0;
-    padding-top: 0;
-    padding-right: 0;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-right: 0 !important;
 }
 
 .fn-whitespace-stop-collapsing .nav-folder-collapse-indicator {
-    margin-top: 4px;
+    margin-top: 4px !important;
 }
 
 
