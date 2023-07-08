@@ -55,7 +55,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	syncDelete: false,
 	showRenameConfirmation: true,
 	defaultOverview: {
-		title: 'Folder overview',
+		title: '{{folderName}} overview',
 		disableTitle: false,
 		depth: 3,
 		includeTypes: ['folder', 'markdown'],

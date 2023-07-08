@@ -59,7 +59,7 @@ export class FolderOverviewSettings extends Modal {
 				.setDesc('Choose the title of the folder overview')
 				.addText((text) =>
 					text
-						.setValue(this.yaml?.title || 'Folder overview')
+						.setValue(this.yaml?.title || '{{folderName}} overview')
 						.onChange(async (value) => {
 							this.yaml.title = value;
 							await this.updateYaml();

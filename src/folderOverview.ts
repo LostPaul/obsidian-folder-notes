@@ -1,5 +1,5 @@
 import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile } from 'obsidian';
-import { getFolderNote } from './functions/folderNoteFunctions';
+import { extractFolderName, getFolderNote } from './functions/folderNoteFunctions';
 import FolderNotesPlugin from './main';
 export type yamlSettings = {
 	title?: string;
@@ -32,7 +32,9 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 		};
 	}
 	const depth = yaml?.depth || 1;
-	const title = yaml?.title || plugin.settings.defaultOverview.title || 'Folder overview';
+	let title = yaml?.title || plugin.settings.defaultOverview.title || '{{folderName}} overview';
+	const folderName = extractFolderName(plugin.settings.folderNoteName, plugin.removeExtension(plugin.getFolderNameFromPathString(ctx.sourcePath)));
+	title = title.replaceAll('{{folderName}}', folderName);
 	const disableTitle = yaml?.disableTitle || plugin.settings.defaultOverview.disableTitle || false;
 	let includeTypes: string[] = yaml?.includeTypes || plugin.settings.defaultOverview.includeTypes || ['folder', 'markdown'];
 	includeTypes = includeTypes.map((type) => type.toLowerCase());
