@@ -5,10 +5,10 @@ export type yamlSettings = {
 	title?: string;
 	disableTitle?: boolean;
 	depth?: number;
-	type?: 'folder' | 'markdown' | 'canvas';
+	type?: 'folder' | 'markdown' | 'canvas' | 'other' | 'pdf' | 'images' | 'audio' | 'video';
 	includeTypes?: string[];
 	style?: 'list' | 'grid';
-	disableCanvasTag?: boolean;
+	disableFileTag?: boolean;
 	sortBy?: 'name' | 'created' | 'modified' | 'nameAsc' | 'createdAsc' | 'modifiedAsc';
 };
 
@@ -27,7 +27,7 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 			type: plugin.settings.defaultOverview.type,
 			includeTypes: plugin.settings.defaultOverview.includeTypes,
 			style: plugin.settings.defaultOverview.style,
-			disableCanvasTag: plugin.settings.defaultOverview.disableCanvasTag,
+			disableFileTag: plugin.settings.defaultOverview.disableFileTag,
 			sortBy: plugin.settings.defaultOverview.sortBy,
 		};
 	}
@@ -39,7 +39,7 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 	let includeTypes: string[] = yaml?.includeTypes || plugin.settings.defaultOverview.includeTypes || ['folder', 'markdown'];
 	includeTypes = includeTypes.map((type) => type.toLowerCase());
 	const style: 'list' | 'grid' = yaml?.style || 'list';
-	const disableCanvasTag = yaml?.disableCanvasTag || plugin.settings.defaultOverview.disableCanvasTag || false;
+	const disableFileTag = yaml?.disableFileTag || plugin.settings.defaultOverview.disableFileTag || false;
 
 	const root = el.createEl('div', { cls: 'folder-overview' });
 	const titleEl = root.createEl('h1', { cls: 'folder-overview-title' });
@@ -104,9 +104,9 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 		files.forEach((file) => {
 			if (file instanceof TFolder) {
 				const folderItem = addFolderList(plugin, ul, pathBlacklist, file);
-				goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist, includeTypes, disableCanvasTag);
+				goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist, includeTypes, disableFileTag);
 			} else if (file instanceof TFile) {
-				addFileList(plugin, ul, pathBlacklist, file, includeTypes, disableCanvasTag);
+				addFileList(plugin, ul, pathBlacklist, file, includeTypes, disableFileTag);
 			}
 		});
 	} else if (style === 'explorer') {
@@ -128,7 +128,7 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 }
 
 function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLUListElement, folder: TFolder,
-	depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: yamlSettings, pathBlacklist: string[], includeTypes: string[], disableCanvasTag: boolean) {
+	depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: yamlSettings, pathBlacklist: string[], includeTypes: string[], disableFileTag: boolean) {
 	if (sourceFolderPath === '') {
 		depth--;
 	}
@@ -144,9 +144,9 @@ function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLU
 	files.forEach((file) => {
 		if (file instanceof TFolder) {
 			const folderItem = addFolderList(plugin, ul, pathBlacklist, file);
-			goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist, includeTypes, disableCanvasTag);
+			goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist, includeTypes, disableFileTag);
 		} else if (file instanceof TFile) {
-			addFileList(plugin, ul, pathBlacklist, file, includeTypes, disableCanvasTag);
+			addFileList(plugin, ul, pathBlacklist, file, includeTypes, disableFileTag);
 		}
 	});
 }
@@ -235,18 +235,27 @@ function addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLL
 	return folderItem;
 }
 
-function addFileList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], file: TFile, includeTypes: string[], disableCanvasTag: boolean) {
+function addFileList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], file: TFile, includeTypes: string[], disableFileTag: boolean) {
 	if (includeTypes.length > 0) {
 		if (file.extension === 'md' && !includeTypes.includes('markdown')) return;
 		if (file.extension === 'canvas' && !includeTypes.includes('canvas')) return;
+		if (file.extension === 'pdf' && !includeTypes.includes('pdf')) return;
+		const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+		if (imageTypes.includes(file.extension) && !includeTypes.includes('image')) return;
+		const videoTypes = ['mp4', 'webm', 'ogv', 'mov', 'mkv'];
+		if (videoTypes.includes(file.extension) && !includeTypes.includes('video')) return;
+		const audioTypes = ['mp3', 'wav', 'm4a', '3gp', 'flac', 'ogg', 'oga', 'opus'];
+		if (audioTypes.includes(file.extension) && includeTypes.includes('audio')) return;
+		const allTypes = ['md', 'canvas', 'pdf', ...imageTypes, ...videoTypes, ...audioTypes];
+		if (!allTypes.includes(file.extension) && !includeTypes.includes('other')) return;
 	}
 	if (pathBlacklist.includes(file.path)) return;
 	const listItem = list.createEl('li', { cls: 'folder-overview-list file-link' });
 	const nameItem = listItem.createEl('div', { cls: 'folder-overview-list-item' });
 	const link = nameItem.createEl('a', { cls: 'internal-link', href: file.path });
-	link.innerText = file.name.replace('.md', '').replace('.canvas', '');
-	if (file.extension === 'canvas' && !disableCanvasTag) {
-		nameItem.createDiv({ cls: 'nav-file-tag' }).innerText = 'canvas';
+	link.innerText = file.basename;
+	if (file.extension !== 'md' && !disableFileTag) {
+		nameItem.createDiv({ cls: 'nav-file-tag' }).innerText = file.extension;
 	}
 }
 

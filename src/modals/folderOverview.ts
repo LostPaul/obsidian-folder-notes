@@ -23,7 +23,7 @@ export class FolderOverviewSettings extends Modal {
 				type: this.plugin.settings.defaultOverview.type,
 				includeTypes: this.plugin.settings.defaultOverview.includeTypes,
 				style: this.plugin.settings.defaultOverview.style,
-				disableCanvasTag: this.plugin.settings.defaultOverview.disableCanvasTag,
+				disableFileTag: this.plugin.settings.defaultOverview.disableFileTag,
 				sortBy: this.plugin.settings.defaultOverview.sortBy,
 			};
 		}
@@ -74,19 +74,26 @@ export class FolderOverviewSettings extends Modal {
 				.setValues(this.yaml?.includeTypes || this.plugin.settings.defaultOverview.includeTypes || [])
 				.addResetButton()
 		);
-		if ((this.yaml?.includeTypes?.length || 0) < 3) {
+		if ((this.yaml?.includeTypes?.length || 0) < 8) {
 			setting.addDropdown((dropdown) => {
 				if (!this.yaml.includeTypes) this.yaml.includeTypes = this.plugin.settings.defaultOverview.includeTypes || [];
 				this.yaml.includeTypes = this.yaml.includeTypes.map((type: string) => type.toLowerCase());
-				if (!this.yaml.includeTypes.includes('markdown')) {
-					dropdown.addOption('Markdown', 'Markdown');
-				}
-				if (!this.yaml.includeTypes.includes('folder')) {
-					dropdown.addOption('Folder', 'Folder');
-				}
-				if (!this.yaml.includeTypes.includes('canvas')) {
-					dropdown.addOption('Canvas', 'Canvas');
-				}
+				const options = [
+					{ value: 'markdown', label: 'Markdown' },
+					{ value: 'folder', label: 'Folder' },
+					{ value: 'canvas', label: 'Canvas' },
+					{ value: 'pdf', label: 'PDF' },
+					{ value: 'image', label: 'Image' },
+					{ value: 'audio', label: 'Audio' },
+					{ value: 'video', label: 'Video' },
+					{ value: 'other', label: 'All other file types' },
+				];
+
+				options.forEach((option) => {
+					if (!this.yaml.includeTypes?.includes(option.value)) {
+						dropdown.addOption(option.value, option.label);
+					}
+				});
 				dropdown.addOption('+', '+');
 				dropdown.setValue('+');
 				dropdown.onChange(async (value) => {
@@ -97,15 +104,19 @@ export class FolderOverviewSettings extends Modal {
 				});
 			});
 		}
-		if (this.yaml.includeTypes?.includes('canvas')) {
+		let disableFileTag;
+		this.yaml.includeTypes?.forEach((type: string) => {
+			type === 'folder' || type === 'markdown' ? (disableFileTag = true) : null;
+		});
+		if (disableFileTag) {
 			new Setting(contentEl)
-				.setName('Disable canvas tag')
-				.setDesc('Choose if the canvas tag should be shown')
+				.setName('Disable file tag')
+				.setDesc('Choose if the file tag should be shown after the file name')
 				.addToggle((toggle) => {
 					toggle
-						.setValue(this.yaml.disableCanvasTag || this.plugin.settings.defaultOverview.disableCanvasTag || false)
+						.setValue(this.yaml.disableFileTag || this.plugin.settings.defaultOverview.disableFileTag || false)
 						.onChange(async (value) => {
-							this.yaml.disableCanvasTag = value;
+							this.yaml.disableFileTag = value;
 							await this.updateYaml();
 						});
 				});

@@ -60,7 +60,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		depth: 3,
 		includeTypes: ['folder', 'markdown'],
 		style: 'list',
-		disableCanvasTag: false,
+		disableFileTag: false,
 	},
 	useSubmenus: true,
 	syncMove: true,
