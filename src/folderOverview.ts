@@ -5,7 +5,7 @@ export type yamlSettings = {
 	title?: string;
 	disableTitle?: boolean;
 	depth?: number;
-	type?: 'folder' | 'markdown' | 'canvas' | 'other' | 'pdf' | 'images' | 'audio' | 'video';
+	type?: 'folder' | 'markdown' | 'canvas' | 'other' | 'pdf' | 'images' | 'audio' | 'video' | 'all';
 	includeTypes?: string[];
 	style?: 'list' | 'grid';
 	disableFileTag?: boolean;
@@ -243,7 +243,7 @@ function addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLL
 }
 
 function addFileList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], file: TFile, includeTypes: string[], disableFileTag: boolean) {
-	if (includeTypes.length > 0) {
+	if (includeTypes.length > 0 && !includeTypes.includes('all')) {
 		if (file.extension === 'md' && !includeTypes.includes('markdown')) return;
 		if (file.extension === 'canvas' && !includeTypes.includes('canvas')) return;
 		if (file.extension === 'pdf' && !includeTypes.includes('pdf')) return;

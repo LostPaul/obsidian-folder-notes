@@ -76,7 +76,7 @@ export class FolderOverviewSettings extends Modal {
 				.setValues(this.yaml?.includeTypes || this.plugin.settings.defaultOverview.includeTypes || [])
 				.addResetButton()
 		);
-		if ((this.yaml?.includeTypes?.length || 0) < 8) {
+		if ((this.yaml?.includeTypes?.length || 0) < 8 && !this.yaml.includeTypes?.includes('all')) {
 			setting.addDropdown((dropdown) => {
 				if (!this.yaml.includeTypes) this.yaml.includeTypes = this.plugin.settings.defaultOverview.includeTypes || [];
 				this.yaml.includeTypes = this.yaml.includeTypes.map((type: string) => type.toLowerCase());
@@ -89,6 +89,7 @@ export class FolderOverviewSettings extends Modal {
 					{ value: 'audio', label: 'Audio' },
 					{ value: 'video', label: 'Video' },
 					{ value: 'other', label: 'All other file types' },
+					{ value: 'all', label: 'All file types' },
 				];
 
 				options.forEach((option) => {
@@ -99,6 +100,11 @@ export class FolderOverviewSettings extends Modal {
 				dropdown.addOption('+', '+');
 				dropdown.setValue('+');
 				dropdown.onChange(async (value) => {
+					if (value === 'all') {
+						this.yaml.includeTypes = this.yaml.includeTypes?.filter((type: string) => type === 'folder');
+						// @ts-ignore
+						list.setValues(this.yaml.includeTypes);
+					}
 					// @ts-ignore
 					await list.addValue(value.toLowerCase());
 					await this.updateYaml();
@@ -177,6 +183,7 @@ export class FolderOverviewSettings extends Modal {
 					.onChange(async (value) => {
 						this.yaml.showEmptyFolders = value;
 						this.yaml.onlyIncludeSubfolders = false;
+						this.display();
 						await this.updateYaml();
 					});
 			});
