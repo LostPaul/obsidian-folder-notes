@@ -25,6 +25,8 @@ export class FolderOverviewSettings extends Modal {
 				style: this.plugin.settings.defaultOverview.style,
 				disableFileTag: this.plugin.settings.defaultOverview.disableFileTag,
 				sortBy: this.plugin.settings.defaultOverview.sortBy,
+				showEmptyFolders: this.plugin.settings.defaultOverview.showEmptyFolders,
+				onlyIncludeSubfolders: this.plugin.settings.defaultOverview.onlyIncludeSubfolders,
 			};
 		}
 	}
@@ -165,6 +167,32 @@ export class FolderOverviewSettings extends Modal {
 						await this.updateYaml();
 					})
 			);
+
+		new Setting(contentEl)
+			.setName('Show folder names of empty folders')
+			.setDesc('That includes subfolders of the current folder when you are on file depth 1')
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.yaml.showEmptyFolders || this.plugin.settings.defaultOverview.showEmptyFolders || false)
+					.onChange(async (value) => {
+						this.yaml.showEmptyFolders = value;
+						this.yaml.onlyIncludeSubfolders = false;
+						await this.updateYaml();
+					});
+			});
+
+		if (this.yaml.showEmptyFolders) {
+			new Setting(contentEl)
+				.setName('Only show first empty subfolders of current folder')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.yaml.onlyIncludeSubfolders || this.plugin.settings.defaultOverview.onlyIncludeSubfolders || false)
+						.onChange(async (value) => {
+							this.yaml.onlyIncludeSubfolders = value;
+							await this.updateYaml();
+						});
+				});
+		}
 
 
 	}

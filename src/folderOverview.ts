@@ -10,6 +10,8 @@ export type yamlSettings = {
 	style?: 'list' | 'grid';
 	disableFileTag?: boolean;
 	sortBy?: 'name' | 'created' | 'modified' | 'nameAsc' | 'createdAsc' | 'modifiedAsc';
+	showEmptyFolders?: boolean;
+	onlyIncludeSubfolders?: boolean;
 };
 
 export function createCanvasOverview() {
@@ -18,7 +20,7 @@ export function createCanvasOverview() {
 
 export function createOverview(plugin: FolderNotesPlugin, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 	// parse source to yaml
-	let yaml = parseYaml(source);
+	let yaml: yamlSettings = parseYaml(source);
 	if (!yaml) {
 		yaml = {
 			title: plugin.settings.defaultOverview.title,
@@ -29,17 +31,20 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 			style: plugin.settings.defaultOverview.style,
 			disableFileTag: plugin.settings.defaultOverview.disableFileTag,
 			sortBy: plugin.settings.defaultOverview.sortBy,
+			showEmptyFolders: plugin.settings.defaultOverview.showEmptyFolders,
+			onlyIncludeSubfolders: plugin.settings.defaultOverview.onlyIncludeSubfolders,
 		};
 	}
 	const depth = yaml?.depth || 1;
 	let title = yaml?.title || plugin.settings.defaultOverview.title || '{{folderName}} overview';
 	const folderName = extractFolderName(plugin.settings.folderNoteName, plugin.removeExtension(plugin.getFolderNameFromPathString(ctx.sourcePath)));
-	title = title.replaceAll('{{folderName}}', folderName);
+	title = title.replaceAll('{{folderName}}', folderName || '');
 	const disableTitle = yaml?.disableTitle || plugin.settings.defaultOverview.disableTitle || false;
 	let includeTypes: string[] = yaml?.includeTypes || plugin.settings.defaultOverview.includeTypes || ['folder', 'markdown'];
 	includeTypes = includeTypes.map((type) => type.toLowerCase());
 	const style: 'list' | 'grid' = yaml?.style || 'list';
 	const disableFileTag = yaml?.disableFileTag || plugin.settings.defaultOverview.disableFileTag || false;
+	const showEmptyFolders = yaml?.showEmptyFolders || plugin.settings.defaultOverview.showEmptyFolders || false;
 
 	const root = el.createEl('div', { cls: 'folder-overview' });
 	const titleEl = root.createEl('h1', { cls: 'folder-overview-title' });
@@ -122,8 +127,9 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 		root.appendChild(folderElement);
 		*/
 	}
-	if (includeTypes.length > 1 && style !== 'grid') {
-		removeEmptyFolders(ul);
+	if (includeTypes.length > 1 && style !== 'grid' && (!showEmptyFolders || yaml.onlyIncludeSubfolders)) {
+		console.log('depth', depth, yaml.onlyIncludeSubfolders);
+		removeEmptyFolders(ul, 1, yaml);
 	}
 }
 
@@ -205,7 +211,7 @@ function sortFiles(files: TAbstractFile[], yaml: yamlSettings, plugin: FolderNot
 	});
 }
 
-function removeEmptyFolders(ul: HTMLUListElement | HTMLLIElement) {
+function removeEmptyFolders(ul: HTMLUListElement | HTMLLIElement, depth: number, yaml: yamlSettings) {
 	const childrensToRemove: ChildNode[] = [];
 	ul.childNodes.forEach((el) => {
 		const childrens = (el as Element).querySelector('ul');
@@ -213,10 +219,11 @@ function removeEmptyFolders(ul: HTMLUListElement | HTMLLIElement) {
 		if (childrens && !childrens?.hasChildNodes() && !(el instanceof HTMLUListElement)) {
 			childrensToRemove.push(el);
 		} else if (el instanceof HTMLUListElement || el instanceof HTMLLIElement) {
-			removeEmptyFolders(el);
+			removeEmptyFolders(el, depth + 1, yaml);
 		}
 	});
 	childrensToRemove.forEach((el) => {
+		if (yaml.onlyIncludeSubfolders && depth === 1) { return; }
 		el.remove();
 	});
 }
