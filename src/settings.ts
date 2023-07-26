@@ -485,6 +485,7 @@ export class SettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Add excluded folder')
+			.setClass('add-exclude-folder-item')
 			.addButton((cb) => {
 				cb.setIcon('plus');
 				cb.setClass('add-exclude-folder');

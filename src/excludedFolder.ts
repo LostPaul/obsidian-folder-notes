@@ -130,7 +130,7 @@ function resyncArray(plugin: FolderNotesPlugin) {
 export function addExcludePatternListItem(settings: SettingsTab, containerEl: HTMLElement, pattern: ExcludePattern) {
 	const plugin: FolderNotesPlugin = settings.plugin;
 	const setting = new Setting(containerEl);
-	setting.setClass('fn-exclude-folder-list-item');
+	setting.setClass('fn-exclude-folder-list');
 	setting.addSearch((cb) => {
 		// @ts-ignore
 		cb.containerEl.addClass('fn-exclude-folder-path');
@@ -205,7 +205,7 @@ export function addExcludePatternListItem(settings: SettingsTab, containerEl: HT
 export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTMLElement, excludedFolder: ExcludedFolder) {
 	const plugin: FolderNotesPlugin = settings.plugin;
 	const setting = new Setting(containerEl);
-	setting.setClass('fn-exclude-folder-list-item');
+	setting.setClass('fn-exclude-folder-list');
 	setting.addSearch((cb) => {
 		new FolderSuggest(
 			cb.inputEl,
