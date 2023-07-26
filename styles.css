@@ -48,8 +48,15 @@
     cursor: pointer;
 }
 
+.fn-excluded-folder-heading {
+    margin-top: 0 !important;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
 .add-exclude-folder-item {
     padding-bottom: 0 !important;
+    border-top: 0 !important;
+    padding-top: 0 !important;
 }
 
 .fn-exclude-folder-list {

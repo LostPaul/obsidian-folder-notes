@@ -466,6 +466,7 @@ export class SettingsTab extends PluginSettingTab {
 
 		const manageExcluded = new Setting(containerEl)
 			.setHeading()
+			.setClass('fn-excluded-folder-heading')
 			.setName('Manage excluded folders');
 		const desc3 = document.createDocumentFragment();
 		desc3.append(
