@@ -6,7 +6,7 @@ import { handleViewHeaderClick, handleFolderClick } from './events/handleClick';
 import { handleFileRename, handleFolderRename } from './events/handleRename';
 import { createFolderNote, extractFolderName, getFolderNote, getFolder } from './functions/folderNoteFunctions';
 import { getExcludedFolder } from './excludedFolder';
-// import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
+import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
 import { createOverview as createFolderOverview } from './folderOverview';
 import { FolderOverviewSettings } from './modals/folderOverview';
 import './functions/ListComponent';
@@ -16,7 +16,7 @@ export default class FolderNotesPlugin extends Plugin {
 	settingsTab: SettingsTab;
 	activeFolderDom: HTMLElement | null;
 	activeFileExplorer: FileExplorerWorkspaceLeaf;
-
+	fmtpHandler: FrontMatterTitlePluginHandler | null = null;
 	async onload() {
 		console.log('loading folder notes plugin');
 		await this.loadSettings();
@@ -33,7 +33,9 @@ export default class FolderNotesPlugin extends Plugin {
 
 		new Commands(this.app, this).registerCommands();
 
-		// new FrontMatterTitlePluginHandler(this.app, this);
+		if (this.settings.frontMatterTitle.enabled) {
+			this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
+		}
 
 		this.observer = new MutationObserver((mutations: MutationRecord[]) => {
 			mutations.forEach((rec) => {
@@ -50,9 +52,18 @@ export default class FolderNotesPlugin extends Plugin {
 							if (!breadcrumbs) return;
 							let path = '';
 							breadcrumbs.forEach((breadcrumb: HTMLElement) => {
-								path += breadcrumb.innerText.trim() + '/';
+								if (breadcrumb.hasAttribute('old-name')) {
+									path += breadcrumb.getAttribute('old-name') + '/';
+								} else {
+									path += breadcrumb.innerText.trim() + '/';
+								}
 								const folderPath = path.slice(0, -1);
 								breadcrumb.setAttribute('data-path', folderPath);
+								const folder = this.fmtpHandler?.modifiedFolders.get(folderPath);
+								if (folder) {
+									breadcrumb.setAttribute('old-name', folder.name || '');
+									breadcrumb.innerText = folder.newName || '';
+								}
 								const folderNote = getFolderNote(this, folderPath);
 								if (folderNote) {
 									breadcrumb.classList.add('has-folder-note');
@@ -131,7 +142,6 @@ export default class FolderNotesPlugin extends Plugin {
 				return handleFileRename(file, oldPath, this);
 			}
 		}));
-
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
 			if (file instanceof TFile) {
 				const folder = getFolder(this, file);
@@ -228,6 +238,51 @@ export default class FolderNotesPlugin extends Plugin {
 		});
 	}
 
+	async changeName(folder: TFolder, name: string | null | undefined, replacePath: boolean, waitForCreate = false, count = 0) {
+		if (!name) name = folder.name;
+		let fileExplorerItem = this.getEL(folder.path);
+		if (!fileExplorerItem) {
+			if (waitForCreate && count < 5) {
+				await new Promise((r) => setTimeout(r, 500));
+				this.changeName(folder, name, replacePath, waitForCreate, count + 1);
+				return;
+			}
+			return;
+		}
+		fileExplorerItem = fileExplorerItem.querySelector('div.nav-folder-title-content')
+		if (!fileExplorerItem) { return; }
+		if (this.settings.frontMatterTitle.explorer) {
+			fileExplorerItem.innerText = name;
+			fileExplorerItem.setAttribute('old-name', folder.name);
+		} else {
+			fileExplorerItem.innerText = folder.name;
+			fileExplorerItem.removeAttribute('old-name');
+		}
+		if (replacePath) {
+			this.updateBreadcrumbs();
+		}
+	}
+
+	updateBreadcrumbs(remove?: boolean) {
+		if (!this.settings.frontMatterTitle.path && !remove) { return; }
+		const viewHeaderItems = document.querySelectorAll('span.view-header-breadcrumb');
+		const files = this.app.vault.getAllLoadedFiles().filter((file) => file instanceof TFolder);
+		viewHeaderItems.forEach((item) => {
+			if (!item.hasAttribute('data-path')) { return; }
+			const path = item.getAttribute('data-path');
+			const folder = files.find((file) => file.path === path);
+			if (!(folder instanceof TFolder)) { return; }
+			if (remove) {
+				item.textContent = folder.name;
+				item.removeAttribute('old-name');
+			} else {
+				item.textContent = folder.newName || folder.name;
+				item.setAttribute('old-name', folder.name);
+				item.setAttribute('data-path', folder.path);
+			}
+		});
+	}
+
 	removeCSSClassFromEL(path: string | undefined, cssClass: string) {
 		if (!path) return;
 		const fileExplorerItem = this.getEL(path);
@@ -288,6 +343,10 @@ export default class FolderNotesPlugin extends Plugin {
 		document.body.classList.remove('hide-folder-note');
 		document.body.classList.remove('fn-whitespace-stop-collapsing');
 		if (this.activeFolderDom) { this.activeFolderDom.removeClass('is-active'); }
+		if (this.fmtpHandler) {
+			this.fmtpHandler.deleteEvent();
+		}
+
 	}
 
 	async loadSettings() {

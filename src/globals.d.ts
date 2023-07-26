@@ -18,6 +18,9 @@ declare module 'obsidian' {
 	interface Setting {
 		createList: (list: ListComponent | ((list: ListComponent) => void)) => ListComponent;
 	}
+	interface TFolder {
+		newName: string | null;
+	}
 
 	class ListComponent {
 		containerEl: HTMLElement;

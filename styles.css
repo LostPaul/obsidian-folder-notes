@@ -110,10 +110,10 @@
 }
 
 .folder-overview-list {
-    margin-top : 0 !important;
+    margin-top: 0 !important;
     margin-bottom: 0 !important;
     padding-bottom: 1.200 !important;
-    padding-top: 1.200  !important;
+    padding-top: 1.200 !important;
 }
 
 .folder-overview-list-item {
@@ -142,9 +142,11 @@
     flex-direction: column;
     justify-content: space-between;
 }
+
 .folder-overview-grid-item-article a {
     text-decoration: none !important;
 }
+
 .folder-overview-grid-item-article h1 {
     font-size: 1.2rem;
 }

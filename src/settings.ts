@@ -3,6 +3,7 @@ import FolderNotesPlugin from './main';
 import { TemplateSuggest } from './suggesters/templateSuggester';
 import { extractFolderName, getFolderNote } from './functions/folderNoteFunctions';
 import { addExcludeFolderListItem, ExcludedFolder, addExcludedFolder, ExcludePattern, addExcludePatternListItem } from './excludedFolder';
+import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
 // import ConfirmationModal from "./modals/confirmCreation";
 import { yamlSettings } from './folderOverview';
 export interface FolderNotesSettings {
@@ -30,6 +31,11 @@ export interface FolderNotesSettings {
 	defaultOverview: yamlSettings;
 	useSubmenus: boolean;
 	syncMove: boolean;
+	frontMatterTitle: {
+		enabled: boolean;
+		explorer: boolean;
+		path: boolean;
+	}
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -64,6 +70,11 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	},
 	useSubmenus: true,
 	syncMove: true,
+	frontMatterTitle: {
+		enabled: false,
+		explorer: true,
+		path: true,
+	}
 };
 export class SettingsTab extends PluginSettingTab {
 	plugin: FolderNotesPlugin;
@@ -115,6 +126,29 @@ export class SettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		const setting = new Setting(containerEl);
+		const desc = document.createDocumentFragment();
+		desc.append(
+			'After setting the template path, restart Obsidian if the template folder path (from templater/templates) had been changed beforehand.',
+			desc.createEl('br'),
+			'Obsidian should also be restarted if the template path was removed.'
+		);
+		setting.setName('Template path');
+		setting.setDesc(desc).descEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
+		setting.addSearch((cb) => {
+			new TemplateSuggest(cb.inputEl, this.plugin);
+			cb.setPlaceholder('Template path');
+			cb.setValue(this.plugin.app.vault.getAbstractFileByPath(this.plugin.settings.templatePath)?.name.replace('.md', '') || '');
+			cb.onChange(async (value) => {
+				if (value.trim() === '') {
+					this.plugin.settings.templatePath = '';
+					await this.plugin.saveSettings();
+					this.display();
+					return;
+				}
+			});
+		});
 
 		const storageLocation = new Setting(containerEl)
 			.setName('Storage location')
@@ -195,6 +229,26 @@ export class SettingsTab extends PluginSettingTab {
 		disableSetting.infoEl.appendText('Requires a restart to take effect');
 		disableSetting.infoEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
+		if (Platform.isDesktopApp) {
+			new Setting(containerEl)
+				.setName('Key for creating folder note')
+				.setDesc('The key combination to create a folder note')
+				.addDropdown((dropdown) => {
+					if (!Platform.isMacOS) {
+						dropdown.addOption('ctrl', 'Ctrl + Click');
+					} else {
+						dropdown.addOption('ctrl', 'Cmd + Click');
+					}
+					dropdown.addOption('alt', 'Alt + Click');
+					dropdown.setValue(this.plugin.settings.ctrlKey ? 'ctrl' : 'alt');
+					dropdown.onChange(async (value) => {
+						this.plugin.settings.ctrlKey = value === 'ctrl';
+						this.plugin.settings.altKey = value === 'alt';
+						await this.plugin.saveSettings();
+						this.display();
+					});
+				});
+		}
 
 		new Setting(containerEl)
 			.setName('Only open folder notes through the name')
@@ -284,27 +338,6 @@ export class SettingsTab extends PluginSettingTab {
 					})
 			);
 
-		if (Platform.isDesktopApp) {
-			new Setting(containerEl)
-				.setName('Key for creating folder note')
-				.setDesc('The key combination to create a folder note')
-				.addDropdown((dropdown) => {
-					if (!Platform.isMacOS) {
-						dropdown.addOption('ctrl', 'Ctrl + Click');
-					} else {
-						dropdown.addOption('ctrl', 'Cmd + Click');
-					}
-					dropdown.addOption('alt', 'Alt + Click');
-					dropdown.setValue(this.plugin.settings.ctrlKey ? 'ctrl' : 'alt');
-					dropdown.onChange(async (value) => {
-						this.plugin.settings.ctrlKey = value === 'ctrl';
-						this.plugin.settings.altKey = value === 'alt';
-						await this.plugin.saveSettings();
-						this.display();
-					});
-				});
-		}
-
 		new Setting(containerEl)
 			.setName('Add underline to folders with folder notes')
 			.setDesc('Add an underline to folders that have a folder note in the file explorer')
@@ -355,28 +388,63 @@ export class SettingsTab extends PluginSettingTab {
 				);
 		}
 
-		const setting = new Setting(containerEl);
-		const desc = document.createDocumentFragment();
-		desc.append(
-			'After setting the template path, restart Obsidian if the template folder path (from templater/templates) had been changed beforehand.',
-			desc.createEl('br'),
-			'Obsidian should also be restarted if the template path was removed.'
-		);
-		setting.setName('Template path');
-		setting.setDesc(desc).descEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
-		setting.addSearch((cb) => {
-			new TemplateSuggest(cb.inputEl, this.plugin);
-			cb.setPlaceholder('Template path');
-			cb.setValue(this.plugin.app.vault.getAbstractFileByPath(this.plugin.settings.templatePath)?.name.replace('.md', '') || '');
-			cb.onChange(async (value) => {
-				if (value.trim() === '') {
-					this.plugin.settings.templatePath = '';
-					await this.plugin.saveSettings();
-					this.display();
-					return;
-				}
-			});
-		});
+		new Setting(containerEl)
+			.setName('Enable front matter title plugin integration')
+			.setDesc('Automatically rename a folder name when the folder note is renamed')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.frontMatterTitle.enabled)
+					.onChange(async (value) => {
+						this.plugin.settings.frontMatterTitle.enabled = value;
+						await this.plugin.saveSettings();
+						if (value) {
+							this.plugin.fmtpHandler = new FrontMatterTitlePluginHandler(this.plugin);
+						} else {
+							if (this.plugin.fmtpHandler) {
+								this.plugin.updateBreadcrumbs(true);
+							}
+							this.plugin.fmtpHandler?.deleteEvent();
+							this.plugin.fmtpHandler = null;
+						}
+						this.display();
+					})
+			);
+
+		if (this.plugin.settings.frontMatterTitle.enabled) {
+			new Setting(containerEl)
+				.setName('Include file explorer')
+				.setDesc('Automatically rename a folder name in the file explorer when the folder note is renamed')
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.frontMatterTitle.explorer)
+						.onChange(async (value) => {
+							this.plugin.settings.frontMatterTitle.explorer = value;
+							await this.plugin.saveSettings();
+							this.plugin.app.vault.getFiles().forEach((file) => {
+								this.plugin.fmtpHandler?.handleRename({ id: '', result: false, path: file.path }, false);
+							});
+							this.display();
+						})
+				);
+
+			new Setting(containerEl)
+				.setName('Include path above note')
+				.setDesc('Automatically rename a folder name in the path above a note when the folder note is renamed')
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.frontMatterTitle.path)
+						.onChange(async (value) => {
+							this.plugin.settings.frontMatterTitle.path = value;
+							await this.plugin.saveSettings();
+							if (value) {
+								this.plugin.updateBreadcrumbs();
+							} else {
+								this.plugin.updateBreadcrumbs(true);
+							}
+							this.display();
+						})
+				);
+		}
 
 		// Due to an issue with templater it has been disabled for now
 		// If you want to try it yourself make a pr

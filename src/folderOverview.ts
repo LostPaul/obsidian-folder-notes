@@ -128,7 +128,6 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 		*/
 	}
 	if (includeTypes.length > 1 && style !== 'grid' && (!showEmptyFolders || yaml.onlyIncludeSubfolders)) {
-		console.log('depth', depth, yaml.onlyIncludeSubfolders);
 		removeEmptyFolders(ul, 1, yaml);
 	}
 }
