@@ -403,6 +403,9 @@ export class SettingsTab extends PluginSettingTab {
 							if (this.plugin.fmtpHandler) {
 								this.plugin.updateBreadcrumbs(true);
 							}
+							this.plugin.app.vault.getFiles().forEach((file) => {
+								this.plugin.fmtpHandler?.handleRename({ id: '', result: false, path: file.path }, false);
+							});
 							this.plugin.fmtpHandler?.deleteEvent();
 							this.plugin.fmtpHandler = null;
 						}
@@ -423,7 +426,6 @@ export class SettingsTab extends PluginSettingTab {
 							this.plugin.app.vault.getFiles().forEach((file) => {
 								this.plugin.fmtpHandler?.handleRename({ id: '', result: false, path: file.path }, false);
 							});
-							this.display();
 						})
 				);
 
@@ -441,7 +443,6 @@ export class SettingsTab extends PluginSettingTab {
 							} else {
 								this.plugin.updateBreadcrumbs(true);
 							}
-							this.display();
 						})
 				);
 		}

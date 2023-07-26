@@ -60,7 +60,7 @@ export default class FolderNotesPlugin extends Plugin {
 								const folderPath = path.slice(0, -1);
 								breadcrumb.setAttribute('data-path', folderPath);
 								const folder = this.fmtpHandler?.modifiedFolders.get(folderPath);
-								if (folder) {
+								if (folder && this.settings.frontMatterTitle.path && this.settings.frontMatterTitle.enabled) {
 									breadcrumb.setAttribute('old-name', folder.name || '');
 									breadcrumb.innerText = folder.newName || '';
 								}
@@ -251,7 +251,7 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 		fileExplorerItem = fileExplorerItem.querySelector('div.nav-folder-title-content')
 		if (!fileExplorerItem) { return; }
-		if (this.settings.frontMatterTitle.explorer) {
+		if (this.settings.frontMatterTitle.explorer && this.settings.frontMatterTitle.enabled) {
 			fileExplorerItem.innerText = name;
 			fileExplorerItem.setAttribute('old-name', folder.name);
 		} else {
