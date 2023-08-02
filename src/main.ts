@@ -33,9 +33,11 @@ export default class FolderNotesPlugin extends Plugin {
 
 		new Commands(this.app, this).registerCommands();
 
-		if (this.settings.frontMatterTitle.enabled) {
-			this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
-		}
+		this.app.workspace.onLayoutReady(() => {
+			if (this.settings.frontMatterTitle.enabled) {
+				this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
+			}
+		});
 
 		this.observer = new MutationObserver((mutations: MutationRecord[]) => {
 			mutations.forEach((rec) => {
@@ -85,7 +87,9 @@ export default class FolderNotesPlugin extends Plugin {
 			childList: true,
 			subtree: true,
 		});
-		this.registerEvent(this.app.workspace.on('layout-change', () => { this.loadFileClasses(); }));
+		this.registerEvent(this.app.workspace.on('layout-change', () => {
+			this.loadFileClasses();
+		}));
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
 			if (!(file instanceof TFile)) { return; }
 			// parent is null here even if the parent exists
