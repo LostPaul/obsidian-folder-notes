@@ -13,7 +13,6 @@ export default class ConfirmationModal extends Modal {
 		this.app = app;
 	}
 	onOpen() {
-		console.log(this.containerEl)
 		this.modalEl.addClass('fn-confirmation-modal');
 		let templateFolderPath: string;
 		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.plugin.app);
@@ -45,7 +44,6 @@ export default class ConfirmationModal extends Modal {
 						if (folder instanceof TFolder) {
 							const excludedFolder = getExcludedFolder(this.plugin, folder.path);
 							if (excludedFolder) continue;
-							console.log(folder.path);
 							if (folder.path === templateFolderPath) continue;
 							const path = folder.path + '/' + this.plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name) + '.md';
 							if (this.app.vault.getAbstractFileByPath(path)) continue;
