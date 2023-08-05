@@ -1,6 +1,7 @@
 import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile } from 'obsidian';
 import { extractFolderName, getFolderNote } from './functions/folderNoteFunctions';
 import FolderNotesPlugin from './main';
+import { FolderOverviewSettings } from './modals/folderOverview';
 export type yamlSettings = {
 	title?: string;
 	disableTitle?: boolean;
@@ -46,6 +47,7 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 	const disableFileTag = yaml?.disableFileTag || plugin.settings.defaultOverview.disableFileTag || false;
 	const showEmptyFolders = yaml?.showEmptyFolders || plugin.settings.defaultOverview.showEmptyFolders || false;
 
+	el.parentElement?.classList.add('folder-overview-container');
 	const root = el.createEl('div', { cls: 'folder-overview' });
 	const titleEl = root.createEl('h1', { cls: 'folder-overview-title' });
 	const ul = root.createEl('ul', { cls: 'folder-overview-list' });
@@ -58,7 +60,6 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 	if (!sourceFile) return;
 	const sourceFolderPath = plugin.getFolderPathFromString(ctx.sourcePath);
 	let sourceFolder: TFolder | undefined;
-
 	if (sourceFile.parent instanceof TFolder) {
 		sourceFolder = sourceFile.parent;
 	} else {
@@ -77,6 +78,17 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 	});
 	if (!includeTypes.includes('folder')) {
 		files = getAllFiles(files, sourceFolderPath, depth);
+	}
+	if (files.length === 0) { 
+		// create button to edit the overview
+		const editButton = root.createEl('button', { cls: 'folder-overview-edit-button' });
+		editButton.innerText = 'Edit overview';
+		editButton.addEventListener('click', (e) => {
+			e.stopImmediatePropagation();
+			e.preventDefault();
+			e.stopPropagation();
+			new FolderOverviewSettings(plugin.app, plugin, parseYaml(source), ctx, el).open();
+		}, { capture: true });
 	}
 	files = sortFiles(files, yaml, plugin);
 

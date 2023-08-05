@@ -4,7 +4,7 @@ import { TemplateSuggest } from './suggesters/templateSuggester';
 import { extractFolderName, getFolderNote } from './functions/folderNoteFunctions';
 import { addExcludeFolderListItem, ExcludedFolder, addExcludedFolder, ExcludePattern, addExcludePatternListItem } from './excludedFolder';
 import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
-// import ConfirmationModal from "./modals/confirmCreation";
+import ConfirmationModal from "./modals/confirmCreation";
 import { yamlSettings } from './folderOverview';
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
@@ -447,10 +447,7 @@ export class SettingsTab extends PluginSettingTab {
 				);
 		}
 
-		// Due to an issue with templater it has been disabled for now
-		// If you want to try it yourself make a pr
-		// The issue was that it only used the first folder for all of the other folder notes
-		/*
+
 		new Setting(containerEl)
 		.setName('Create folder note for every folder')
 		.setDesc('Create a folder note for every folder in the vault')
@@ -458,10 +455,10 @@ export class SettingsTab extends PluginSettingTab {
 			cb.setIcon('plus');
 			cb.setTooltip('Create folder notes');
 			cb.onClick(async () => {
+				
 				new ConfirmationModal(this.app, this.plugin).open();
 			});
 		});
-		*/
 
 
 		const manageExcluded = new Setting(containerEl)

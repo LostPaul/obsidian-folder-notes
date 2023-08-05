@@ -168,3 +168,8 @@
     margin-right: 1.200rem;
     margin-bottom: 1.200rem;
 }
+
+.fn-confirmation-modal .setting-item {
+    border-top: 0 !important;
+    padding-top: 0 !important;
+}
