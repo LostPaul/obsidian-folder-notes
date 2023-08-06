@@ -126,6 +126,7 @@ export function extractFolderName(template: string, changedFileName: string) {
 
 export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, storageLocation?: string, file?: TFile) {
 	if (!folderPath) return null;
+	console.log(folderPath);
 	const folder = {
 		path: folderPath,
 		name: plugin.getFolderNameFromPathString(folderPath),

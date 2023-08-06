@@ -173,3 +173,7 @@
     border-top: 0 !important;
     padding-top: 0 !important;
 }
+
+.pointer-cursor {
+    cursor: pointer !important;
+}

@@ -20,6 +20,7 @@ declare module 'obsidian' {
 	}
 	interface TFolder {
 		newName: string | null;
+		collapsed: boolean;
 	}
 
 	class ListComponent {

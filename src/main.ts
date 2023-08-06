@@ -9,6 +9,7 @@ import { getExcludedFolder } from './excludedFolder';
 import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
 import { createOverview as createFolderOverview } from './folderOverview';
 import { FolderOverviewSettings } from './modals/folderOverview';
+import { FolderOverview } from './folderOverviewClass';
 import './functions/ListComponent';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
@@ -175,7 +176,8 @@ export default class FolderNotesPlugin extends Plugin {
 				childList: true,
 				subtree: true,
 			});
-			createFolderOverview(this, source, el, ctx);
+			const folderOverview = new FolderOverview(this, ctx, source, el);
+			folderOverview.create(this, parseYaml(source), el, ctx);
 		});
 		if (this.app.workspace.layoutReady) {
 			this.loadFileClasses();
