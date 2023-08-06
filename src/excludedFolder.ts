@@ -68,24 +68,24 @@ export function getExcludedFolderByPattern(plugin: FolderNotesPlugin, folderName
 	return plugin.settings.excludeFolders.filter((s) => s.type == 'pattern').find((pattern) => {
 		if (!pattern.string) { return false; }
 		const string = pattern.string.toLocaleLowerCase().trim();
-		if (!string.startsWith('{regex}') || string.startsWith('*') || string.endsWith('*')) { return false; }
+		if (!string.startsWith('{regex}') && !(string.startsWith('*') || string.endsWith('*'))) { return false; }
 		const regex = string.replace('{regex}', '').trim();
 		if (string.startsWith('{regex}') && regex === '') { return false; }
-		if (regex !== undefined) {
+		if (regex !== undefined && string.startsWith('{regex}')) {
 			const match = new RegExp(regex).exec(folderName);
 			if (match) {
 				return true;
 			}
-		} else if (pattern.string.startsWith('*') && pattern.string.endsWith('*')) {
-			if (folderName.includes(pattern.string.slice(1, -1))) {
+		} else if (string.startsWith('*') && string.endsWith('*')) {
+			if (folderName.includes(string.slice(1, -1))) {
 				return true;
 			}
-		} else if (pattern.string.startsWith('*')) {
-			if (folderName.endsWith(pattern.string.slice(1))) {
+		} else if (string.startsWith('*')) {
+			if (folderName.endsWith(string.slice(1))) {
 				return true;
 			}
-		} else if (pattern.string.endsWith('*')) {
-			if (folderName.startsWith(pattern.string.slice(0, -1))) {
+		} else if (string.endsWith('*')) {
+			if (folderName.startsWith(string.slice(0, -1))) {
 				return true;
 			}
 		}
