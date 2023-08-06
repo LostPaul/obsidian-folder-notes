@@ -82,7 +82,7 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 	if (!includeTypes.includes('folder')) {
 		files = getAllFiles(files, sourceFolderPath, depth);
 	}
-	if (files.length === 0) { 
+	if (files.length === 0) {
 		// create button to edit the overview
 		const editButton = root.createEl('button', { cls: 'folder-overview-edit-button' });
 		editButton.innerText = 'Edit overview';
@@ -130,22 +130,80 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 			}
 		});
 	} else if (style === 'explorer') {
-		/*
-		const view = plugin.getFileExplorerView();
-		const folderElement = plugin.getEL(plugin.getFolderPathFromString(ctx.sourcePath))?.parentElement;
-		if (!folderElement) return;
-		// copy folderElement
-		const newFolderElement = folderElement.cloneNode(true) as HTMLElement;
-		newFolderElement.querySelectorAll('.nav-folder').forEach((el) => {
-			el.classList.remove('is-collapsed');
-		});
-		root.appendChild(folderElement);
-		*/
+	} else if (style === 'testing') {
+		cloneFileExplorerView(plugin, ctx, root);
 	}
 	if (includeTypes.length > 1 && style !== 'grid' && (!showEmptyFolders || yaml.onlyIncludeSubfolders)) {
 		removeEmptyFolders(ul, 1, yaml);
 	}
 }
+function cloneFileExplorerView(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement) {
+	const folder = plugin.getEL(plugin.getFolderPathFromString(ctx.sourcePath))
+	const folderElement = folder?.parentElement;
+	console.log(folderElement)
+	if (!folderElement) return;
+	const newFolderElement = folderElement.cloneNode(true) as HTMLElement;
+	newFolderElement.querySelectorAll('div.tree-item-icon').forEach((el) => {
+		if (el instanceof HTMLElement) {
+			el.onclick = () => {
+				el.classList.toggle('is-collapsed');
+				if (el.classList.contains('is-collapsed')) {
+					console.log(el.parentElement?.parentElement);
+					console.log(el.parentElement?.parentElement?.childNodes[1])
+					console.log(el.parentElement?.parentElement?.querySelector('tree-item-children'))
+					el.parentElement?.parentElement?.childNodes[1]?.remove();
+				} else {
+					console.log(el.parentElement)
+					const path = el.parentElement?.getAttribute('data-path');
+					if (!path) return;
+					const folder = plugin.app.vault.getAbstractFileByPath(path);
+					if (!(folder instanceof TFolder)) return;
+					const folderElement = el.parentElement?.parentElement;
+					if (!folderElement) return;
+					console.log('folderElement', folderElement);
+					const childrenElement = folderElement.createDiv({ cls: 'tree-item-children nav-folder-children' });
+					folder.children.forEach((child) => {
+						if (child instanceof TFolder) {
+							const folderElement = childrenElement.createDiv({
+								cls: 'tree-item nav-folder',
+								attr: {
+									'data-path': child.path,
+								},
+							});
+							const folderTitle = folderElement.createDiv({
+								cls: 'tree-item-self is-clickable nav-folder-title',
+							})
+							folderTitle.createDiv({
+								cls: 'tree-item-icon',
+							});
+							folderTitle.createDiv({
+								cls: 'tree-item-inner nav-folder-title-content',
+								text: child.name,
+							});
+						} else if (child instanceof TFile) {
+							const fileElement = childrenElement.createDiv({
+								cls: 'tree-item nav-file',
+							});
+							const fileTitle = fileElement.createDiv({
+								cls: 'tree-item-self is-clickable nav-file-title',
+								attr: {
+									'data-path': child.path,
+									'draggable': 'true'
+								},
+							})
+							fileTitle.createDiv({
+								cls: 'tree-item-inner nav-file-title-content',
+								text: child.basename,
+							});
+						}
+					});
+				}
+			}
+		}
+	});
+	root.appendChild(newFolderElement);
+}
+
 
 function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLUListElement, folder: TFolder,
 	depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: yamlSettings, pathBlacklist: string[], includeTypes: string[], disableFileTag: boolean) {
@@ -155,6 +213,8 @@ function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLU
 	let files = folder.children.filter((file) => {
 		const folderPath = plugin.getFolderPathFromString(file.path);
 		if (!folderPath.startsWith(sourceFolderPath)) { return false; }
+		const excludedFolder = getExcludedFolder(plugin, file.path);
+		if (excludedFolder?.excludeFromFolderOverview) { return false; }
 		if ((file.path.split('/').length - sourceFolderPath.split('/').length) - 1 < depth) {
 			return true;
 		}
