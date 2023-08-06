@@ -43,6 +43,18 @@ export default class ExcludedFolderSettings extends Modal {
 			);
 
 		new Setting(contentEl)
+			.setName('Don\'t show folder in folder overview')
+			.setDesc('Choose if the folder should be shown in the folder overview')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.excludedFolder.excludeFromFolderOverview)
+					.onChange(async (value) => {
+						this.excludedFolder.excludeFromFolderOverview = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(contentEl)
 			.setName('Disable auto creation of folder notes in this folder')
 			.setDesc('Choose if a folder note should be created when a new folder is created')
 			.addToggle((toggle) =>

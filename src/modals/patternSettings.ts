@@ -42,6 +42,18 @@ export default class PatternSettings extends Modal {
 					})
 			);
 
+		new Setting(contentEl)
+			.setName('Don\'t show folder in folder overview')
+			.setDesc('Choose if the folder should be shown in the folder overview')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.pattern.excludeFromFolderOverview)
+					.onChange(async (value) => {
+						this.pattern.excludeFromFolderOverview = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
 
 		new Setting(contentEl)
 			.setName('Disable open folder note')

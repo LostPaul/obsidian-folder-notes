@@ -2,6 +2,7 @@ import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile 
 import { extractFolderName, getFolderNote } from './functions/folderNoteFunctions';
 import FolderNotesPlugin from './main';
 import { FolderOverviewSettings } from './modals/folderOverview';
+import { getExcludedFolder } from './excludedFolder';
 export type yamlSettings = {
 	title?: string;
 	disableTitle?: boolean;
@@ -71,6 +72,8 @@ export function createOverview(plugin: FolderNotesPlugin, source: string, el: HT
 	files = files.filter((file) => {
 		const folderPath = plugin.getFolderPathFromString(file.path);
 		if (!folderPath.startsWith(sourceFolderPath)) { return false; }
+		const excludedFolder = getExcludedFolder(plugin, file.path);
+		if (excludedFolder?.excludeFromFolderOverview) { return false; }
 		if (file.path === ctx.sourcePath) { return false; }
 		if ((file.path.split('/').length - sourceFolderPath.split('/').length) - 1 < depth) {
 			return true;

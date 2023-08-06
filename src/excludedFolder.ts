@@ -15,6 +15,7 @@ export class ExcludedFolder {
 	disableFolderNote: boolean;
 	enableCollapsing: boolean;
 	position: number;
+	excludeFromFolderOverview: boolean;
 	constructor(path: string, position: number) {
 		this.type = 'folder';
 		this.path = path;
@@ -24,6 +25,7 @@ export class ExcludedFolder {
 		this.disableFolderNote = false;
 		this.enableCollapsing = false;
 		this.position = position;
+		this.excludeFromFolderOverview = false;
 		this.string = '';
 	}
 }
@@ -38,6 +40,7 @@ export class ExcludePattern {
 	disableAutoCreate: boolean;
 	disableFolderNote: boolean;
 	enableCollapsing: boolean;
+	excludeFromFolderOverview: boolean;
 	constructor(pattern: string, position: number) {
 		this.type = 'pattern';
 		this.string = pattern;
@@ -47,6 +50,7 @@ export class ExcludePattern {
 		this.disableAutoCreate = true;
 		this.disableFolderNote = false;
 		this.enableCollapsing = false;
+		this.excludeFromFolderOverview = false;
 		this.path = '';
 	}
 }
@@ -61,10 +65,14 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string) {
 }
 
 export function getExcludedFolderByPattern(plugin: FolderNotesPlugin, folderName: string) {
-	return plugin.settings.excludeFolders.filter((s) => s.path === '').find((pattern) => {
+	return plugin.settings.excludeFolders.filter((s) => s.type == 'pattern').find((pattern) => {
 		if (!pattern.string) { return false; }
-		if (pattern.string.toLocaleLowerCase().startsWith('{regex}') && pattern.string.slice(7).trim() !== '') {
-			const match = new RegExp(pattern.string.slice(7).trim()).exec(folderName);
+		const string = pattern.string.toLocaleLowerCase().trim();
+		if (!string.startsWith('{regex}') || string.startsWith('*') || string.endsWith('*')) { return false; }
+		const regex = string.replace('{regex}', '').trim();
+		if (string.startsWith('{regex}') && regex === '') { return false; }
+		if (regex !== undefined) {
+			const match = new RegExp(regex).exec(folderName);
 			if (match) {
 				return true;
 			}
