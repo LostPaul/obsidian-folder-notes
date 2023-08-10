@@ -11,7 +11,8 @@ export enum FileSuggestMode {
 export class FolderSuggest extends TextInputSuggest<TFolder> {
 	constructor(
         public inputEl: HTMLInputElement,
-        private plugin: FolderNotesPlugin
+        private plugin: FolderNotesPlugin,
+		public folder?: TFolder,
 	) {
 		super(inputEl);
 	}
@@ -29,7 +30,13 @@ export class FolderSuggest extends TextInputSuggest<TFolder> {
 	getSuggestions(input_str: string): TFolder[] {
 		const folders: TFolder[] = [];
 		const lower_input_str = input_str.toLowerCase();
-		this.plugin.app.vault.getAllLoadedFiles().forEach((folder: TAbstractFile) => {
+		let files: TAbstractFile[] = [];
+		if (this.folder) {
+			files = this.folder.children;
+		} else {
+			files = this.plugin.app.vault.getAllLoadedFiles();
+		}
+		files.forEach((folder: TAbstractFile) => {
 			if (
 				folder instanceof TFolder &&
                 folder.path.toLowerCase().contains(lower_input_str) &&

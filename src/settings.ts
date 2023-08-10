@@ -5,7 +5,8 @@ import { extractFolderName, getFolderNote } from './functions/folderNoteFunction
 import { addExcludeFolderListItem, ExcludedFolder, addExcludedFolder, ExcludePattern, addExcludePatternListItem } from './excludedFolder';
 import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
 import ConfirmationModal from "./modals/confirmCreation";
-import { yamlSettings } from './folderOverview';
+import { yamlSettings } from './folderOverview/FolderOverview';
+import { FolderOverviewSettings } from './folderOverview/modalSettings';
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
 	ctrlKey: boolean;
@@ -61,12 +62,18 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	syncDelete: false,
 	showRenameConfirmation: true,
 	defaultOverview: {
+		folderPath: '',
 		title: '{{folderName}} overview',
 		disableTitle: false,
 		depth: 3,
 		includeTypes: ['folder', 'markdown'],
 		style: 'list',
 		disableFileTag: false,
+		sortBy: 'name',
+		sortByAsc: true,
+		showEmptyFolders: false,
+		onlyIncludeSubfolders: false,
+		storeFolderCondition: true,
 	},
 	useSubmenus: true,
 	syncMove: true,
@@ -124,6 +131,18 @@ export class SettingsTab extends PluginSettingTab {
 					.onChange(async (value: '.md' | '.canvas') => {
 						this.plugin.settings.folderNoteType = value;
 						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('Manage folder overview defaults')
+			.setDesc('Manage the default settings for the folder overview plugin')
+			.addButton((button) =>
+				button
+					.setButtonText('Manage')
+					.setCta()
+					.onClick(async () => {
+						new FolderOverviewSettings(this.plugin.app, this.plugin, this.plugin.settings.defaultOverview, null, null, true).open();
 					})
 			);
 
@@ -210,11 +229,9 @@ export class SettingsTab extends PluginSettingTab {
 						.onChange(async (value) => {
 							this.plugin.settings.syncMove = value;
 							await this.plugin.saveSettings();
-						}
-						)
+						})
 				);
 		}
-
 		const disableSetting = new Setting(containerEl);
 		disableSetting.setName('Disable folder collapsing');
 		disableSetting.setDesc('Disable the ability to collapse folders by clicking exactly on the folder name');
@@ -449,16 +466,16 @@ export class SettingsTab extends PluginSettingTab {
 
 
 		new Setting(containerEl)
-		.setName('Create folder note for every folder')
-		.setDesc('Create a folder note for every folder in the vault')
-		.addButton((cb) => {
-			cb.setIcon('plus');
-			cb.setTooltip('Create folder notes');
-			cb.onClick(async () => {
-				
-				new ConfirmationModal(this.app, this.plugin).open();
+			.setName('Create folder note for every folder')
+			.setDesc('Create a folder note for every folder in the vault')
+			.addButton((cb) => {
+				cb.setIcon('plus');
+				cb.setTooltip('Create folder notes');
+				cb.onClick(async () => {
+
+					new ConfirmationModal(this.app, this.plugin).open();
+				});
 			});
-		});
 
 
 		const manageExcluded = new Setting(containerEl)

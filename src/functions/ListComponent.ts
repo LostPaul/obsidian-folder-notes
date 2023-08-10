@@ -1,5 +1,7 @@
 import { Setting } from 'obsidian';
-import { FolderOverviewSettings } from '../modals/folderOverview';
+import { FolderOverviewSettings } from '../folderOverview/modalSettings';
+import { includeTypes } from 'src/folderOverview/FolderOverview';
+import { updateYaml } from 'src/folderOverview/FolderOverview';
 export default class ListComponent {
 	containerEl: HTMLElement;
 	controlEl: HTMLElement;
@@ -20,13 +22,17 @@ export default class ListComponent {
 	setValues(values: string[]) {
 		this.listEl.empty();
 		this.values = values;
-		this.modal.yaml.includeTypes = values;
+		this.modal.yaml.includeTypes = values as includeTypes[];
 		if (values.length !== 0) {
 			values.forEach((value) => {
 				this.addElement(value);
 			});
 		}
-		this.modal.updateYaml();
+		if (this.modal.defaultSettings) {
+			this.modal.plugin.saveSettings();
+			return this;
+		}
+		updateYaml(this.modal.plugin, this.modal.ctx, this.modal.el, this.modal.yaml);
 		return this;
 	}
 	addElement(value: string) {
@@ -46,7 +52,7 @@ export default class ListComponent {
 	async addValue(value: string) {
 		this.values.push(value);
 		this.addElement(value);
-		this.modal.yaml.includeTypes = this.values;
+		this.modal.yaml.includeTypes = this.values as includeTypes[];
 		return this;
 	}
 	addResetButton() {

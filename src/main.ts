@@ -1,4 +1,4 @@
-import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings';
 import { Commands } from './commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
@@ -7,9 +7,8 @@ import { handleFileRename, handleFolderRename } from './events/handleRename';
 import { createFolderNote, extractFolderName, getFolderNote, getFolder } from './functions/folderNoteFunctions';
 import { getExcludedFolder } from './excludedFolder';
 import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
-import { createOverview as createFolderOverview } from './folderOverview';
-import { FolderOverviewSettings } from './modals/folderOverview';
-import { FolderOverview } from './folderOverviewClass';
+import { FolderOverviewSettings } from './folderOverview/modalSettings';
+import { FolderOverview } from './folderOverview/FolderOverview';
 import './functions/ListComponent';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
@@ -160,29 +159,48 @@ export default class FolderNotesPlugin extends Plugin {
 			if (!this.settings.syncDelete) { return; }
 			this.app.vault.delete(folderNote);
 		}));
-		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-			const observer = new MutationObserver(() => {
-				const editButton = el.parentElement?.childNodes.item(1);
-				if (editButton) {
-					editButton.addEventListener('click', (e) => {
-						e.stopImmediatePropagation();
-						e.preventDefault();
-						e.stopPropagation();
-						new FolderOverviewSettings(this.app, this, parseYaml(source), ctx, el).open();
-					}, { capture: true });
-				}
+		if (this.app.workspace.layoutReady) {
+			this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+				this.handleOverviewBlock(source, el, ctx);
 			});
-			observer.observe(el, {
-				childList: true,
-				subtree: true,
+		} else {
+			this.app.workspace.onLayoutReady(() => {
+				console.log('layout ready');
+				this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+					this.handleOverviewBlock(source, el, ctx);
+				});
 			});
-			const folderOverview = new FolderOverview(this, ctx, source, el);
-			folderOverview.create(this, parseYaml(source), el, ctx);
-		});
+		}
 		if (this.app.workspace.layoutReady) {
 			this.loadFileClasses();
 		} else {
 			this.app.workspace.onLayoutReady(async () => this.loadFileClasses());
+		}
+	}
+
+	handleOverviewBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+		console.log('handling overview block');
+		const observer = new MutationObserver(() => {
+			const editButton = el.parentElement?.childNodes.item(1);
+			if (editButton) {
+				editButton.addEventListener('click', (e) => {
+					e.stopImmediatePropagation();
+					e.preventDefault();
+					e.stopPropagation();
+					new FolderOverviewSettings(this.app, this, parseYaml(source), ctx, el).open();
+				}, { capture: true });
+			}
+		});
+		observer.observe(el, {
+			childList: true,
+			subtree: true,
+		});
+		try {
+		const folderOverview = new FolderOverview(this, ctx, source, el);
+		folderOverview.create(this, parseYaml(source), el, ctx);
+		} catch (e) {
+			new Notice('Error creating folder overview (folder notes plugin) - check console for more details');
+			console.error(e);
 		}
 	}
 
