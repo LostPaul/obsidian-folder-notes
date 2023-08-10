@@ -120,7 +120,7 @@ export class FolderOverviewSettings extends Modal {
 				.setDesc('Choose if the collapsed condition should be stored stored until you restart Obsidian')
 				.addToggle((toggle) =>
 					toggle
-						.setValue(this.yaml.storeFolderCondition || this.plugin.settings.defaultOverview.storeFolderCondition || true)
+						.setValue(this.yaml.storeFolderCondition)
 						.onChange(async (value) => {
 							this.yaml.storeFolderCondition = value;
 							if (this.defaultSettings) {
