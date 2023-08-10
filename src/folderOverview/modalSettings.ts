@@ -43,7 +43,6 @@ export class FolderOverviewSettings extends Modal {
 				this.close();
 			}
 		});
-		console.log(this.yaml);
 		contentEl.createEl('h2', { text: 'Folder overview settings' });
 		new Setting(contentEl)
 			.setName('Disable the title')
@@ -52,7 +51,6 @@ export class FolderOverviewSettings extends Modal {
 				toggle
 					.setValue(this.yaml.disableTitle || false)
 					.onChange(async (value) => {
-						console.log(this.yaml)
 						this.yaml.disableTitle = value;
 						this.display();
 						if (this.defaultSettings) {

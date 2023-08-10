@@ -86,7 +86,6 @@ export class FolderOverview {
         } else if (sourceFolder) {
             files = sourceFolder.children;
         }
-        console.log(files);
         files = this.filterFiles(files, plugin, sourceFolderPath, this.yaml.depth, this.pathBlacklist);
         if (!this.yaml.includeTypes.includes('folder')) {
             files = this.getAllFiles(files, sourceFolderPath, this.yaml.depth);
@@ -98,7 +97,6 @@ export class FolderOverview {
                 e.stopImmediatePropagation();
                 e.preventDefault();
                 e.stopPropagation();
-                console.log(this)
                 new FolderOverviewSettings(plugin.app, plugin, this.yaml, ctx, el).open();
             }, { capture: true });
         }
@@ -465,7 +463,6 @@ export class FolderOverview {
 }
 
 export async function updateYaml(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, el: HTMLElement, yaml: yamlSettings) {
-    console.log('update yaml');
     const file = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
     if (!(file instanceof TFile)) return;
     let stringYaml = stringifyYaml(yaml);
@@ -477,9 +474,7 @@ export async function updateYaml(plugin: FolderNotesPlugin, ctx: MarkdownPostPro
         }
         if (info) {
             const { lineStart } = info;
-            console.log(text);
             const lineEnd = getCodeBlockEndLine(text, lineStart);
-            console.log(lineStart, lineEnd);
             if (lineEnd === -1 || !lineEnd) return text;
             const lineLength = lineEnd - lineStart;
             const lines = text.split('\n');

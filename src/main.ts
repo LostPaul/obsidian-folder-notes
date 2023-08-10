@@ -163,7 +163,7 @@ export default class FolderNotesPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
 			this.handleOverviewBlock(source, el, ctx);
 		});
-		
+
 		if (this.app.workspace.layoutReady) {
 			this.loadFileClasses();
 		} else {
@@ -172,7 +172,6 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	handleOverviewBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-		console.log('handling overview block');
 		const observer = new MutationObserver(() => {
 			const editButton = el.parentElement?.childNodes.item(1);
 			if (editButton) {
