@@ -159,18 +159,11 @@ export default class FolderNotesPlugin extends Plugin {
 			if (!this.settings.syncDelete) { return; }
 			this.app.vault.delete(folderNote);
 		}));
-		if (this.app.workspace.layoutReady) {
-			this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-				this.handleOverviewBlock(source, el, ctx);
-			});
-		} else {
-			this.app.workspace.onLayoutReady(() => {
-				console.log('layout ready');
-				this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-					this.handleOverviewBlock(source, el, ctx);
-				});
-			});
-		}
+
+		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+			this.handleOverviewBlock(source, el, ctx);
+		});
+		
 		if (this.app.workspace.layoutReady) {
 			this.loadFileClasses();
 		} else {
@@ -196,8 +189,8 @@ export default class FolderNotesPlugin extends Plugin {
 			subtree: true,
 		});
 		try {
-		const folderOverview = new FolderOverview(this, ctx, source, el);
-		folderOverview.create(this, parseYaml(source), el, ctx);
+			const folderOverview = new FolderOverview(this, ctx, source, el);
+			folderOverview.create(this, parseYaml(source), el, ctx);
 		} catch (e) {
 			new Notice('Error creating folder overview (folder notes plugin) - check console for more details');
 			console.error(e);
