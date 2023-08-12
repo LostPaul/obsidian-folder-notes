@@ -60,7 +60,11 @@ export class FolderOverviewSettings extends Modal {
 				this.close();
 			}
 		});
-		contentEl.createEl('h2', { text: 'Folder overview settings' });
+		if (!this.defaultSettings) {
+			contentEl.createEl('h2', { text: 'Folder overview settings' });
+		} else {
+			contentEl.createEl('h2', { text: 'Default folder overview settings' });
+		}
 		new Setting(contentEl)
 			.setName('Show the title')
 			.setDesc('Choose if the title should be shown')
@@ -76,7 +80,7 @@ export class FolderOverviewSettings extends Modal {
 						await updateYaml(this.plugin, this.ctx, this.el, this.yaml);;
 					})
 			);
-		if (!this.yaml.showTitle) {
+		if (this.yaml.showTitle) {
 			new Setting(contentEl)
 				.setName('Title')
 				.setDesc('Choose the title of the folder overview')
