@@ -1,0 +1,21 @@
+# https://github.com/SilentVoid13/Templater/blob/master/.github/workflows/release.yml
+name: Plugin release
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: npm build
+        run: |
+          npm install
+          npm run build --if-present
+      - name: Plugin release
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          artifacts: "main.js,manifest.json,styles.css"
+          token: ${{ secrets.GITHUB_TOKEN }}
