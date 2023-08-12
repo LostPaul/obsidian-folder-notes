@@ -21,7 +21,7 @@ export class FolderOverviewSettings extends Modal {
 			const includeTypes = yaml?.includeTypes || plugin.settings.defaultOverview.includeTypes || ['folder', 'markdown'];
 			this.yaml = {
 				id: yaml?.id || crypto.randomUUID(),
-				folderPath: yaml?.folderPath || plugin.getFolderPathFromString(ctx.sourcePath),
+				folderPath: yaml?.folderPath === undefined || yaml?.folderPath === null ? plugin.getFolderPathFromString(ctx.sourcePath) : yaml?.folderPath,
 				title: yaml?.title || plugin.settings.defaultOverview.title,
 				showTitle: yaml?.showTitle === undefined || yaml?.showTitle === null ? plugin.settings.defaultOverview.showTitle : yaml?.showTitle,
 				depth: yaml?.depth || plugin.settings.defaultOverview.depth,
@@ -105,7 +105,7 @@ export class FolderOverviewSettings extends Modal {
 					.setPlaceholder('Folder path')
 					.setValue(this.yaml?.folderPath || '')
 					.onChange(async (value) => {
-						if (!(this.app.vault.getAbstractFileByPath(value) instanceof TFolder)) return;
+						if (!(this.app.vault.getAbstractFileByPath(value) instanceof TFolder) && value !== '') return;
 						this.yaml.folderPath = value;
 						if (this.defaultSettings) {
 							return this.plugin.saveSettings();

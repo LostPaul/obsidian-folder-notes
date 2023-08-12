@@ -43,7 +43,7 @@ export class FolderOverview {
         this.el = el;
         this.yaml = {
             id: yaml?.id || crypto.randomUUID(),
-            folderPath: yaml?.folderPath || plugin.getFolderPathFromString(ctx.sourcePath),
+            folderPath: yaml?.folderPath === undefined || yaml?.folderPath === null ? plugin.getFolderPathFromString(ctx.sourcePath) : yaml?.folderPath,
             title: yaml?.title || plugin.settings.defaultOverview.title,
             showTitle: yaml?.showTitle === undefined || yaml?.showTitle === null ? plugin.settings.defaultOverview.showTitle : yaml?.showTitle,
             depth: yaml?.depth || plugin.settings.defaultOverview.depth,
@@ -71,7 +71,11 @@ export class FolderOverview {
         const sourceFolderPath = this.yaml.folderPath || plugin.getFolderPathFromString(ctx.sourcePath);
         let sourceFolder: TFolder | undefined;
         if (sourceFolderPath !== '/') {
-            sourceFolder = plugin.app.vault.getAbstractFileByPath(this.yaml.folderPath) as TFolder;
+            if (this.yaml.folderPath  === '') {
+                sourceFolder = plugin.app.vault.getAbstractFileByPath(plugin.getFolderPathFromString(ctx.sourcePath)) as TFolder;
+            } else {
+                sourceFolder = plugin.app.vault.getAbstractFileByPath(this.yaml.folderPath) as TFolder;
+            }
         }
         if (this.yaml.showTitle) {
             if (sourceFolder && sourceFolderPath !== '/') {
@@ -405,7 +409,7 @@ export class FolderOverview {
     removeEmptyFolders(ul: HTMLUListElement | HTMLLIElement, depth: number, yaml: yamlSettings) {
         const childrensToRemove: ChildNode[] = [];
         ul.childNodes.forEach((el) => {
-            if ((el.childNodes[0] as HTMLElement)?.classList.contains('internal-link')) { return; }
+            if ((el.childNodes[0] as HTMLElement)?.classList && (el.childNodes[0] as HTMLElement)?.classList.contains('internal-link')) { return; }
             const childrens = (el as Element).querySelector('ul');
             if (!childrens || childrens === null) { return; }
             if (childrens && !childrens?.hasChildNodes() && !(el instanceof HTMLUListElement)) {
