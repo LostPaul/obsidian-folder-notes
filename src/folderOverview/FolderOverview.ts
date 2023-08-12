@@ -168,7 +168,10 @@ export class FolderOverview {
     cloneFileExplorerView(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: yamlSettings, pathBlacklist: string[]) {
         const folder = plugin.getEL(this.yaml.folderPath)
         let folderElement = folder?.parentElement;
-        const tFolder = plugin.app.vault.getAbstractFileByPath(this.yaml.folderPath);
+        let tFolder = plugin.app.vault.getAbstractFileByPath(this.yaml.folderPath);
+        if (!tFolder && yaml.folderPath.trim() == '') {
+            tFolder = plugin.app.vault.getAbstractFileByPath(plugin.getFolderPathFromString(ctx.sourcePath));
+        }
         if (!folderElement && yaml.folderPath.trim() !== '') return;
         folderElement = document.querySelector('div.nav-files-container') as HTMLElement;
         if (!folderElement) return;
