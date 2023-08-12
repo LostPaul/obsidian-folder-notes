@@ -1,5 +1,5 @@
 import { Setting } from 'obsidian';
-import { FolderOverviewSettings } from '../folderOverview/modalSettings';
+import { FolderOverviewSettings } from '../folderOverview/ModalSettings';
 import { includeTypes } from 'src/folderOverview/FolderOverview';
 import { updateYaml } from 'src/folderOverview/FolderOverview';
 export default class ListComponent {

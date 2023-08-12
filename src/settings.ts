@@ -1,12 +1,12 @@
 import { App, Notice, Platform, PluginSettingTab, Setting, TFile, TFolder } from 'obsidian';
 import FolderNotesPlugin from './main';
-import { TemplateSuggest } from './suggesters/templateSuggester';
+import { TemplateSuggest } from './suggesters/TemplateSuggester';
 import { extractFolderName, getFolderNote } from './functions/folderNoteFunctions';
 import { addExcludeFolderListItem, ExcludedFolder, addExcludedFolder, ExcludePattern, addExcludePatternListItem } from './excludedFolder';
-import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
-import ConfirmationModal from "./modals/confirmCreation";
+import { FrontMatterTitlePluginHandler } from './events/FrontMatterTitle';
+import ConfirmationModal from "./modals/ConfirmCreation";
 import { yamlSettings } from './folderOverview/FolderOverview';
-import { FolderOverviewSettings } from './folderOverview/modalSettings';
+import { FolderOverviewSettings } from './folderOverview/ModalSettings';
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
 	ctrlKey: boolean;

@@ -1,8 +1,8 @@
 import FolderNotesPlugin from '../main';
-import ExistingFolderNoteModal from '../modals/existingNote';
+import ExistingFolderNoteModal from '../modals/ExistingNote';
 import { applyTemplate } from '../template';
 import { TFolder, TFile, TAbstractFile, Keymap } from 'obsidian';
-import DeleteConfirmationModal from '../modals/deleteConfirmation';
+import DeleteConfirmationModal from '../modals/DeleteConfirmation';
 import { addExcludedFolder, deleteExcludedFolder, getExcludedFolder, ExcludedFolder, updateExcludedFolder } from '../excludedFolder';
 
 export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, useModal?: boolean, existingNote?: TFile) {

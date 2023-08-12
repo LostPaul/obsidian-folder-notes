@@ -187,7 +187,7 @@ export class FolderOverviewSettings extends Modal {
 				.setDesc('Choose if the file tag should be shown after the file name')
 				.addToggle((toggle) => {
 					toggle
-						.setValue(this.yaml.disableFileTag || this.plugin.settings.defaultOverview.disableFileTag || false)
+						.setValue(this.yaml.disableFileTag)
 						.onChange(async (value) => {
 							this.yaml.disableFileTag = value;
 							if (this.defaultSettings) {
@@ -255,7 +255,7 @@ export class FolderOverviewSettings extends Modal {
 				.setDesc('Show the names of folders that appear to have no files/folders in the folder overview. That\'s mostly the case when you set the file depth to 1.')
 				.addToggle((toggle) => {
 					toggle
-						.setValue(this.yaml.showEmptyFolders || this.plugin.settings.defaultOverview.showEmptyFolders || false)
+						.setValue(this.yaml.showEmptyFolders)
 						.onChange(async (value) => {
 							this.yaml.showEmptyFolders = value;
 							this.yaml.onlyIncludeSubfolders = false;
@@ -272,7 +272,7 @@ export class FolderOverviewSettings extends Modal {
 					.setName('Only show first empty subfolders of current folder')
 					.addToggle((toggle) => {
 						toggle
-							.setValue(this.yaml.onlyIncludeSubfolders || this.plugin.settings.defaultOverview.onlyIncludeSubfolders || false)
+							.setValue(this.yaml.onlyIncludeSubfolders)
 							.onChange(async (value) => {
 								this.yaml.onlyIncludeSubfolders = value;
 								if (this.defaultSettings) {

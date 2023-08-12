@@ -1,9 +1,11 @@
 import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile, stringifyYaml, Notice } from 'obsidian';
 import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctions';
 import FolderNotesPlugin from '../main';
-import { FolderOverviewSettings } from './modalSettings';
+import { FolderOverviewSettings } from './ModalSettings';
 import { getExcludedFolder } from '../excludedFolder';
+
 export type includeTypes = 'folder' | 'markdown' | 'canvas' | 'other' | 'pdf' | 'images' | 'audio' | 'video' | 'all';
+
 export type yamlSettings = {
     folderPath: string;
     title: string;
@@ -18,6 +20,7 @@ export type yamlSettings = {
     onlyIncludeSubfolders: boolean;
     storeFolderCondition: boolean;
 };
+
 export class FolderOverview {
     yaml: yamlSettings;
     plugin: FolderNotesPlugin;
@@ -38,16 +41,16 @@ export class FolderOverview {
         this.yaml = {
             folderPath: yaml?.folderPath || plugin.getFolderPathFromString(ctx.sourcePath),
             title: yaml?.title || plugin.settings.defaultOverview.title,
-            disableTitle: yaml?.disableTitle || plugin.settings.defaultOverview.disableTitle,
+            disableTitle: yaml?.disableTitle !== undefined && yaml?.disableTitle !== null ? yaml?.disableTitle : plugin.settings.defaultOverview.disableTitle,
             depth: yaml?.depth || plugin.settings.defaultOverview.depth,
             style: yaml?.style || 'list',
             includeTypes: includeTypes.map((type) => type.toLowerCase()) as includeTypes[],
-            disableFileTag: yaml?.disableFileTag || plugin.settings.defaultOverview.disableFileTag,
+            disableFileTag: yaml?.disableFileTag !== undefined && yaml?.disableFileTag !== null ? yaml?.disableFileTag : plugin.settings.defaultOverview.disableFileTag,
             sortBy: yaml?.sortBy || plugin.settings.defaultOverview.sortBy,
             sortByAsc: yaml?.sortByAsc || plugin.settings.defaultOverview.sortByAsc,
-            showEmptyFolders: yaml?.showEmptyFolders || plugin.settings.defaultOverview.showEmptyFolders,
-            onlyIncludeSubfolders: yaml?.onlyIncludeSubfolders || plugin.settings.defaultOverview.onlyIncludeSubfolders,
-            storeFolderCondition: yaml?.storeFolderCondition || plugin.settings.defaultOverview.storeFolderCondition
+            showEmptyFolders: yaml?.showEmptyFolders  !== undefined && yaml?.showEmptyFolders !== null ? yaml?.showEmptyFolders : plugin.settings.defaultOverview.showEmptyFolders,
+            onlyIncludeSubfolders: yaml?.onlyIncludeSubfolders !== undefined && yaml?.onlyIncludeSubfolders !== null ? yaml?.onlyIncludeSubfolders : plugin.settings.defaultOverview.onlyIncludeSubfolders,
+            storeFolderCondition: yaml?.storeFolderCondition !== undefined && yaml?.storeFolderCondition !== null ? yaml?.storeFolderCondition : plugin.settings.defaultOverview.storeFolderCondition,
         }
     }
     create(plugin: FolderNotesPlugin, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {

@@ -1,13 +1,13 @@
 import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice } from 'obsidian';
-import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings';
+import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './Settings';
 import { Commands } from './commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
 import { handleViewHeaderClick, handleFolderClick } from './events/handleClick';
 import { handleFileRename, handleFolderRename } from './events/handleRename';
 import { createFolderNote, extractFolderName, getFolderNote, getFolder } from './functions/folderNoteFunctions';
 import { getExcludedFolder } from './excludedFolder';
-import { FrontMatterTitlePluginHandler } from './events/frontMatterTitle';
-import { FolderOverviewSettings } from './folderOverview/modalSettings';
+import { FrontMatterTitlePluginHandler } from './events/FrontMatterTitle';
+import { FolderOverviewSettings } from './folderOverview/ModalSettings';
 import { FolderOverview } from './folderOverview/FolderOverview';
 import './functions/ListComponent';
 export default class FolderNotesPlugin extends Plugin {
