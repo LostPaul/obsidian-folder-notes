@@ -221,7 +221,6 @@ export class Commands {
 							let json = Object.assign({}, this.plugin.settings.defaultOverview);
 							json.id = crypto.randomUUID();
 							const yaml = stringifyYaml(json)
-							console.log(lineText)
 							if (lineText.trim() === '') {
 								editor.replaceSelection(`\`\`\`folder-overview\n${yaml}\`\`\`\n`);
 							} else if (lineText.trim() === '>') {
