@@ -365,8 +365,10 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-		const overview = await (this.loadData() as any).defaultOverview;
+		const data = await this.loadData();
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
+		if (!data) { return; }
+		const overview =  (data as any).defaultOverview;
 		if (!overview) { return; }
 		this.settings.defaultOverview = Object.assign({}, DEFAULT_SETTINGS.defaultOverview, overview);
 	}
