@@ -17,8 +17,24 @@ export class FolderOverviewSettings extends Modal {
 		this.app = app;
 		if (!yaml) {
 			this.yaml = this.plugin.settings.defaultOverview;
-		} else {
-			this.yaml = yaml;
+		} else if (ctx) {
+			const includeTypes = yaml?.includeTypes || plugin.settings.defaultOverview.includeTypes || ['folder', 'markdown'];
+			this.yaml = {
+				id: yaml?.id || crypto.randomUUID(),
+				folderPath: yaml?.folderPath || plugin.getFolderPathFromString(ctx.sourcePath),
+				title: yaml?.title || plugin.settings.defaultOverview.title,
+				showTitle: yaml?.showTitle === undefined || yaml?.showTitle === null ? plugin.settings.defaultOverview.showTitle : yaml?.showTitle,
+				depth: yaml?.depth || plugin.settings.defaultOverview.depth,
+				style: yaml?.style || 'list',
+				includeTypes: includeTypes.map((type) => type.toLowerCase()) as includeTypes[],
+				disableFileTag: yaml?.disableFileTag === undefined || yaml?.disableFileTag === null ? plugin.settings.defaultOverview.disableFileTag : yaml?.disableFileTag,
+				sortBy: yaml?.sortBy || plugin.settings.defaultOverview.sortBy,
+				sortByAsc: yaml?.sortByAsc || plugin.settings.defaultOverview.sortByAsc,
+				showEmptyFolders: yaml?.showEmptyFolders === undefined || yaml?.showEmptyFolders === null ? plugin.settings.defaultOverview.showEmptyFolders : yaml?.showEmptyFolders,
+				onlyIncludeSubfolders: yaml?.onlyIncludeSubfolders === undefined || yaml?.onlyIncludeSubfolders === null ? plugin.settings.defaultOverview.onlyIncludeSubfolders : yaml?.onlyIncludeSubfolders,
+				storeFolderCondition: yaml?.storeFolderCondition === undefined || yaml?.storeFolderCondition === null ? plugin.settings.defaultOverview.storeFolderCondition : yaml?.storeFolderCondition,
+				showFolderNotes: yaml?.showFolderNotes === undefined || yaml?.showFolderNotes === null ? plugin.settings.defaultOverview.showFolderNotes : yaml?.showFolderNotes,
+			}
 		}
 		if (ctx) {
 			this.ctx = ctx;
@@ -30,6 +46,7 @@ export class FolderOverviewSettings extends Modal {
 			this.yaml = this.plugin.settings.defaultOverview;
 			this.defaultSettings = true;
 		}
+		updateYaml(this.plugin, this.ctx, this.el, this.yaml);
 	}
 	onOpen() {
 		this.display();
@@ -45,13 +62,13 @@ export class FolderOverviewSettings extends Modal {
 		});
 		contentEl.createEl('h2', { text: 'Folder overview settings' });
 		new Setting(contentEl)
-			.setName('Disable the title')
+			.setName('Show the title')
 			.setDesc('Choose if the title should be shown')
 			.addToggle((toggle) =>
 				toggle
-					.setValue(this.yaml.disableTitle || false)
+					.setValue(this.yaml.showTitle)
 					.onChange(async (value) => {
-						this.yaml.disableTitle = value;
+						this.yaml.showTitle = value;
 						this.display();
 						if (this.defaultSettings) {
 							return this.plugin.saveSettings();
@@ -59,7 +76,7 @@ export class FolderOverviewSettings extends Modal {
 						await updateYaml(this.plugin, this.ctx, this.el, this.yaml);;
 					})
 			);
-		if (!this.yaml.disableTitle) {
+		if (!this.yaml.showTitle) {
 			new Setting(contentEl)
 				.setName('Title')
 				.setDesc('Choose the title of the folder overview')
@@ -84,11 +101,6 @@ export class FolderOverviewSettings extends Modal {
 					.setPlaceholder('Folder path')
 					.setValue(this.yaml?.folderPath || '')
 					.onChange(async (value) => {
-						if (value === '' || value === '/') {
-							this.yaml.folderPath = '';
-							await updateYaml(this.plugin, this.ctx, this.el, this.yaml);;
-							return;
-						}
 						if (!(this.app.vault.getAbstractFileByPath(value) instanceof TFolder)) return;
 						this.yaml.folderPath = value;
 						if (this.defaultSettings) {
@@ -197,6 +209,21 @@ export class FolderOverviewSettings extends Modal {
 						});
 				});
 		}
+		new Setting(contentEl)
+			.setName('Show folder notes')
+			.setDesc('Choose if folder notes (the note itself and not the folder name) should be shown in the overview')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.yaml.showFolderNotes)
+					.onChange(async (value) => {
+						this.yaml.showFolderNotes = value;
+						if (this.defaultSettings) {
+							return this.plugin.saveSettings();
+						}
+						await updateYaml(this.plugin, this.ctx, this.el, this.yaml);
+					})
+			);
+
 		if (this.yaml.style !== 'explorer') {
 			new Setting(contentEl)
 				.setName('File depth')

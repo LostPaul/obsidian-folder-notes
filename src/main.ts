@@ -1,6 +1,6 @@
 import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './Settings';
-import { Commands } from './commands';
+import { Commands } from './Commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
 import { handleViewHeaderClick, handleFolderClick } from './events/handleClick';
 import { handleFileRename, handleFolderRename } from './events/handleRename';
@@ -117,7 +117,6 @@ export default class FolderNotesPlugin extends Plugin {
 			if (folderNote) return;
 			createFolderNote(this, file.path, true, true);
 			this.addCSSClassToTitleEL(file.path, 'has-folder-note');
-
 		}));
 
 		this.registerEvent(this.app.workspace.on('file-open', (openFile: TFile | null) => {
@@ -367,6 +366,9 @@ export default class FolderNotesPlugin extends Plugin {
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const overview = await (this.loadData() as any).defaultOverview;
+		if (!overview) { return; }
+		this.settings.defaultOverview = Object.assign({}, DEFAULT_SETTINGS.defaultOverview, overview);
 	}
 
 	async saveSettings() {

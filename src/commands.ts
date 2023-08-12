@@ -17,7 +17,7 @@ export class Commands {
 	regularCommands() {
 		this.plugin.addCommand({
 			id: 'turn-into-folder-note',
-			name: 'Make current active note a folder note',
+			name: 'Make current active note a folder note for the folder of the active note',
 			callback: () => {
 				const file = this.app.workspace.getActiveFile();
 				if (!(file instanceof TFile)) return;
@@ -25,6 +25,62 @@ export class Commands {
 				if (!(folder instanceof TFolder)) return;
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				turnIntoFolderNote(this.plugin, file, folder, folderNote);
+			}
+		});
+		this.plugin.addCommand({
+			id: 'create-folder-note',
+			name: 'Create folder note with a new folder for the active note in the current folder',
+			callback: async () => {
+				const file = this.app.workspace.getActiveFile();
+				if (!(file instanceof TFile)) return;
+				let newPath = file.parent?.path + '/' + file.basename;
+				if (file.parent?.path === '' || file.parent?.path === '/') {
+					newPath = file.basename;
+				}
+				if (this.plugin.app.vault.getAbstractFileByPath(newPath)) {
+					return new Notice('Folder already exists');
+				}
+				await this.plugin.app.vault.createFolder(newPath);
+				const folder = this.plugin.app.vault.getAbstractFileByPath(newPath);
+				if (!(folder instanceof TFolder)) return;
+				createFolderNote(this.plugin, folder.path, true, false, file);
+			}
+		})
+		this.plugin.addCommand({
+			id: 'create-folder-note-for-current-folder',
+			name: 'Create folder note for current folder of active note',
+			callback: () => {
+				const file = this.app.workspace.getActiveFile();
+				if (!(file instanceof TFile)) return;
+				const folder = file.parent;
+				if (!(folder instanceof TFolder)) return;
+				createFolderNote(this.plugin, folder.path, true, false);
+			}
+		});
+		this.plugin.addCommand({
+			id: 'delete-folder-note-for-current-folder',
+			name: 'Delete folder note of current folder of active note',
+			callback: () => {
+				const file = this.app.workspace.getActiveFile();
+				if (!(file instanceof TFile)) return;
+				const folder = file.parent;
+				if (!(folder instanceof TFolder)) return;
+				const folderNote = getFolderNote(this.plugin, folder.path);
+				if (!(folderNote instanceof TFile)) return;
+				deleteFolderNote(this.plugin, folderNote);
+			}
+		});
+		this.plugin.addCommand({
+			id: 'open-folder-note-for-current-folder',
+			name: 'Open folder note of current folder of active note',
+			callback: () => {
+				const file = this.app.workspace.getActiveFile();
+				if (!(file instanceof TFile)) return;
+				const folder = file.parent;
+				if (!(folder instanceof TFolder)) return;
+				const folderNote = getFolderNote(this.plugin, folder.path);
+				if (!(folderNote instanceof TFile)) return;
+				openFolderNote(this.plugin, folderNote);
 			}
 		});
 	}
@@ -156,13 +212,26 @@ export class Commands {
 			const fileContent = editor.getValue().trim();
 			const line = editor.getCursor().line;
 			const lineText = editor.getLine(line);
-			if (!fileContent.includes('```folder-overview') && lineText.trim() == '') {
+			if (lineText.trim() === '' || lineText.trim() === '>') {
 				menu.addItem((item) => {
 					item.setTitle('Create folder overview')
 						.setIcon('edit')
 						.onClick(() => {
-							const yaml = stringifyYaml(this.plugin.settings.defaultOverview)
-							editor.replaceSelection(`\`\`\`folder-overview\n${yaml}\`\`\`\n`);
+							// clone this.plugin.settings.defaultOverview
+							let json = Object.assign({}, this.plugin.settings.defaultOverview);
+							json.id = crypto.randomUUID();
+							const yaml = stringifyYaml(json)
+							console.log(lineText)
+							if (lineText.trim() === '') {
+								editor.replaceSelection(`\`\`\`folder-overview\n${yaml}\`\`\`\n`);
+							} else if (lineText.trim() === '>') {
+								// add > to the beginning of each line
+								const lines = yaml.split('\n');
+								const newLines = lines.map((line) => {
+									return `> ${line}`;
+								});
+								editor.replaceSelection(`\`\`\`folder-overview\n${newLines.join('\n')}\`\`\`\n`);
+							}
 						});
 				});
 			}
