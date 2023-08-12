@@ -68,7 +68,7 @@ export class FolderOverview {
         let files: TAbstractFile[] = [];
         const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
         if (!sourceFile) return;
-        const sourceFolderPath = this.yaml.folderPath || plugin.getFolderPathFromString(ctx.sourcePath);
+        let sourceFolderPath = this.yaml.folderPath || plugin.getFolderPathFromString(ctx.sourcePath);
         let sourceFolder: TFolder | undefined;
         if (sourceFolderPath !== '/') {
             if (this.yaml.folderPath  === '') {
@@ -86,7 +86,10 @@ export class FolderOverview {
                 titleEl.innerText = this.yaml.title.replace('{{folderName}}', '');
             }
         }
-        if (!sourceFolder && sourceFolderPath !== '/') { return new Notice('Couldn\'t find the folder'); }
+        if (!sourceFolder && (sourceFolderPath !== '/' && sourceFolderPath !== '')) { return new Notice('Couldn\'t find the folder'); }
+        if (!sourceFolder && sourceFolderPath == '') {
+            sourceFolderPath = '/';
+        }
         if (sourceFolderPath == '/') {
             const rootFiles: TAbstractFile[] = [];
             plugin.app.vault.getAllLoadedFiles().filter(f => f.parent?.path === '/').forEach((file) => {
