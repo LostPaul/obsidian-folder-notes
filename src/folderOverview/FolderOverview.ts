@@ -64,7 +64,7 @@ export class FolderOverview {
         const root = el.createEl('div', { cls: 'folder-overview' });
         const titleEl = root.createEl('h1', { cls: 'folder-overview-title' });
         const ul = root.createEl('ul', { cls: 'folder-overview-list' });
-        if (this.yaml.includeTypes.length === 0) { return; }
+        if (this.yaml.includeTypes.length === 0) { return this.addEditButton(root); }
         let files: TAbstractFile[] = [];
         const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
         if (!sourceFile) return;
@@ -106,14 +106,7 @@ export class FolderOverview {
             files = this.getAllFiles(files, sourceFolderPath, this.yaml.depth);
         }
         if (files.length === 0) {
-            const editButton = root.createEl('button', { cls: 'folder-overview-edit-button' });
-            editButton.innerText = 'Edit overview';
-            editButton.addEventListener('click', (e) => {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                e.stopPropagation();
-                new FolderOverviewSettings(plugin.app, plugin, this.yaml, ctx, el).open();
-            }, { capture: true });
+            this.addEditButton(root)
         }
         files = this.sortFiles(files, this.yaml, plugin);
 
@@ -124,7 +117,6 @@ export class FolderOverview {
                 const gridArticle = gridItem.createEl('article', { cls: 'folder-overview-grid-item-article' });
                 if (file instanceof TFile) {
                     const fileContent = await plugin.app.vault.read(file);
-                    // skip --- yaml
                     const descriptionEl = gridArticle.createEl('p', { cls: 'folder-overview-grid-item-description' });
                     let description = fileContent.split('\n')[0];
                     if (description.length > 64) {
@@ -160,10 +152,23 @@ export class FolderOverview {
                 });
             }
         }
-        if (this.yaml.style !== 'list') { return; }
-        if (this.yaml.includeTypes.length > 1 && (!this.yaml.showEmptyFolders || this.yaml.onlyIncludeSubfolders)) {
+        const overviewListEl = el.childNodes[0].childNodes[1];
+        if (overviewListEl && overviewListEl.childNodes.length === 0) {
+            this.addEditButton(root);
+        }
+        if (this.yaml.includeTypes.length > 1 && (!this.yaml.showEmptyFolders || this.yaml.onlyIncludeSubfolders) && this.yaml.style === 'list') {
             this.removeEmptyFolders(ul, 1, this.yaml);
         }
+    }
+    addEditButton(root: HTMLElement) {
+        const editButton = root.createEl('button', { cls: 'folder-overview-edit-button' });
+        editButton.innerText = 'Edit overview';
+        editButton.addEventListener('click', (e) => {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            e.stopPropagation();
+            new FolderOverviewSettings(this.plugin.app, this.plugin, this.yaml, this.ctx, this.el).open();
+        }, { capture: true });
     }
     cloneFileExplorerView(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: yamlSettings, pathBlacklist: string[]) {
         const folder = plugin.getEL(this.yaml.folderPath)
@@ -511,7 +516,7 @@ export function getCodeBlockEndLine(text: string, startLine: number, count = 1) 
     let line = startLine + 1;
     const lines = text.split('\n');
     while (line < lines.length) {
-        if (count > 20) { return -1; }
+        if (count > 50) { return -1; }
         if (lines[line].startsWith('```')) {
             return line;
         }

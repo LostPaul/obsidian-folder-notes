@@ -29,7 +29,7 @@ export class FolderOverviewSettings extends Modal {
 				includeTypes: includeTypes.map((type) => type.toLowerCase()) as includeTypes[],
 				disableFileTag: yaml?.disableFileTag === undefined || yaml?.disableFileTag === null ? plugin.settings.defaultOverview.disableFileTag : yaml?.disableFileTag,
 				sortBy: yaml?.sortBy || plugin.settings.defaultOverview.sortBy,
-				sortByAsc: yaml?.sortByAsc || plugin.settings.defaultOverview.sortByAsc,
+				sortByAsc: yaml?.sortByAsc === undefined || yaml?.sortByAsc === null ? plugin.settings.defaultOverview.sortByAsc : yaml?.sortByAsc,
 				showEmptyFolders: yaml?.showEmptyFolders === undefined || yaml?.showEmptyFolders === null ? plugin.settings.defaultOverview.showEmptyFolders : yaml?.showEmptyFolders,
 				onlyIncludeSubfolders: yaml?.onlyIncludeSubfolders === undefined || yaml?.onlyIncludeSubfolders === null ? plugin.settings.defaultOverview.onlyIncludeSubfolders : yaml?.onlyIncludeSubfolders,
 				storeFolderCondition: yaml?.storeFolderCondition === undefined || yaml?.storeFolderCondition === null ? plugin.settings.defaultOverview.storeFolderCondition : yaml?.storeFolderCondition,
