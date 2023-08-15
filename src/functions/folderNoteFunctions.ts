@@ -43,6 +43,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 }
 
 export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile, skipConfirmation?: boolean) {
+	const extension = file.extension
 	if (folderNote) {
 		if (plugin.settings.showRenameConfirmation && !skipConfirmation) {
 			return new ExistingFolderNoteModal(plugin.app, plugin, file, folder, folderNote).open();
@@ -61,7 +62,7 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 			excludedFolder.disableSync = true;
 			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
 		}
-		const newPath = `${folder.path}/${folder.name} (${file.stat.ctime.toString().slice(10) + Math.floor(Math.random() * 1000)})${plugin.settings.folderNoteType}`;
+		const newPath = `${folder.path}/${folder.name} (${file.stat.ctime.toString().slice(10) + Math.floor(Math.random() * 1000)}).${extension}`;
 		plugin.app.vault.rename(folderNote, newPath).then(() => {
 			if (!excludedFolder) { return; }
 			if (!excludedFolderExisted) {
@@ -74,16 +75,18 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 	}
 	const folderName = folder.name;
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
-	let path = `${folder.path}/${fileName}${plugin.settings.folderNoteType}`;
+
+	let path = `${folder.path}/${fileName}.${extension}`;
 	if (plugin.settings.storageLocation === 'parentFolder') {
 		const parentFolderPath = folder.parent?.path;
 		if (!parentFolderPath) return;
 		if (parentFolderPath.trim() === '') {
-			path = `${fileName}${plugin.settings.folderNoteType}`;
+			path = `${fileName}.${extension}`;
 		} else {
-			path = `${parentFolderPath}/${fileName}${plugin.settings.folderNoteType}`;
+			path = `${parentFolderPath}/${fileName}.${extension}`;
 		}
 	}
+
 	await plugin.app.vault.rename(file, path);
 	plugin.addCSSClassToTitleEL(path, 'is-folder-note', true);
 	plugin.addCSSClassToTitleEL(folder.path, 'has-folder-note');
