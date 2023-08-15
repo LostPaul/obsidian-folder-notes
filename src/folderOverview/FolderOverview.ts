@@ -33,6 +33,7 @@ export class FolderOverview {
     el: HTMLElement;
     pathBlacklist: string[] = [];
     folders: TFolder[] = [];
+    sourceFilePath: string;
     constructor(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, source: string, el: HTMLElement) {
         let yaml: yamlSettings = parseYaml(source);
         if (!yaml) { yaml = {} as yamlSettings; }
@@ -41,6 +42,7 @@ export class FolderOverview {
         this.ctx = ctx;
         this.source = source;
         this.el = el;
+        this.sourceFilePath = this.ctx.sourcePath
         this.yaml = {
             id: yaml?.id || crypto.randomUUID(),
             folderPath: yaml?.folderPath === undefined || yaml?.folderPath === null ? plugin.getFolderPathFromString(ctx.sourcePath) : yaml?.folderPath,
@@ -106,7 +108,7 @@ export class FolderOverview {
             files = this.getAllFiles(files, sourceFolderPath, this.yaml.depth);
         }
         if (files.length === 0) {
-            this.addEditButton(root)
+            return this.addEditButton(root)
         }
         files = this.sortFiles(files);
 
@@ -165,10 +167,10 @@ export class FolderOverview {
             if (this.yaml.style === 'explorer') {
                 const overview = el.childNodes[0];
                 if (!overview.childNodes[2]) {
-                    this.addEditButton(root);
+                    return this.addEditButton(root);
                 }
-             } else {
-                this.addEditButton(root);
+            } else {
+                return this.addEditButton(root);
             }
         }
         if (this.yaml.includeTypes.length > 1 && (!this.yaml.showEmptyFolders || this.yaml.onlyIncludeSubfolders) && this.yaml.style === 'list') {
@@ -234,7 +236,7 @@ export class FolderOverview {
                     const path = el.parentElement?.getAttribute('data-path');
                     if (!path) return;
                     const folder = plugin.app.vault.getAbstractFileByPath(path);
-                    this.handleCollapseClick(el, plugin, yaml, pathBlacklist, folder);
+                    this.handleCollapseClick(el, plugin, yaml, pathBlacklist, this.source, folder);
                 }
             }
         });
@@ -276,7 +278,7 @@ export class FolderOverview {
                 }
                 collapseIcon.innerHTML = svg;
                 collapseIcon.onclick = () => {
-                    this.handleCollapseClick(collapseIcon, this.plugin, this.yaml, this.pathBlacklist, child);
+                    this.handleCollapseClick(collapseIcon, this.plugin, this.yaml, this.pathBlacklist, this.source, child);
                 }
                 folderTitle.createDiv({
                     cls: 'tree-item-inner nav-folder-title-content',
@@ -316,7 +318,7 @@ export class FolderOverview {
         }
     }
 
-    handleCollapseClick(el: HTMLElement, plugin: FolderNotesPlugin, yaml: yamlSettings, pathBlacklist: string[], folder?: TFolder | undefined | null | TAbstractFile) {
+    handleCollapseClick(el: HTMLElement, plugin: FolderNotesPlugin, yaml: yamlSettings, pathBlacklist: string[], sourcePath: string, folder?: TFolder | undefined | null | TAbstractFile) {
         el.classList.toggle('is-collapsed');
         if (el.classList.contains('is-collapsed')) {
             if (!(folder instanceof TFolder)) return;
@@ -336,7 +338,8 @@ export class FolderOverview {
 
 
     goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLUListElement, folder: TFolder,
-        depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: yamlSettings, pathBlacklist: string[], includeTypes: string[], disableFileTag: boolean) {
+        depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: yamlSettings,
+        pathBlacklist: string[], includeTypes: string[], disableFileTag: boolean) {
         if (sourceFolderPath === '') {
             depth--;
         }
@@ -366,6 +369,7 @@ export class FolderOverview {
             if (pathBlacklist.includes(file.path) && !this.yaml.showFolderNotes) { return false; }
             const folderPath = plugin.getFolderPathFromString(file.path);
             if (!folderPath.startsWith(sourceFolderPath) && sourceFolderPath !== '/') { return false; }
+            if (file.path === this.sourceFilePath) { return false; }
             const excludedFolder = getExcludedFolder(plugin, file.path);
             if (excludedFolder?.excludeFromFolderOverview) { return false; }
             if ((file.path.split('/').length - sourceFolderPath.split('/').length) - 1 < depth) {
