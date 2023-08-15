@@ -273,7 +273,11 @@ export class FolderOverviewSettings extends Modal {
 					dropdown.setValue('desc');
 				}
 				dropdown.onChange(async (value) => {
-					this.yaml.sortByAsc = value === 'asc';
+					if (value === 'desc') {
+						this.yaml.sortByAsc = false;
+					} else {
+						this.yaml.sortByAsc = true;
+					}
 					if (this.defaultSettings) {
 						return this.plugin.saveSettings();
 					}

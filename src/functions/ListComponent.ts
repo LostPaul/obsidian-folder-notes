@@ -52,7 +52,6 @@ export default class ListComponent {
 	async addValue(value: string) {
 		this.values.push(value);
 		this.addElement(value);
-		console.log(this.values);
 		this.modal.yaml.includeTypes = this.values as includeTypes[];
 		return this;
 	}
