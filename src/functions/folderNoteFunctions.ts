@@ -146,6 +146,7 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, sto
 		folder.path = fileName;
 		path = `${fileName}`;
 	}
+	
 	let folderNote = plugin.app.vault.getAbstractFileByPath(path + plugin.settings.folderNoteType);
 	if (folderNote instanceof TFile) {
 		return folderNote;

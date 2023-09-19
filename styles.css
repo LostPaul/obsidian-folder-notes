@@ -177,3 +177,32 @@
 .pointer-cursor {
     cursor: pointer !important;
 }
+
+
+/* Setting tab style */
+.fn-settings-tab-bar {
+	display: flex;
+	flex-direction: row;
+}
+
+.fn-settings-tab {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding: 10px;
+	border: 1px solid var(--background-modifier-border)
+}
+
+.fn-settings-tab-active {
+	background-color: var(--color-accent);
+	color: var(--text-on-accent);
+}
+
+.fn-settings-tab-name {
+	font-weight: bold;
+}
+
+.fn-settings-tab-icon {
+	display: flex;
+}
