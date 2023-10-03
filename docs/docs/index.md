@@ -4,3 +4,7 @@ This plugin has some unique features that separate it from similar "Folder note"
 
 
 ![[assets/Untitled.png]]
+
+[[assets/Untitled.png]]
+![[docs/assets/Untitled.png]]
+[[docs/assets/Untitled.png]]
