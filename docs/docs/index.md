@@ -7,7 +7,7 @@ This plugin has some unique features that separate it from similar "Folder note"
 - Sync folder note name with the folder name
 - Automatically create folder notes when creating folders
 - Turn every folder into a folder note
-- Folder overview embed with default settings
+- Folder overview code block with default settings in settings from the plugin
 - Hide folder notes in the file explorer
 - Underline folder names in the file explorer/path
 - Stop collapsing of folders (with folder notes) in the file explorer
