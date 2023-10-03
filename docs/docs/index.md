@@ -1,17 +1,6 @@
-# Welcome to MkDocs test2
+# Introduction
+Folder notes is a plugin for the note taking app  [Obsidian](https://obsidian.md/) that lets you attach notes to folders so that you can click on the name of a folder to open the note like in the app [Notion](https://www.notion.so/).
+This plugin has some unique features that separate it from similar "Folder note" plugins like opening folder notes through the path, creating folder notes for every existing folder, templater/template support and more.
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
 
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+![[Untitled.png]]
