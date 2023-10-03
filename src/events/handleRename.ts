@@ -51,7 +51,7 @@ export function handleFolderRename(file: TFolder, oldPath: string, plugin: Folde
 		folderNote.path = `${file.path}/${folderNote.name}`;
 		newPath = `${file.path}/${fileName}.${folderNote.extension}`;
 	}
-	plugin.app.vault.rename(folderNote, newPath);
+	plugin.app.fileManager.renameFile(folderNote, newPath);
 }
 
 export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNotesPlugin) {
