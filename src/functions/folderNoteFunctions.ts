@@ -33,7 +33,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		await leaf.openFile(file);
 	}
 	if (file && !existingNote) {
-		applyTemplate(this, file, plugin.settings.templatePath);
+		applyTemplate(plugin, file, leaf, plugin.settings.templatePath);
 	}
 
 	const folder = plugin.app.vault.getAbstractFileByPath(folderPath);

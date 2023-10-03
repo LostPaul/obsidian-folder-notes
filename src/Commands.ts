@@ -83,6 +83,91 @@ export class Commands {
 				openFolderNote(this.plugin, folderNote);
 			}
 		});
+		this.plugin.addCommand({
+			id: 'insert-folder-overview-fn',
+			name: 'Insert folder overview',
+			editorCheckCallback: (checking: boolean, editor: Editor) => {
+				const line = editor.getCursor().line;
+				const lineText = editor.getLine(line);
+				if (lineText.trim() === '' || lineText.trim() === '>') {
+					if (!checking) {
+						let json = Object.assign({}, this.plugin.settings.defaultOverview);
+						json.id = crypto.randomUUID();
+						const yaml = stringifyYaml(json)
+						if (lineText.trim() === '') {
+							editor.replaceSelection(`\`\`\`folder-overview\n${yaml}\`\`\`\n`);
+						} else if (lineText.trim() === '>') {
+							// add > to the beginning of each line
+							const lines = yaml.split('\n');
+							const newLines = lines.map((line) => {
+								return `> ${line}`;
+							});
+							editor.replaceSelection(`\`\`\`folder-overview\n${newLines.join('\n')}\`\`\`\n`);
+						}
+					}
+					return true;
+				}
+				return false;
+			},
+		})
+		this.plugin.addCommand({
+			id: 'create-folder-note-from-selected-text',
+			name: 'Create folder note from selected text',
+			editorCheckCallback: (checking: boolean, editor: Editor, view: MarkdownView) => {
+				const text = editor.getSelection().trim();
+				const line = editor.getCursor().line;
+				const file = view.file;
+				if (!(file instanceof TFile)) return false;
+				if (text && text.trim() !== '') {
+					if (checking) { return true;}
+					const blacklist = ['*', '\\', '"', '/', '<', '>', '?', '|', ':'];
+					for (const char of blacklist) {
+						if (text.includes(char)) {
+							new Notice('File name cannot contain any of the following characters: * " \\ / < > : | ?');
+							return false;
+						}
+					}
+					if (text.endsWith('.')) {
+						new Notice('File name cannot end with a dot');
+						return;
+					}
+					let folder: TAbstractFile | null;
+					const folderPath = this.plugin.getFolderPathFromString(file.path);
+					if (folderPath === '') {
+						folder = this.plugin.app.vault.getAbstractFileByPath(text);
+						if (folder instanceof TFolder) {
+							new Notice('Folder note already exists');
+							return false;
+						} else {
+							this.plugin.app.vault.createFolder(text);
+							createFolderNote(this.plugin, text, false);
+						}
+					} else {
+						folder = this.plugin.app.vault.getAbstractFileByPath(folderPath + '/' + text);
+						if (folder instanceof TFolder) {
+							new Notice('Folder note already exists');
+							return false;
+						}
+						if (this.plugin.settings.storageLocation === 'parentFolder') {
+							if (this.app.vault.getAbstractFileByPath(folderPath + '/' + text + this.plugin.settings.folderNoteType)) {
+								new Notice('File already exists');
+								return false;
+							}
+						}
+						this.plugin.app.vault.createFolder(folderPath + '/' + text);
+						createFolderNote(this.plugin, folderPath + '/' + text, false);
+					}
+					const fileName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', text);
+					if (fileName !== text) {
+						editor.replaceSelection(`[[${fileName}]]`);
+					} else {
+						editor.replaceSelection(`[[${fileName}|${text}]]`);
+					}
+					return true;
+				}
+				return false;
+			},
+		})
 	}
 	fileCommands() {
 		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
@@ -209,7 +294,6 @@ export class Commands {
 	editorCommands() {
 		this.plugin.registerEvent(this.plugin.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
 			const text = editor.getSelection().trim();
-			const fileContent = editor.getValue().trim();
 			const line = editor.getCursor().line;
 			const lineText = editor.getLine(line);
 			if (lineText.trim() === '' || lineText.trim() === '>') {
@@ -217,7 +301,6 @@ export class Commands {
 					item.setTitle('Create folder overview')
 						.setIcon('edit')
 						.onClick(() => {
-							// clone this.plugin.settings.defaultOverview
 							let json = Object.assign({}, this.plugin.settings.defaultOverview);
 							json.id = crypto.randomUUID();
 							const yaml = stringifyYaml(json)
@@ -254,6 +337,7 @@ export class Commands {
 						}
 						let folder: TAbstractFile | null;
 						const folderPath = this.plugin.getFolderPathFromString(file.path);
+						const fileName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', text);
 						if (folderPath === '') {
 							folder = this.plugin.app.vault.getAbstractFileByPath(text);
 							if (folder instanceof TFolder) {
@@ -268,15 +352,14 @@ export class Commands {
 								return new Notice('Folder note already exists');
 							}
 							if (this.plugin.settings.storageLocation === 'parentFolder') {
-								if (this.app.vault.getAbstractFileByPath(folderPath + '/' + text + this.plugin.settings.folderNoteType)) {
+								if (this.app.vault.getAbstractFileByPath(folderPath + '/' + fileName + this.plugin.settings.folderNoteType)) {
 									return new Notice('File already exists');
 								}
 							}
 							this.plugin.app.vault.createFolder(folderPath + '/' + text);
 							createFolderNote(this.plugin, folderPath + '/' + text, false);
 						}
-						const fileName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', text);
-						if (fileName === text) {
+						if (fileName !== text) {
 							editor.replaceSelection(`[[${fileName}]]`);
 						} else {
 							editor.replaceSelection(`[[${fileName}|${text}]]`);

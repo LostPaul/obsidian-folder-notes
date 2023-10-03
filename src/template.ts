@@ -2,11 +2,12 @@
 // from where I got the template code for this plugin
 // https://github.com/mgmeyers/obsidian-kanban/blob/48e6c278ce9140b7e034b181432321f697d6e45e/src/components/helpers.ts
 
-import { TFile, App } from 'obsidian';
+import { TFile, App, WorkspaceLeaf } from 'obsidian';
 import FolderNotesPlugin from './main';
 export async function applyTemplate(
 	plugin: FolderNotesPlugin,
 	file: TFile,
+	leaf?: WorkspaceLeaf | null,
 	templatePath?: string
 ) {
 	const templateFile = templatePath
@@ -32,11 +33,19 @@ export async function applyTemplate(
 						templateFile,
 						file
 					);
+				} else {
+					if (leaf instanceof WorkspaceLeaf) {
+						leaf.openFile(file).then(async () => {
+							return await templatesPlugin.instance.insertTemplate(templateFile, file);
+						});
+					}
 				}
-				return await templatesPlugin.instance.insertTemplate(templateFile);
 			}
 
 			if (templatesEnabled) {
+				if (leaf instanceof WorkspaceLeaf) {
+					leaf.openFile(file)
+				}
 				return await templatesPlugin.instance.insertTemplate(templateFile);
 			}
 

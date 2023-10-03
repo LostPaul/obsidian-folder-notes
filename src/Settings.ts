@@ -121,7 +121,6 @@ export class SettingsTab extends PluginSettingTab {
 	}
 	renderSettingsPage(tabId: string) {
 		this.settingsPage.empty();
-		console.log(tabId);
 		switch (tabId.toLocaleLowerCase()) {
 			case this.TABS.GENERAL.id:
 				this.renderGeneral();
@@ -150,7 +149,6 @@ export class SettingsTab extends PluginSettingTab {
 		for (const [tabId, tabInfo] of Object.entries(this.TABS)) {
 			const tabEl = tabBar.createEl('div', { cls: 'fn-settings-tab' });
 			const tabName = tabEl.createEl('div', { cls: 'fn-settings-tab-name', text: tabInfo.name });
-			console.log(this.plugin.settings.settingsTab, tabId);
 			if (this.plugin.settings.settingsTab.toLocaleLowerCase() === tabId.toLocaleLowerCase()) {
 				tabEl.addClass('fn-settings-tab-active');
 			}
@@ -387,7 +385,6 @@ export class SettingsTab extends PluginSettingTab {
 				cb.setIcon('plus');
 				cb.setTooltip('Create folder notes');
 				cb.onClick(async () => {
-
 					new ConfirmationModal(this.app, this.plugin).open();
 				});
 			});
