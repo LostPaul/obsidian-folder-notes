@@ -3,4 +3,4 @@ Folder notes is a plugin for the note taking app  [Obsidian](https://obsidian.md
 This plugin has some unique features that separate it from similar "Folder note" plugins like opening folder notes through the path, creating folder notes for every existing folder, templater/template support and more.
 
 
-![[Untitled.png]]
+![[assets/Untitled.png]]
