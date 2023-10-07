@@ -43,7 +43,7 @@ export class Commands {
 				await this.plugin.app.vault.createFolder(newPath);
 				const folder = this.plugin.app.vault.getAbstractFileByPath(newPath);
 				if (!(folder instanceof TFolder)) return;
-				createFolderNote(this.plugin, folder.path, true, false, file);
+				createFolderNote(this.plugin, folder.path, true, file.extension, false, file);
 			}
 		})
 		this.plugin.addCommand({
@@ -54,7 +54,7 @@ export class Commands {
 				if (!(file instanceof TFile)) return;
 				const folder = file.parent;
 				if (!(folder instanceof TFolder)) return;
-				createFolderNote(this.plugin, folder.path, true, false);
+				createFolderNote(this.plugin, folder.path, true, undefined, false);
 			}
 		});
 		this.plugin.addCommand({
@@ -223,7 +223,7 @@ export class Commands {
 								await this.plugin.app.vault.createFolder(newPath);
 								const newFolder = this.plugin.app.vault.getAbstractFileByPath(newPath);
 								if (!(newFolder instanceof TFolder)) return;
-								createFolderNote(this.plugin, newFolder.path, true, false, file);
+								createFolderNote(this.plugin, newFolder.path, true, undefined, false, file);
 							});
 					});
 					if (this.plugin.getFolderPathFromString(file.path) === '') return;

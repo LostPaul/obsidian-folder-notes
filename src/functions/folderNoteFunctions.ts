@@ -4,35 +4,83 @@ import { applyTemplate } from '../template';
 import { TFolder, TFile, TAbstractFile, Keymap } from 'obsidian';
 import DeleteConfirmationModal from '../modals/DeleteConfirmation';
 import { addExcludedFolder, deleteExcludedFolder, getExcludedFolder, ExcludedFolder, updateExcludedFolder } from '../excludedFolder';
+import { openExcalidrawView } from './excalidraw';
+import { AskForExtensionModal } from 'src/modals/AskForExtension';
 
-export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, useModal?: boolean, existingNote?: TFile) {
+export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, extension?: string, useModal?: boolean, existingNote?: TFile) {
 	const leaf = plugin.app.workspace.getLeaf(false);
 	const folderName = plugin.getFolderNameFromPathString(folderPath);
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
+	let folderNoteType = extension || plugin.settings.folderNoteType;
+	if (folderNoteType === '.excalidraw') {
+		folderNoteType = '.md';
+	} else if (folderNoteType === '.ask') {
+		return new AskForExtensionModal(plugin, folderPath, openFile, folderNoteType, useModal, existingNote).open();
+	}
 	let path = '';
 	if (plugin.settings.storageLocation === 'parentFolder') {
 		const parentFolderPath = plugin.getFolderPathFromString(folderPath);
 		if (parentFolderPath.trim() === '') {
-			path = `${fileName}${plugin.settings.folderNoteType}`;
+			path = `${fileName}${folderNoteType}`;
 		} else {
-			path = `${parentFolderPath}/${fileName}${plugin.settings.folderNoteType}`;
+			path = `${parentFolderPath}/${fileName}${folderNoteType}`;
 		}
 	} else if (plugin.settings.storageLocation === 'vaultFolder') {
-		path = `${fileName}${plugin.settings.folderNoteType}`;
+		path = `${fileName}${folderNoteType}`;
 	} else {
-		path = `${folderPath}/${fileName}${plugin.settings.folderNoteType}`;
+		path = `${folderPath}/${fileName}${folderNoteType}`;
 	}
 	let file: TFile;
 	if (!existingNote) {
-		file = await plugin.app.vault.create(path, '');
+		let content = '';
+		if (extension !== '.md') {
+			if (plugin.settings.templatePath && folderNoteType === plugin.settings.templatePath.slice(plugin.settings.templatePath.lastIndexOf('.'))) {
+				const templateFile = plugin.app.vault.getAbstractFileByPath(plugin.settings.templatePath);
+				if (templateFile instanceof TFile) {
+					if (['md', 'canvas', 'txt'].includes(templateFile.extension)) {
+						content = await plugin.app.vault.read(templateFile);
+					} else {
+						return plugin.app.vault.readBinary(templateFile).then(async (data) => {
+							file = await plugin.app.vault.createBinary(path, data);
+							if (openFile) {
+								await leaf.openFile(file);
+							}
+						});
+					}
+				}
+			} else if (plugin.settings.folderNoteType === '.excalidraw' || extension === '.excalidraw') {
+				content =
+					`---
+
+excalidraw-plugin: parsed
+tags: [excalidraw]
+			
+---
+==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==
+			
+			
+%%
+# Drawing
+\`\`\`json
+{"type":"excalidraw","version":2,"source":"https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/1.9.20","elements":[],"appState":{"gridSize":null,"viewBackgroundColor":"#ffffff"}}
+\`\`\`
+%%`;
+			} else if (plugin.settings.folderNoteType === '.canvas') {
+				content = '{}'
+			}
+		}
+		file = await plugin.app.vault.create(path, content);
 	} else {
 		file = existingNote;
 		plugin.app.vault.rename(existingNote, path);
 	}
 	if (openFile) {
 		await leaf.openFile(file);
+		if (plugin.settings.folderNoteType === '.excalidraw' || extension === '.excalidraw') {
+			openExcalidrawView(leaf);
+		}
 	}
-	if (file && !existingNote) {
+	if (file && !existingNote && plugin.settings.folderNoteType == '.excalidraw' && extension == plugin.settings.templatePath.split('.').pop()) {
 		applyTemplate(plugin, file, leaf, plugin.settings.templatePath);
 	}
 
@@ -146,17 +194,28 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, sto
 		folder.path = fileName;
 		path = `${fileName}`;
 	}
-	
-	let folderNote = plugin.app.vault.getAbstractFileByPath(path + plugin.settings.folderNoteType);
+	let folderNoteType = plugin.settings.folderNoteType;
+	if (folderNoteType === '.excalidraw') {
+		folderNoteType = '.md';
+	}
+
+	let folderNote = plugin.app.vault.getAbstractFileByPath(path + folderNoteType);
 	if (folderNote instanceof TFile) {
 		return folderNote;
 	} else {
-		if (plugin.settings.folderNoteType === '.canvas') {
-			folderNote = plugin.app.vault.getAbstractFileByPath(path + '.md');
-		} else {
-			folderNote = plugin.app.vault.getAbstractFileByPath(path + '.canvas');
+		const supportedFileTypes = plugin.settings.supportedFileTypes.filter((type) => type !== plugin.settings.folderNoteType.replace('.', ''));
+		for (let type of supportedFileTypes) {
+			if (type === 'excalidraw' || type === '.excalidraw') {
+				type = '.md';
+			}
+			if (!type.startsWith('.')) {
+				type = '.' + type;
+			}
+			folderNote = plugin.app.vault.getAbstractFileByPath(path + type);
+			if (folderNote instanceof TFile) {
+				return folderNote;
+			}
 		}
-		return folderNote;
 	}
 }
 

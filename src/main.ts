@@ -115,7 +115,7 @@ export default class FolderNotesPlugin extends Plugin {
 			if (excludedFolder?.disableAutoCreate) return;
 			const folderNote = getFolderNote(this, file.path);
 			if (folderNote) return;
-			createFolderNote(this, file.path, true, true);
+			createFolderNote(this, file.path, true, undefined, true);
 			this.addCSSClassToTitleEL(file.path, 'has-folder-note');
 		}));
 

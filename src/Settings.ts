@@ -7,6 +7,9 @@ import { FrontMatterTitlePluginHandler } from './events/FrontMatterTitle';
 import ConfirmationModal from "./modals/ConfirmCreation";
 import { yamlSettings } from './folderOverview/FolderOverview';
 import { FolderOverviewSettings } from './folderOverview/ModalSettings';
+import ListComponent from './functions/ListComponent';
+import AddSupportedFileModal from './modals/AddSupportedFileType';
+import { FileSuggest } from './suggesters/FileSuggester';
 
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
@@ -26,7 +29,7 @@ export interface FolderNotesSettings {
 	openInNewTab: boolean;
 	folderNoteName: string;
 	newFolderNoteName: string;
-	folderNoteType: '.md' | '.canvas';
+	folderNoteType: string;
 	disableFolderHighlighting: boolean;
 	storageLocation: 'insideFolder' | 'parentFolder' | 'vaultFolder';
 	syncDelete: boolean;
@@ -39,6 +42,7 @@ export interface FolderNotesSettings {
 		path: boolean;
 	},
 	settingsTab: string;
+	supportedFileTypes: string[];
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -86,7 +90,8 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		explorer: true,
 		path: true,
 	},
-	settingsTab: 'general'
+	settingsTab: 'general',
+	supportedFileTypes: ['md', 'canvas']
 };
 
 export class SettingsTab extends PluginSettingTab {
@@ -193,24 +198,89 @@ export class SettingsTab extends PluginSettingTab {
 		nameSetting.infoEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
 		new Setting(containerEl)
-			.setName('Folder note type')
-			.setDesc('Choose the file type for creating new folder notes (markdown or canvas) old folder notes will not be changed and you can also create canvas/markdown files and change the name manually to the custom folder note name or to the name of the folder.')
-			.addDropdown((dropdown) =>
+			.setName('Default folder note type for new folder notes')
+			.setDesc('Choose the default file type for new folder notes. (canvas, markdown, ...)')
+			.addDropdown((dropdown) => {
+				dropdown.addOption('.ask', 'ask for file type');
+				this.plugin.settings.supportedFileTypes.forEach((type) => {
+					if (type === '.md' || type === 'md') {
+						dropdown.addOption('.md', 'markdown');
+					} else {
+						dropdown.addOption('.' + type, type);
+					}
+				});
+				if (!this.plugin.settings.supportedFileTypes.includes(this.plugin.settings.folderNoteType.replace('.', '')) && this.plugin.settings.folderNoteType !== '.ask') {
+					this.plugin.settings.folderNoteType = '.md';
+					this.plugin.saveSettings();
+				}
+				const defaultType = this.plugin.settings.folderNoteType.startsWith('.') ? this.plugin.settings.folderNoteType : '.' + this.plugin.settings.folderNoteType;
+
 				dropdown
-					.addOption('.md', 'markdown')
-					.addOption('.canvas', 'canvas')
-					.setValue(this.plugin.settings.folderNoteType)
+					.setValue(defaultType)
 					.onChange(async (value: '.md' | '.canvas') => {
 						this.plugin.settings.folderNoteType = value;
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
+						this.display();
+					})
+			});
+
+		const setting0 = new Setting(containerEl)
+		setting0.setName('Supported file types for folder notes')
+		const desc0 = document.createDocumentFragment();
+		desc0.append(
+			'Choose the file types that should be supported for folder notes. (e.g. if you click on a folder name it searches for all file extensions that are supported)',
+			desc0.createEl('br'),
+			'Adding more file types may cause performance issues becareful when adding more file types and don\'t add too many.',
+		)
+		setting0.setDesc(desc0);
+		const list = setting0.createList((list: ListComponent) => {
+			list.addSettings(this)
+			list.setValues(this.plugin.settings.supportedFileTypes || ['md', 'canvas']);
+			list.addResetButton();
+		})
+
+		if (!this.plugin.settings.supportedFileTypes.includes('md') || !this.plugin.settings.supportedFileTypes.includes('canvas') || !this.plugin.settings.supportedFileTypes.includes('excalidraw')) {
+			setting0.addDropdown((dropdown) => {
+				const options = [
+					{ value: 'md', label: 'Markdown' },
+					{ value: 'canvas', label: 'Canvas' },
+					{ value: 'excalidraw', label: 'excalidraw' },
+					{ value: 'custom', label: 'Custom extension' },
+				];
+
+				options.forEach((option) => {
+					if (!this.plugin.settings.supportedFileTypes?.includes(option.value)) {
+						dropdown.addOption(option.value, option.label);
+					}
+				});
+				dropdown.addOption('+', '+');
+				dropdown.setValue('+');
+				dropdown.onChange(async (value) => {
+					if (value === 'custom') {
+						return new AddSupportedFileModal(this.app, this.plugin, this, list as ListComponent).open();
+					}
+					// @ts-ignore
+					await list.addValue(value.toLowerCase());
+					this.display();
+					this.plugin.saveSettings();
+				});
+			});
+		} else {
+			setting0.addButton((button) =>
+				button
+					.setButtonText('Add custom file type')
+					.setCta()
+					.onClick(async () => {
+						new AddSupportedFileModal(this.app, this.plugin, this, list as ListComponent).open();
 					})
 			);
+		}
+
+
 		const setting = new Setting(containerEl);
 		const desc = document.createDocumentFragment();
 		desc.append(
-			'After setting the template path, restart Obsidian if the template folder path (from templater/templates) had been changed beforehand.',
-			desc.createEl('br'),
-			'Obsidian should also be restarted if the template path was removed.'
+			'Restart after changing the template path',
 		);
 		setting.setName('Template path');
 		setting.setDesc(desc).descEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
@@ -456,19 +526,19 @@ export class SettingsTab extends PluginSettingTab {
 		);
 		disableSetting.infoEl.appendText('Requires a restart to take effect');
 		disableSetting.infoEl.style.color = this.app.vault.getConfig('accentColor') as string || '#7d5bed';
-		
+
 		new Setting(containerEl)
-		.setName('Use submenus')
-		.setDesc('Use submenus for file/folder commands')
-		.addToggle((toggle) =>
-			toggle
-				.setValue(this.plugin.settings.useSubmenus)
-				.onChange(async (value) => {
-					this.plugin.settings.useSubmenus = value;
-					await this.plugin.saveSettings();
-					this.display();
-				})
-		);
+			.setName('Use submenus')
+			.setDesc('Use submenus for file/folder commands')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.useSubmenus)
+					.onChange(async (value) => {
+						this.plugin.settings.useSubmenus = value;
+						await this.plugin.saveSettings();
+						this.display();
+					})
+			);
 
 		if (this.plugin.settings.frontMatterTitle.enabled) {
 			new Setting(containerEl)
@@ -584,21 +654,21 @@ export class SettingsTab extends PluginSettingTab {
 		}
 
 		new Setting(containerEl)
-				.setName('Change folder name in the path')
-				.setDesc('Automatically rename a folder name in the path above a note when the folder note is renamed')
-				.addToggle((toggle) =>
-					toggle
-						.setValue(this.plugin.settings.frontMatterTitle.path)
-						.onChange(async (value) => {
-							this.plugin.settings.frontMatterTitle.path = value;
-							await this.plugin.saveSettings();
-							if (value) {
-								this.plugin.updateBreadcrumbs();
-							} else {
-								this.plugin.updateBreadcrumbs(true);
-							}
-						})
-				);
+			.setName('Change folder name in the path')
+			.setDesc('Automatically rename a folder name in the path above a note when the folder note is renamed')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.frontMatterTitle.path)
+					.onChange(async (value) => {
+						this.plugin.settings.frontMatterTitle.path = value;
+						await this.plugin.saveSettings();
+						if (value) {
+							this.plugin.updateBreadcrumbs();
+						} else {
+							this.plugin.updateBreadcrumbs(true);
+						}
+					})
+			);
 	}
 
 
