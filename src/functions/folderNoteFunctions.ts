@@ -14,6 +14,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	let folderNoteType = extension || plugin.settings.folderNoteType;
 	if (folderNoteType === '.excalidraw') {
 		folderNoteType = '.md';
+		extension = '.excalidraw';
 	} else if (folderNoteType === '.ask') {
 		return new AskForExtensionModal(plugin, folderPath, openFile, folderNoteType, useModal, existingNote).open();
 	}
@@ -34,7 +35,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	if (!existingNote) {
 		let content = '';
 		if (extension !== '.md') {
-			if (plugin.settings.templatePath && folderNoteType === plugin.settings.templatePath.slice(plugin.settings.templatePath.lastIndexOf('.'))) {
+			if (plugin.settings.templatePath && folderNoteType === plugin.settings.templatePath.split('.').pop()) {
 				const templateFile = plugin.app.vault.getAbstractFileByPath(plugin.settings.templatePath);
 				if (templateFile instanceof TFile) {
 					if (['md', 'canvas', 'txt'].includes(templateFile.extension)) {
