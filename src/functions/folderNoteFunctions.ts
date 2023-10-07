@@ -35,7 +35,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	if (!existingNote) {
 		let content = '';
 		if (extension !== '.md') {
-			if (plugin.settings.templatePath && folderNoteType === plugin.settings.templatePath.split('.').pop()) {
+			if (plugin.settings.templatePath && folderNoteType === '.' + plugin.settings.templatePath.split('.').pop()) {
 				const templateFile = plugin.app.vault.getAbstractFileByPath(plugin.settings.templatePath);
 				if (templateFile instanceof TFile) {
 					if (['md', 'canvas', 'txt'].includes(templateFile.extension)) {
