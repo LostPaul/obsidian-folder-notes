@@ -5,7 +5,7 @@ import { FolderOverviewSettings } from './ModalSettings';
 import { getExcludedFolder } from '../excludedFolder';
 import * as path from 'path';
 
-export type includeTypes = 'folder' | 'markdown' | 'canvas' | 'other' | 'pdf' | 'images' | 'audio' | 'video' | 'all';
+export type includeTypes = 'folder' | 'markdown' | 'canvas' | 'other' | 'pdf' | 'image' | 'audio' | 'video' | 'all';
 
 export type yamlSettings = {
     id: string;
@@ -290,7 +290,20 @@ export class FolderOverview {
             if (child instanceof TFile) {
                 if (this.pathBlacklist.includes(child.path) && !this.yaml.showFolderNotes) { continue; }
                 const extension = child.extension.toLowerCase() == 'md' ? 'markdown' : child.extension.toLowerCase();
-                if (!this.yaml.includeTypes.includes(extension as includeTypes)) { continue; }
+                const includeTypes = this.yaml.includeTypes;
+                if (includeTypes.length > 0 && !includeTypes.includes('all')) {
+                    if (extension === 'md' && !includeTypes.includes('markdown')) continue;
+                    if (extension === 'canvas' && !includeTypes.includes('canvas')) continue;
+                    if (extension === 'pdf' && !includeTypes.includes('pdf')) continue;
+                    const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+                    if (imageTypes.includes(extension) && !includeTypes.includes('image')) continue;
+                    const videoTypes = ['mp4', 'webm', 'ogv', 'mov', 'mkv'];
+                    if (videoTypes.includes(extension) && !includeTypes.includes('video')) continue;
+                    const audioTypes = ['mp3', 'wav', 'm4a', '3gp', 'flac', 'ogg', 'oga', 'opus'];
+                    if (audioTypes.includes(extension) && includeTypes.includes('audio')) continue;
+                    const allTypes = ['md', 'canvas', 'pdf', ...imageTypes, ...videoTypes, ...audioTypes];
+                    if (!allTypes.includes(extension) && !includeTypes.includes('other')) continue;
+                }
                 const fileElement = childrenElement.createDiv({
                     cls: 'tree-item nav-file',
                 });

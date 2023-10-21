@@ -94,12 +94,23 @@ export default class ListComponent {
 		return this;
 	}
 	removeValue(value: string) {
-		this.values = this.values.filter((v) => v !== value);
-		this.setValues(this.values);
-		if (this.modal) {
-			this.modal.display();
-		} else if (this.settings) {
-			this.settings.display();
+		if (value === 'all') {
+			if (this.modal) {
+				this.modal.plugin.loadSettings();
+				this.setValues(this.modal.plugin.settings.defaultOverview.includeTypes || []);
+				this.modal.display();
+			} else if (this.settings) {
+				this.setValues(['md', 'canvas']);
+				this.settings.display();
+			}
+		} else {
+			this.values = this.values.filter((v) => v !== value);
+			this.setValues(this.values);
+			if (this.modal) {
+				this.modal.display();
+			} else if (this.settings) {
+				this.settings.display();
+			}
 		}
 	}
 }
