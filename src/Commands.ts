@@ -220,10 +220,15 @@ export class Commands {
 								if (this.plugin.app.vault.getAbstractFileByPath(newPath)) {
 									return new Notice('Folder already exists');
 								}
+								const automaticallyCreateFolderNote = this.plugin.settings.autoCreate;
+								this.plugin.settings.autoCreate = false;
+								this.plugin.saveSettings();
 								await this.plugin.app.vault.createFolder(newPath);
 								const newFolder = this.plugin.app.vault.getAbstractFileByPath(newPath);
 								if (!(newFolder instanceof TFolder)) return;
-								createFolderNote(this.plugin, newFolder.path, true, undefined, false, file);
+								await createFolderNote(this.plugin, newFolder.path, true, '.' + file.extension, false, file);
+								this.plugin.settings.autoCreate = automaticallyCreateFolderNote;
+								this.plugin.saveSettings();
 							});
 					});
 					if (this.plugin.getFolderPathFromString(file.path) === '') return;

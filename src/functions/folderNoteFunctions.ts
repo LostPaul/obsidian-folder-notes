@@ -11,7 +11,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	const leaf = plugin.app.workspace.getLeaf(false);
 	const folderName = plugin.getFolderNameFromPathString(folderPath);
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
-	let folderNoteType = extension || plugin.settings.folderNoteType;
+	let folderNoteType = extension ?? plugin.settings.folderNoteType;
 	if (folderNoteType === '.excalidraw') {
 		folderNoteType = '.md';
 		extension = '.excalidraw';
