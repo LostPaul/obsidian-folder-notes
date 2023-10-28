@@ -1,5 +1,5 @@
 import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice } from 'obsidian';
-import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './Settings';
+import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/SettingsTab';
 import { Commands } from './Commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
 import { handleViewHeaderClick, handleFolderClick } from './events/handleClick';

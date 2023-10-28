@@ -2,7 +2,7 @@ import { Setting } from 'obsidian';
 import FolderNotesPlugin from './main';
 import ExcludedFolderSettings from './modals/ExcludeFolderSettings';
 import { FolderSuggest } from './suggesters/FolderSuggester';
-import { SettingsTab } from './Settings';
+import { SettingsTab } from './settings/SettingsTab';
 import PatternSettings from './modals/PatternSettings';
 
 export class ExcludedFolder {

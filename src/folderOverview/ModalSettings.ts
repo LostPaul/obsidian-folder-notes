@@ -45,6 +45,7 @@ export class FolderOverviewSettings extends Modal {
 		if (defaultSettings) {
 			this.yaml = this.plugin.settings.defaultOverview;
 			this.defaultSettings = true;
+			return
 		}
 		updateYaml(this.plugin, this.ctx, this.el, this.yaml);
 	}

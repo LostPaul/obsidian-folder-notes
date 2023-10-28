@@ -2,7 +2,7 @@ import { Setting } from 'obsidian';
 import { FolderOverviewSettings } from '../folderOverview/ModalSettings';
 import { includeTypes } from 'src/folderOverview/FolderOverview';
 import { updateYaml } from 'src/folderOverview/FolderOverview';
-import { SettingsTab } from 'src/Settings';
+import { SettingsTab } from 'src/settings/SettingsTab';
 export default class ListComponent {
 	containerEl: HTMLElement;
 	controlEl: HTMLElement;
