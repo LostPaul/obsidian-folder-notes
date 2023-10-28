@@ -16,6 +16,25 @@ export async function renderPath(settingsTab: SettingsTab) {
                 })
         );
 
+    new Setting(containerEl)
+        .setName('Change folder name in the path')
+        .setDesc('Automatically rename a folder name in the path above a note when the folder note is renamed')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.frontMatterTitle.path)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.frontMatterTitle.path = value;
+                    await settingsTab.plugin.saveSettings();
+                    if (value) {
+                        settingsTab.plugin.updateBreadcrumbs();
+                    } else {
+                        settingsTab.plugin.updateBreadcrumbs(true);
+                    }
+                })
+        );
+
+    settingsTab.settingsPage.createEl('h3', { text: 'Style settings' });
+
     if (settingsTab.plugin.settings.openFolderNoteOnClickInPath) {
         new Setting(containerEl)
             .setName('Underline folders in the path')
@@ -36,19 +55,37 @@ export async function renderPath(settingsTab: SettingsTab) {
     }
 
     new Setting(containerEl)
-        .setName('Change folder name in the path')
-        .setDesc('Automatically rename a folder name in the path above a note when the folder note is renamed')
+        .setName('Bold folders in the path')
+        .setDesc('Make the folder name bold in the path above a note')
         .addToggle((toggle) =>
             toggle
-                .setValue(settingsTab.plugin.settings.frontMatterTitle.path)
+                .setValue(settingsTab.plugin.settings.boldNameInPath)
                 .onChange(async (value) => {
-                    settingsTab.plugin.settings.frontMatterTitle.path = value;
-                    await settingsTab.plugin.saveSettings();
+                    settingsTab.plugin.settings.boldNameInPath = value;
                     if (value) {
-                        settingsTab.plugin.updateBreadcrumbs();
+                        document.body.classList.add('folder-note-bold-path');
                     } else {
-                        settingsTab.plugin.updateBreadcrumbs(true);
+                        document.body.classList.remove('folder-note-bold-path');
                     }
+                    await settingsTab.plugin.saveSettings();
                 })
         );
+
+    new Setting(containerEl)
+        .setName('Cursive the name of folder notes in the path')
+        .setDesc('Make the folder name cursive in the path above a note')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.cursiveNameInPath)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.cursiveNameInPath = value;
+                    if (value) {
+                        document.body.classList.add('folder-note-cursive-path');
+                    } else {
+                        document.body.classList.remove('folder-note-cursive-path');
+                    }
+                    await settingsTab.plugin.saveSettings();
+                })
+        );
+
 }

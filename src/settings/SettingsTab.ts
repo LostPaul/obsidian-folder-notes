@@ -41,6 +41,10 @@ export interface FolderNotesSettings {
 	},
 	settingsTab: string;
 	supportedFileTypes: string[];
+	boldName: boolean;
+	boldNameInPath: boolean;
+	cursiveName: boolean;
+	cursiveNameInPath: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -89,7 +93,11 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		path: true,
 	},
 	settingsTab: 'general',
-	supportedFileTypes: ['md', 'canvas']
+	supportedFileTypes: ['md', 'canvas'],
+	boldName: false,
+	boldNameInPath: false,
+	cursiveName: false,
+	cursiveNameInPath: false,
 };
 
 export class SettingsTab extends PluginSettingTab {

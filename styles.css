@@ -20,21 +20,6 @@
     cursor: pointer;
 }
 
-.folder-note-underline .has-folder-note .nav-folder-title-content {
-    text-decoration-line: underline;
-    text-decoration-color: var(--text-faint);
-    text-decoration-thickness: 2px;
-    text-underline-offset: 1px;
-}
-
-.folder-note-underline-path .has-folder-note.view-header-breadcrumb {
-    text-decoration-line: underline;
-    text-decoration-color: var(--text-faint);
-    text-decoration-thickness: 1px;
-    text-underline-offset: 2px;
-}
-
-
 
 .hide-folder-note .is-folder-note {
     display: none;
@@ -205,4 +190,36 @@
 
 .fn-settings-tab-icon {
 	display: flex;
+}
+
+/* File explorer & path styles */
+
+.folder-note-underline .has-folder-note .nav-folder-title-content {
+    text-decoration-line: underline;
+    text-decoration-color: var(--text-faint);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 1px;
+}
+
+.folder-note-underline-path .has-folder-note.view-header-breadcrumb {
+    text-decoration-line: underline;
+    text-decoration-color: var(--text-faint);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
+.folder-note-bold .has-folder-note .nav-folder-title-content {
+    font-weight: bold;
+}
+
+.folder-note-bold-path .has-folder-note.view-header-breadcrumb {
+    font-weight: bold;
+}
+
+.folder-note-cursive .has-folder-note .nav-folder-title-content {
+    font-style: italic;
+}
+
+.folder-note-cursive-path .has-folder-note.view-header-breadcrumb {
+    font-style: italic;
 }

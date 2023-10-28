@@ -3,22 +3,6 @@ import { SettingsTab } from "./SettingsTab";
 export async function renderFileExplorer(settingsTab: SettingsTab) {
     const containerEl = settingsTab.settingsPage;
     settingsTab.settingsPage.createEl('h1', { text: 'File explorer settings' });
-    new Setting(containerEl)
-        .setName('Add underline to folders with folder notes')
-        .setDesc('Add an underline to folders that have a folder note in the file explorer')
-        .addToggle((toggle) =>
-            toggle
-                .setValue(settingsTab.plugin.settings.underlineFolder)
-                .onChange(async (value) => {
-                    settingsTab.plugin.settings.underlineFolder = value;
-                    if (value) {
-                        document.body.classList.add('folder-note-underline');
-                    } else {
-                        document.body.classList.remove('folder-note-underline');
-                    }
-                    await settingsTab.plugin.saveSettings();
-                })
-        );
 
     new Setting(containerEl)
         .setName('Hide folder note')
@@ -97,4 +81,58 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
                     })
             );
     }
+
+    settingsTab.settingsPage.createEl('h3', { text: 'Style settings' });
+
+    new Setting(containerEl)
+        .setName('Underline the name of folder notes')
+        .setDesc('Add an underline to folders that have a folder note in the file explorer')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.underlineFolder)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.underlineFolder = value;
+                    if (value) {
+                        document.body.classList.add('folder-note-underline');
+                    } else {
+                        document.body.classList.remove('folder-note-underline');
+                    }
+                    await settingsTab.plugin.saveSettings();
+                })
+        );
+
+    new Setting(containerEl)
+        .setName('Bold the name of folder notes')
+        .setDesc('Make the folder name bold in the file explorer')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.boldName)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.boldName = value;
+                    if (value) {
+                        document.body.classList.add('folder-note-bold');
+                    } else {
+                        document.body.classList.remove('folder-note-bold');
+                    }
+                    await settingsTab.plugin.saveSettings();
+                })
+        );
+
+    new Setting(containerEl)
+        .setName('Cursive the name of folder notes')
+        .setDesc('Make the folder name cursive in the file explorer')
+        .addToggle((toggle) =>
+        toggle
+            .setValue(settingsTab.plugin.settings.cursiveName)
+            .onChange(async (value) => {
+                settingsTab.plugin.settings.cursiveName = value;
+                if (value) {
+                    document.body.classList.add('folder-note-cursive');
+                } else {
+                    document.body.classList.remove('folder-note-cursive');
+                }
+                await settingsTab.plugin.saveSettings();
+            })
+    );
+
 }
