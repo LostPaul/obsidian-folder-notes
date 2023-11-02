@@ -40,10 +40,15 @@ export class Commands {
 				if (this.plugin.app.vault.getAbstractFileByPath(newPath)) {
 					return new Notice('Folder already exists');
 				}
+				const automaticallyCreateFolderNote = this.plugin.settings.autoCreate;
+				this.plugin.settings.autoCreate = false;
+				this.plugin.saveSettings();
 				await this.plugin.app.vault.createFolder(newPath);
 				const folder = this.plugin.app.vault.getAbstractFileByPath(newPath);
 				if (!(folder instanceof TFolder)) return;
-				createFolderNote(this.plugin, folder.path, true, file.extension, false, file);
+				createFolderNote(this.plugin, folder.path, true, '.' + file.extension, false, file);
+				this.plugin.settings.autoCreate = automaticallyCreateFolderNote;
+				this.plugin.saveSettings();
 			}
 		})
 		this.plugin.addCommand({
@@ -119,7 +124,7 @@ export class Commands {
 				const file = view.file;
 				if (!(file instanceof TFile)) return false;
 				if (text && text.trim() !== '') {
-					if (checking) { return true;}
+					if (checking) { return true; }
 					const blacklist = ['*', '\\', '"', '/', '<', '>', '?', '|', ':'];
 					for (const char of blacklist) {
 						if (text.includes(char)) {
