@@ -1,7 +1,7 @@
 import FolderNotesPlugin from 'src/main';
 import { getDefer, Listener, Events, ApiInterface, DeferInterface, ListenerRef, EventDispatcherInterface } from 'front-matter-plugin-api-provider';
 import { App, TFile, TFolder } from 'obsidian';
-import { extractFolderName, getFolder } from 'src/functions/folderNoteFunctions';
+import { extractFolderName, getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 export class FrontMatterTitlePluginHandler {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -64,9 +64,9 @@ export class FrontMatterTitlePluginHandler {
 		const resolver = this.api?.getResolverFactory()?.createResolver('#feature-id#');
 		const newName = resolver?.resolve(file?.path ?? '')
 		const folder = getFolder(this.plugin, file);
-
-		if ((extractFolderName(this.plugin.settings.folderNoteName, file.basename) || file.basename) !== folder?.name) { return; }
 		if (!(folder instanceof TFolder)) { return; }
+		const folderNote = getFolderNote(this.plugin, folder.path);
+		if (!folderNote) { return }
 		if (isEvent) {
 			this.plugin.changeName(folder, newName, true);
 		} else {

@@ -222,7 +222,10 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, sto
 
 export function getFolder(plugin: FolderNotesPlugin, file: TFile, storageLocation?: string) {
 	if (!file) return null;
-	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename);
+	let folderName = extractFolderName(plugin.settings.folderNoteName, file.basename);
+	if (plugin.settings.folderNoteName === file.basename && plugin.settings.storageLocation === 'insideFolder') {
+		folderName = file.parent?.name ?? '';
+	}
 	if (!folderName) return null;
 	let folderPath = plugin.getFolderPathFromString(file.path);
 	let folder: TFolder | TAbstractFile | null = null;

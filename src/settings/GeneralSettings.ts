@@ -26,7 +26,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                 .setButtonText('Rename existing folder notes')
                 .setCta()
                 .onClick(async () => {
-                    settingsTab.updateFolderNotes(settingsTab.plugin.settings.folderNoteName, settingsTab.plugin.settings.newFolderNoteName);
+                    settingsTab.updateFolderNotes(settingsTab.plugin.settings.newFolderNoteName);
                 })
         );
     nameSetting.infoEl.appendText('Make sure to back up your vault before renaming all folder notes and restart Obsidian after renaming them');

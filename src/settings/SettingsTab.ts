@@ -178,33 +178,20 @@ export class SettingsTab extends PluginSettingTab {
 		this.renderSettingsPage(this.plugin.settings.settingsTab);
 	}
 
-	updateFolderNotes(oldTemplate: string, newTemplate: string) {
+	updateFolderNotes(newTemplate: string) {
+		new Notice('Starting to update folder notes...');
+		for (const folder of this.app.vault.getAllLoadedFiles()) {
+			if (folder instanceof TFolder) {
+				const folderNote = getFolderNote(this.plugin, folder.path);
+				if (!(folderNote instanceof TFile)) { continue }
+				const folderNoteName = newTemplate.replace('{{folder_name}}', folder.name)
+				const newPath = `${folder.path}/${folderNoteName}.${folderNote.extension}`;
+				if (this.plugin.app.vault.getAbstractFileByPath(newPath)) { continue }
+				this.app.vault.rename(folderNote, newPath);
+			}
+		}
 		this.plugin.settings.folderNoteName = newTemplate;
 		this.plugin.saveSettings();
-		new Notice('Starting to update folder notes...');
-		this.app.vault.getFiles().forEach((file) => {
-			if (file instanceof TFile) {
-				const folderPath = this.plugin.getFolderPathFromString(file.path);
-				let folder = this.app.vault.getAbstractFileByPath(folderPath);
-				let folderName = file.name.slice(0, -file.extension.length - 1);
-				folderName = extractFolderName(oldTemplate, folderName) || '';
-				if (!(folder instanceof TFolder) || folderName !== folder?.name) {
-					if (folderPath.trim() === '') {
-						folder = this.app.vault.getAbstractFileByPath(folderName);
-					} else {
-						folder = this.app.vault.getAbstractFileByPath(folderPath + '/' + folderName);
-					}
-				}
-				if (!(folder instanceof TFolder)) { return; }
-				if (folderName === folder?.name) {
-					const newPath = `${folder?.path}/${this.plugin.settings.folderNoteName.replace('{{folder_name}}', folderName)}.${file.extension}`;
-					this.app.vault.rename(file, newPath);
-				} else if (folder?.name === file.name.slice(0, -file.extension.length - 1) || '') {
-					const newPath = `${folder?.path}/${this.plugin.settings.folderNoteName.replace('{{folder_name}}', file.name.slice(0, -file.extension.length - 1) || '')}.${file.extension}`;
-					this.app.vault.rename(file, newPath);
-				}
-			}
-		});
 		new Notice('Finished updating folder notes');
 	}
 
