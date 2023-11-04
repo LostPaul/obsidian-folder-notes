@@ -60,6 +60,7 @@ export class FolderOverview {
             showFolderNotes: yaml?.showFolderNotes === undefined || yaml?.showFolderNotes === null ? plugin.settings.defaultOverview.showFolderNotes : yaml?.showFolderNotes,
         }
     }
+
     create(plugin: FolderNotesPlugin, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
         el.empty();
         el.parentElement?.classList.add('folder-overview-container');
@@ -136,11 +137,8 @@ export class FolderOverview {
                 }
             });
         } else if (this.yaml.style === 'list') {
-            const folders = files.filter(f => f instanceof TFolder);
+            const folders = this.sortFiles(files.filter(f => f instanceof TFolder));
             files = this.sortFiles(files.filter(f => f instanceof TFile));
-            if (this.yaml.sortByAsc) {
-                files = files.reverse();
-            }
             folders.forEach((file) => {
                 if (file instanceof TFolder) {
                     const folderItem = this.addFolderList(plugin, ul, this.pathBlacklist, file);
@@ -177,6 +175,7 @@ export class FolderOverview {
             this.removeEmptyFolders(ul, 1, this.yaml);
         }
     }
+
     addEditButton(root: HTMLElement) {
         const editButton = root.createEl('button', { cls: 'folder-overview-edit-button' });
         editButton.innerText = 'Edit overview';
@@ -291,8 +290,9 @@ export class FolderOverview {
                 if (this.pathBlacklist.includes(child.path) && !this.yaml.showFolderNotes) { continue; }
                 const extension = child.extension.toLowerCase() == 'md' ? 'markdown' : child.extension.toLowerCase();
                 const includeTypes = this.yaml.includeTypes;
+
                 if (includeTypes.length > 0 && !includeTypes.includes('all')) {
-                    if (extension === 'md' && !includeTypes.includes('markdown')) continue;
+                    if ((extension === 'md' || extension === 'markdown') && !includeTypes.includes('markdown')) continue;
                     if (extension === 'canvas' && !includeTypes.includes('canvas')) continue;
                     if (extension === 'pdf' && !includeTypes.includes('pdf')) continue;
                     const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
@@ -301,12 +301,14 @@ export class FolderOverview {
                     if (videoTypes.includes(extension) && !includeTypes.includes('video')) continue;
                     const audioTypes = ['mp3', 'wav', 'm4a', '3gp', 'flac', 'ogg', 'oga', 'opus'];
                     if (audioTypes.includes(extension) && includeTypes.includes('audio')) continue;
-                    const allTypes = ['md', 'canvas', 'pdf', ...imageTypes, ...videoTypes, ...audioTypes];
+                    const allTypes = ['markdown', 'md', 'canvas', 'pdf', ...imageTypes, ...videoTypes, ...audioTypes];
                     if (!allTypes.includes(extension) && !includeTypes.includes('other')) continue;
                 }
+
                 const fileElement = childrenElement.createDiv({
                     cls: 'tree-item nav-file',
                 });
+
                 const fileTitle = fileElement.createDiv({
                     cls: 'tree-item-self is-clickable nav-file-title pointer-cursor',
                     attr: {
@@ -314,13 +316,16 @@ export class FolderOverview {
                         'draggable': 'true'
                     },
                 })
+
                 fileTitle.onclick = () => {
                     this.plugin.app.workspace.openLinkText(child.path, child.path, true);
                 }
+
                 fileTitle.createDiv({
                     cls: 'tree-item-inner nav-file-title-content',
                     text: child.basename,
                 });
+
                 if (child.extension !== 'md') {
                     fileTitle.createDiv({
                         cls: 'nav-file-tag',
@@ -395,8 +400,9 @@ export class FolderOverview {
         const yaml = this.yaml;
         if (!yaml?.sortBy) {
             yaml.sortBy = this.plugin.settings.defaultOverview.sortBy || 'name';
+            yaml.sortByAsc = this.plugin.settings.defaultOverview.sortByAsc || false;
         }
-        return files.sort((a, b) => {
+        files.sort((a, b) => {
             if (a instanceof TFolder && !(b instanceof TFolder)) {
                 return -1;
             }
@@ -424,14 +430,18 @@ export class FolderOverview {
                     return 1;
                 }
             } else if (yaml.sortBy === 'name') {
-                if (a.name.localeCompare(b.name) > 0) {
+                if (a.basename.localeCompare(b.basename) < 0) {
                     return -1;
-                } else if (a.name.localeCompare(b.name) < 0) {
+                } else if (a.basename.localeCompare(b.basename) > 0) {
                     return 1;
                 }
             }
             return 0;
         });
+        if (!yaml?.sortByAsc) {
+            files = files.reverse();
+        }
+        return files;
     }
 
     removeEmptyFolders(ul: HTMLUListElement | HTMLLIElement, depth: number, yaml: yamlSettings) {
