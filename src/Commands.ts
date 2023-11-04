@@ -53,15 +53,31 @@ export class Commands {
 		})
 		this.plugin.addCommand({
 			id: 'create-folder-note-for-current-folder',
-			name: 'Create folder note for current folder of active note',
+			name: 'Create markdown folder note for current folder of active note',
 			callback: () => {
 				const file = this.app.workspace.getActiveFile();
 				if (!(file instanceof TFile)) return;
 				const folder = file.parent;
 				if (!(folder instanceof TFolder)) return;
-				createFolderNote(this.plugin, folder.path, true, undefined, false);
+				createFolderNote(this.plugin, folder.path, true, '.md', false);
 			}
 		});
+
+		this.plugin.settings.supportedFileTypes.forEach((fileType) => {
+			if (fileType === 'md') return;
+			this.plugin.addCommand({
+				id: `create-${fileType}-folder-note-for-current-folder`,
+				name: `Create ${fileType} folder note for current folder of active note`,
+				callback: () => {
+					const file = this.app.workspace.getActiveFile();
+					if (!(file instanceof TFile)) return;
+					const folder = file.parent;
+					if (!(folder instanceof TFolder)) return;
+					createFolderNote(this.plugin, folder.path, true, '.' + fileType, false);
+				}
+			});
+		});
+
 		this.plugin.addCommand({
 			id: 'delete-folder-note-for-current-folder',
 			name: 'Delete folder note of current folder of active note',
@@ -291,11 +307,22 @@ export class Commands {
 					});
 				} else {
 					subMenu.addItem((item) => {
-						item.setTitle('Create folder note')
+						item.setTitle('Create markdown folder note')
 							.setIcon('edit')
 							.onClick(() => {
-								createFolderNote(this.plugin, file.path, true);
+								createFolderNote(this.plugin, file.path, true, '.md');
 							});
+					});
+
+					this.plugin.settings.supportedFileTypes.forEach((fileType) => {
+						if (fileType === 'md') return;
+						subMenu.addItem((item) => {
+							item.setTitle(`Create ${fileType} folder note`)
+								.setIcon('edit')
+								.onClick(() => {
+									createFolderNote(this.plugin, file.path, true, '.' + fileType);
+								});
+						});
 					});
 				}
 			});
