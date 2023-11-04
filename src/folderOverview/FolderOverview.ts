@@ -89,7 +89,7 @@ export class FolderOverview {
                 titleEl.innerText = this.yaml.title.replace('{{folderName}}', '');
             }
         }
-        if (!sourceFolder && (sourceFolderPath !== '/' && sourceFolderPath !== '')) { return new Notice('Couldn\'t find the folder'); }
+        if (!sourceFolder && (sourceFolderPath !== '/' && sourceFolderPath !== '')) { return new Notice('Folder overview: Couldn\'t find the folder'); }
         if (!sourceFolder && sourceFolderPath == '') {
             sourceFolderPath = '/';
         }
