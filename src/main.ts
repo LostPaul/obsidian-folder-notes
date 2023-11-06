@@ -1,4 +1,4 @@
-import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Platform } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/SettingsTab';
 import { Commands } from './Commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
@@ -45,6 +45,7 @@ export default class FolderNotesPlugin extends Plugin {
 					(<Element>rec.target).querySelectorAll('div.nav-folder-title-content')
 						.forEach((element: HTMLElement) => {
 							if (element.onclick) return;
+							if (Platform.isMobile && this.settings.disableOpenFolderNoteOnClick) return;
 							element.onclick = (event: MouseEvent) => handleFolderClick(event, this);
 						});
 					if (!this.settings.openFolderNoteOnClickInPath) { return; }
@@ -87,18 +88,17 @@ export default class FolderNotesPlugin extends Plugin {
 			childList: true,
 			subtree: true,
 		});
+
 		this.registerEvent(this.app.workspace.on('layout-change', () => {
 			this.loadFileClasses();
 		}));
+
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
 			if (!(file instanceof TFile)) { return; }
-			// parent is null here even if the parent exists
-			// not entirely sure why
-			const parentPath = this.getFolderPathFromString(file.path);
-			const parentName = this.getFileNameFromPathString(parentPath);
-			if (parentName !== file.basename) { return; }
-			this.removeCSSClassFromEL(parentPath, 'has-folder-note');
+			const parentFolder = getFolder(this, file);
+			this.removeCSSClassFromEL(parentFolder?.path, 'has-folder-note');
 		}));
+
 		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
 			if (file instanceof TFile) {
 				const folderName = extractFolderName(this.settings.folderNoteName, file.basename);
@@ -145,6 +145,7 @@ export default class FolderNotesPlugin extends Plugin {
 				return handleFileRename(file, oldPath, this);
 			}
 		}));
+
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
 			if (file instanceof TFile) {
 				const folder = getFolder(this, file);
@@ -189,6 +190,18 @@ export default class FolderNotesPlugin extends Plugin {
 		try {
 			const folderOverview = new FolderOverview(this, ctx, source, el);
 			folderOverview.create(this, parseYaml(source), el, ctx);
+
+			// this.app.vault.on('delete', () => {
+			// 	folderOverview.create(this, parseYaml(source), el, ctx);
+			// });
+
+			// this.app.vault.on('rename', () => {
+			// 	folderOverview.create(this, parseYaml(source), el, ctx);
+			// });
+
+			// this.app.vault.on('create', () => {
+			// 	folderOverview.create(this, parseYaml(source), el, ctx);
+			// });
 		} catch (e) {
 			new Notice('Error creating folder overview (folder notes plugin) - check console for more details');
 			console.error(e);

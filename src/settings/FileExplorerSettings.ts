@@ -22,6 +22,21 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
                 })
         );
 
+    const setting2 = new Setting(containerEl)
+        .setName('Don\'t open folder notes by clicking on the name (on mobile)')
+        .setDesc('Folder notes don\'t open when clicking on the name of the folder (on mobile)')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.disableOpenFolderNoteOnClick)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.disableOpenFolderNoteOnClick = value;
+                    await settingsTab.plugin.saveSettings();
+                })
+        );
+
+        setting2.infoEl.appendText('Requires a restart to take effect');
+        setting2.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
+
     new Setting(containerEl)
         .setName('Only open folder notes through the name')
         .setDesc('Only open folder notes in the file explorer by clicking on the folder name')
@@ -122,17 +137,17 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
         .setName('Cursive the name of folder notes')
         .setDesc('Make the folder name cursive in the file explorer')
         .addToggle((toggle) =>
-        toggle
-            .setValue(settingsTab.plugin.settings.cursiveName)
-            .onChange(async (value) => {
-                settingsTab.plugin.settings.cursiveName = value;
-                if (value) {
-                    document.body.classList.add('folder-note-cursive');
-                } else {
-                    document.body.classList.remove('folder-note-cursive');
-                }
-                await settingsTab.plugin.saveSettings();
-            })
-    );
+            toggle
+                .setValue(settingsTab.plugin.settings.cursiveName)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.cursiveName = value;
+                    if (value) {
+                        document.body.classList.add('folder-note-cursive');
+                    } else {
+                        document.body.classList.remove('folder-note-cursive');
+                    }
+                    await settingsTab.plugin.saveSettings();
+                })
+        );
 
 }
