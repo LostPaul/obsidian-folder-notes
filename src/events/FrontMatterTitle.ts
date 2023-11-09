@@ -65,8 +65,11 @@ export class FrontMatterTitlePluginHandler {
 		const newName = resolver?.resolve(file?.path ?? '')
 		const folder = getFolder(this.plugin, file);
 		if (!(folder instanceof TFolder)) { return; }
+		
 		const folderNote = getFolderNote(this.plugin, folder.path);
 		if (!folderNote) { return }
+		if (folderNote !== file) { return }
+
 		if (isEvent) {
 			this.plugin.changeName(folder, newName, true);
 		} else {
