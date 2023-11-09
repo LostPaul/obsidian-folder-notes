@@ -73,7 +73,7 @@ tags: [excalidraw]
 		file = await plugin.app.vault.create(path, content);
 	} else {
 		file = existingNote;
-		plugin.app.vault.rename(existingNote, path);
+		plugin.app.fileManager.renameFile(existingNote, path);
 	}
 	if (openFile) {
 		await leaf.openFile(file);
@@ -112,7 +112,7 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
 		}
 		const newPath = `${folder.path}/${folder.name} (${file.stat.ctime.toString().slice(10) + Math.floor(Math.random() * 1000)}).${extension}`;
-		plugin.app.vault.rename(folderNote, newPath).then(() => {
+		plugin.app.fileManager.renameFile(folderNote, newPath).then(() => {
 			if (!excludedFolder) { return; }
 			if (!excludedFolderExisted) {
 				deleteExcludedFolder(plugin, excludedFolder);
@@ -136,7 +136,7 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 		}
 	}
 
-	await plugin.app.vault.rename(file, path);
+	await plugin.app.fileManager.renameFile(file, path);
 	plugin.addCSSClassToTitleEL(path, 'is-folder-note', true);
 	plugin.addCSSClassToTitleEL(folder.path, 'has-folder-note');
 }

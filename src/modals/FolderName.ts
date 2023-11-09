@@ -27,7 +27,7 @@ export default class FolderNameModal extends Modal {
 					.onChange(async (value) => {
 						if (value.trim() !== '') {
 							if (!this.app.vault.getAbstractFileByPath(this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + value.trim())) {
-								this.app.vault.rename(this.folder, this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + value.trim());
+								this.plugin.app.fileManager.renameFile(this.folder, this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + value.trim());
 							}
 						}
 					})

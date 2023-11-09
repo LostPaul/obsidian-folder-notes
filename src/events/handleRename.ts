@@ -88,7 +88,7 @@ export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNot
 			excludedFolder.disableSync = true;
 			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
 		}
-		return plugin.app.vault.rename(file, oldPath).then(() => {
+		return plugin.app.fileManager.renameFile(file, oldPath).then(() => {
 			if (!excludedFolder) { return; }
 			if (!excludedFolderExisted) {
 				deleteExcludedFolder(plugin, excludedFolder);
@@ -147,8 +147,8 @@ async function renameFolderOnFileRename(file: TFile, oldPath: string, oldFolder:
 		}
 	}
 	if (plugin.app.vault.getAbstractFileByPath(newFolderPath) || plugin.app.vault.getAbstractFileByPath(newFolderName || '')) {
-		await plugin.app.vault.rename(file, oldPath);
+		await plugin.app.fileManager.renameFile(file, oldPath);
 		return new Notice('A folder with the same name already exists');
 	}
-	await plugin.app.vault.rename(oldFolder, newFolderPath);
+	plugin.app.fileManager.renameFile(oldFolder, newFolderPath);
 }

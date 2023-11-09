@@ -189,7 +189,7 @@ export class SettingsTab extends PluginSettingTab {
 				const folderNoteName = newTemplate.replace('{{folder_name}}', folder.name)
 				const newPath = `${folder.path}/${folderNoteName}.${folderNote.extension}`;
 				if (this.plugin.app.vault.getAbstractFileByPath(newPath)) { continue }
-				this.app.vault.rename(folderNote, newPath);
+				this.plugin.app.fileManager.renameFile(folderNote, newPath);
 			}
 		}
 		this.plugin.settings.folderNoteName = newTemplate;
@@ -210,13 +210,13 @@ export class SettingsTab extends PluginSettingTab {
 						} else {
 							newPath = `${this.plugin.getFolderPathFromString(file.path)}/${folderNote.name}`;
 						}
-						this.app.vault.rename(folderNote, newPath);
+						this.plugin.app.fileManager.renameFile(folderNote, newPath);
 					} else if (this.plugin.settings.storageLocation === 'insideFolder') {
 						if (this.plugin.getFolderPathFromString(folderNote.path) === file.path) {
 							return;
 						} else {
 							const newPath = `${file.path}/${folderNote.name}`;
-							this.app.vault.rename(folderNote, newPath);
+							this.plugin.app.fileManager.renameFile(folderNote, newPath);
 						}
 					}
 				}
