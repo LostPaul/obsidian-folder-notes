@@ -13,7 +13,7 @@ Find more out about the folder overview feature on the [folder overview page](./
 
 To create a folder overview in a note either use the command "Insert folder overview" or right click on pc and select "create folder overview"
 
-![Context menu](./assets/VyBTGhA5eJAVVFusZXIz.png){: style="max-width: 50%;max-height: 50%"}
+![Context menu](./assets/VyBTGhA5eJAVVFusZXIz.png){: style="max-width: 40%;max-height: 40%"}
 
 The folder overview with the default settings looks like this with one note
 
