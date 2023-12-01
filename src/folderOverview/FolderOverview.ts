@@ -186,6 +186,7 @@ export class FolderOverview {
             new FolderOverviewSettings(this.plugin.app, this.plugin, this.yaml, this.ctx, this.el).open();
         }, { capture: true });
     }
+    
     cloneFileExplorerView(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: yamlSettings, pathBlacklist: string[]) {
         const folder = plugin.getEL(this.yaml.folderPath)
         let folderElement = folder?.parentElement;
