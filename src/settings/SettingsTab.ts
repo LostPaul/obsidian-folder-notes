@@ -85,6 +85,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		onlyIncludeSubfolders: false,
 		storeFolderCondition: true,
 		showFolderNotes: false,
+		disableCollapseIcon: true,
 	},
 	useSubmenus: true,
 	syncMove: true,
@@ -153,6 +154,7 @@ export class SettingsTab extends PluginSettingTab {
 		}
 
 	}
+
 	display(): void {
 		const { containerEl } = this;
 

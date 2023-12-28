@@ -34,6 +34,7 @@ export class FolderOverviewSettings extends Modal {
 				onlyIncludeSubfolders: yaml?.onlyIncludeSubfolders === undefined || yaml?.onlyIncludeSubfolders === null ? plugin.settings.defaultOverview.onlyIncludeSubfolders : yaml?.onlyIncludeSubfolders,
 				storeFolderCondition: yaml?.storeFolderCondition === undefined || yaml?.storeFolderCondition === null ? plugin.settings.defaultOverview.storeFolderCondition : yaml?.storeFolderCondition,
 				showFolderNotes: yaml?.showFolderNotes === undefined || yaml?.showFolderNotes === null ? plugin.settings.defaultOverview.showFolderNotes : yaml?.showFolderNotes,
+				disableCollapseIcon: yaml?.disableCollapseIcon === undefined || yaml?.disableCollapseIcon === null ? plugin.settings.defaultOverview.disableCollapseIcon : yaml?.disableCollapseIcon,
 			}
 		}
 		if (ctx) {
@@ -320,7 +321,25 @@ export class FolderOverviewSettings extends Modal {
 			}
 		}
 
+		if (this.yaml.style === 'explorer') {
+			new Setting(contentEl)
+				.setName('Disable collapse icon for folder notes')
+				.setDesc('Remove the collapse icon next to the folder name for folder notes when they only contain the folder note itself')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.yaml.disableCollapseIcon)
+						.onChange(async (value) => {
+							this.yaml.disableCollapseIcon = value;
+							if (this.defaultSettings) {
+								return this.plugin.saveSettings();
+							}
+							await updateYaml(this.plugin, this.ctx, this.el, this.yaml);
+						});
+				});
+		}
+
 	}
+
 	onClose() {
 		const { contentEl } = this;
 		contentEl.empty();

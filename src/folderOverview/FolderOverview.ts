@@ -22,6 +22,7 @@ export type yamlSettings = {
     onlyIncludeSubfolders: boolean;
     storeFolderCondition: boolean;
     showFolderNotes: boolean;
+    disableCollapseIcon: boolean;
 };
 
 export class FolderOverview {
@@ -58,6 +59,7 @@ export class FolderOverview {
             onlyIncludeSubfolders: yaml?.onlyIncludeSubfolders === undefined || yaml?.onlyIncludeSubfolders === null ? plugin.settings.defaultOverview.onlyIncludeSubfolders : yaml?.onlyIncludeSubfolders,
             storeFolderCondition: yaml?.storeFolderCondition === undefined || yaml?.storeFolderCondition === null ? plugin.settings.defaultOverview.storeFolderCondition : yaml?.storeFolderCondition,
             showFolderNotes: yaml?.showFolderNotes === undefined || yaml?.showFolderNotes === null ? plugin.settings.defaultOverview.showFolderNotes : yaml?.showFolderNotes,
+            disableCollapseIcon: yaml?.disableCollapseIcon === undefined || yaml?.disableCollapseIcon === null ? plugin.settings.defaultOverview.disableCollapseIcon : yaml?.disableCollapseIcon,
         }
     }
 
@@ -73,6 +75,7 @@ export class FolderOverview {
         if (!sourceFile) return;
         let sourceFolderPath = this.yaml.folderPath || plugin.getFolderPathFromString(ctx.sourcePath);
         let sourceFolder: TFolder | undefined;
+
         if (sourceFolderPath !== '/') {
             if (this.yaml.folderPath === '') {
                 sourceFolder = plugin.app.vault.getAbstractFileByPath(plugin.getFolderPathFromString(ctx.sourcePath)) as TFolder;
@@ -80,6 +83,7 @@ export class FolderOverview {
                 sourceFolder = plugin.app.vault.getAbstractFileByPath(this.yaml.folderPath) as TFolder;
             }
         }
+
         if (this.yaml.showTitle) {
             if (sourceFolder && sourceFolderPath !== '/') {
                 titleEl.innerText = this.yaml.title.replace('{{folderName}}', sourceFolder.name);
@@ -89,10 +93,12 @@ export class FolderOverview {
                 titleEl.innerText = this.yaml.title.replace('{{folderName}}', '');
             }
         }
+
         if (!sourceFolder && (sourceFolderPath !== '/' && sourceFolderPath !== '')) { return new Notice('Folder overview: Couldn\'t find the folder'); }
         if (!sourceFolder && sourceFolderPath == '') {
             sourceFolderPath = '/';
         }
+
         if (sourceFolderPath == '/') {
             const rootFiles: TAbstractFile[] = [];
             plugin.app.vault.getAllLoadedFiles().filter(f => f.parent?.path === '/').forEach((file) => {
@@ -104,13 +110,17 @@ export class FolderOverview {
         } else if (sourceFolder) {
             files = sourceFolder.children;
         }
+
         files = this.filterFiles(files, plugin, sourceFolderPath, this.yaml.depth, this.pathBlacklist);
+
         if (!this.yaml.includeTypes.includes('folder')) {
             files = this.getAllFiles(files, sourceFolderPath, this.yaml.depth);
         }
+
         if (files.length === 0) {
             return this.addEditButton(root)
         }
+
         files = this.sortFiles(files);
 
         if (this.yaml.style === 'grid') {
@@ -270,16 +280,21 @@ export class FolderOverview {
                     folderTitle.classList.add('is-collapsed');
                 }
                 if (folderNote) { folderTitle.classList.add('has-folder-note') }
+                if (folderNote && child.children.length === 1 && this.yaml.disableCollapseIcon) { folderTitle.classList.add('fn-has-no-files') }
+
                 const collapseIcon = folderTitle.createDiv({
                     cls: 'tree-item-icon collapse-icon nav-folder-collapse-indicator',
                 });
+
                 if (child.collapsed) {
                     collapseIcon.classList.add('is-collapsed');
                 }
+
                 collapseIcon.innerHTML = svg;
                 collapseIcon.onclick = () => {
                     this.handleCollapseClick(collapseIcon, this.plugin, this.yaml, this.pathBlacklist, this.source, child);
                 }
+                
                 folderTitle.createDiv({
                     cls: 'tree-item-inner nav-folder-title-content',
                     text: child.name,

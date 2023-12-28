@@ -105,6 +105,12 @@
     margin-top: 10px;
 }
 
+/* Folder overview */
+
+.fn-has-no-files .collapse-icon {
+    display: none !important;
+}
+
 .folder-overview-list {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
