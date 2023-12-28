@@ -17,9 +17,11 @@ export class AskForExtensionModal extends FuzzySuggestModal<string> {
         this.useModal = useModal;
         this.existingNote = existingNote;
     }
+    
     getItems(): string[] {
         return this.plugin.settings.supportedFileTypes.filter((item) => item.toLowerCase() !== '.ask');
     }
+
     getItemText(item: string): string {
         return item;
     }

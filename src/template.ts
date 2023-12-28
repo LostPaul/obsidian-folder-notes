@@ -24,6 +24,7 @@ export async function applyTemplate(
 				templaterPlugin,
 			} = getTemplatePlugins(plugin.app);
 			const templateContent = await plugin.app.vault.read(templateFile);
+			if (templateContent.includes('==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==')) { return; }
 
 			// If both plugins are enabled, attempt to detect templater first
 

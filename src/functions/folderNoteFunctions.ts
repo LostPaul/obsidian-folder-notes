@@ -7,18 +7,37 @@ import { addExcludedFolder, deleteExcludedFolder, getExcludedFolder, ExcludedFol
 import { openExcalidrawView } from './excalidraw';
 import { AskForExtensionModal } from 'src/modals/AskForExtension';
 
+const defaultExcalidrawTemplate = `---
+
+excalidraw-plugin: parsed
+tags: [excalidraw]
+
+---
+==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==
+
+
+%%
+# Drawing
+\`\`\`json
+{"type":"excalidraw","version":2,"source":"https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/1.9.20","elements":[],"appState":{"gridSize":null,"viewBackgroundColor":"#ffffff"}}
+\`\`\`
+%%`;
+
 export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, extension?: string, useModal?: boolean, existingNote?: TFile) {
 	const leaf = plugin.app.workspace.getLeaf(false);
 	const folderName = plugin.getFolderNameFromPathString(folderPath);
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
 	let folderNoteType = extension ?? plugin.settings.folderNoteType;
+
 	if (folderNoteType === '.excalidraw') {
 		folderNoteType = '.md';
 		extension = '.excalidraw';
 	} else if (folderNoteType === '.ask') {
 		return new AskForExtensionModal(plugin, folderPath, openFile, folderNoteType, useModal, existingNote).open();
 	}
+
 	let path = '';
+
 	if (plugin.settings.storageLocation === 'parentFolder') {
 		const parentFolderPath = plugin.getFolderPathFromString(folderPath);
 		if (parentFolderPath.trim() === '') {
@@ -31,15 +50,20 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	} else {
 		path = `${folderPath}/${fileName}${folderNoteType}`;
 	}
+
 	let file: TFile;
+
 	if (!existingNote) {
 		let content = '';
 		if (extension !== '.md') {
-			if (plugin.settings.templatePath && folderNoteType === '.' + plugin.settings.templatePath.split('.').pop()) {
+			if (plugin.settings.templatePath && folderNoteType.split('.').pop() == plugin.settings.templatePath.split('.').pop()) {
 				const templateFile = plugin.app.vault.getAbstractFileByPath(plugin.settings.templatePath);
 				if (templateFile instanceof TFile) {
 					if (['md', 'canvas', 'txt'].includes(templateFile.extension)) {
 						content = await plugin.app.vault.read(templateFile);
+						if (extension === '.excalidraw' && !content.includes('==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==')) {
+							content = defaultExcalidrawTemplate;
+						}
 					} else {
 						return plugin.app.vault.readBinary(templateFile).then(async (data) => {
 							file = await plugin.app.vault.createBinary(path, data);
@@ -50,22 +74,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 					}
 				}
 			} else if (plugin.settings.folderNoteType === '.excalidraw' || extension === '.excalidraw') {
-				content =
-					`---
-
-excalidraw-plugin: parsed
-tags: [excalidraw]
-			
----
-==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==
-			
-			
-%%
-# Drawing
-\`\`\`json
-{"type":"excalidraw","version":2,"source":"https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/1.9.20","elements":[],"appState":{"gridSize":null,"viewBackgroundColor":"#ffffff"}}
-\`\`\`
-%%`;
+				content = defaultExcalidrawTemplate;
 			} else if (plugin.settings.folderNoteType === '.canvas') {
 				content = '{}'
 			}
@@ -75,13 +84,15 @@ tags: [excalidraw]
 		file = existingNote;
 		plugin.app.fileManager.renameFile(existingNote, path);
 	}
+
 	if (openFile) {
 		await leaf.openFile(file);
 		if (plugin.settings.folderNoteType === '.excalidraw' || extension === '.excalidraw') {
 			openExcalidrawView(leaf);
 		}
 	}
-	if (file && !existingNote && plugin.settings.folderNoteType == '.excalidraw' && extension == plugin.settings.templatePath.split('.').pop()) {
+
+	if (file && !existingNote && plugin.settings.folderNoteType !== '.excalidraw' && extension?.split('.').pop() == plugin.settings.templatePath.split('.').pop()) {
 		applyTemplate(plugin, file, leaf, plugin.settings.templatePath);
 	}
 

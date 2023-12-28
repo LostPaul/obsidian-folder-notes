@@ -53,6 +53,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
                     await settingsTab.plugin.saveSettings();
                 })
         );
+        
     const disableSetting = new Setting(containerEl);
     disableSetting.setName('Disable folder collapsing');
     disableSetting.setDesc('Disable the ability to collapse folders by clicking exactly on the folder name');
