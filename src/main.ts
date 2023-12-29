@@ -1,4 +1,4 @@
-import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Platform } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Platform, Keymap } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/SettingsTab';
 import { Commands } from './Commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
@@ -17,6 +17,9 @@ export default class FolderNotesPlugin extends Plugin {
 	activeFolderDom: HTMLElement | null;
 	activeFileExplorer: FileExplorerWorkspaceLeaf;
 	fmtpHandler: FrontMatterTitlePluginHandler | null = null;
+	hoveredElement: HTMLElement | null = null;
+	mouseEvent: MouseEvent | null = null;
+	hoverLinkTriggered = false;
 	async onload() {
 		console.log('loading folder notes plugin');
 		await this.loadSettings();
@@ -47,6 +50,33 @@ export default class FolderNotesPlugin extends Plugin {
 							if (element.onclick) return;
 							if (Platform.isMobile && this.settings.disableOpenFolderNoteOnClick) return;
 							element.onclick = (event: MouseEvent) => handleFolderClick(event, this);
+							this.registerDomEvent(element, 'pointerover', (event: MouseEvent) => {
+								this.hoveredElement = element;
+								this.mouseEvent = event;
+								if (!Keymap.isModEvent(event)) return;
+								if (!(event.target instanceof HTMLElement)) return;
+
+								const folderPath = event?.target?.parentElement?.getAttribute('data-path') || '';
+								const folderNote = getFolderNote(this, folderPath);
+								if (!folderNote) return;
+
+								this.app.workspace.trigger('hover-link', {
+									event: event,
+									source: 'preview',
+									hoverParent: {
+										file: folderNote,
+									},
+									targetEl: event.target,
+									linktext: folderNote?.basename,
+									sourcePath: folderNote?.path,
+								});
+								this.hoverLinkTriggered = true;
+							});
+							this.registerDomEvent(element, 'pointerout', () => {
+								this.hoveredElement = null;
+								this.mouseEvent = null;
+								this.hoverLinkTriggered = false;
+							});
 						});
 					if (!this.settings.openFolderNoteOnClickInPath) { return; }
 					(<Element>rec.target).querySelectorAll('span.view-header-breadcrumb')
@@ -88,6 +118,30 @@ export default class FolderNotesPlugin extends Plugin {
 			childList: true,
 			subtree: true,
 		});
+
+		this.registerDomEvent(window, 'keydown', (event: KeyboardEvent) => {
+			const hoveredElement = this.hoveredElement;
+			if (this.hoverLinkTriggered) return;
+			if (!hoveredElement) return;
+			if (!Keymap.isModEvent(event)) return;
+		
+			const folderPath = hoveredElement?.parentElement?.getAttribute('data-path') || '';
+			const folderNote = getFolderNote(this, folderPath);
+			if (!folderNote) return;
+		
+			this.app.workspace.trigger('hover-link', {
+				event: this.mouseEvent,
+				source: 'preview',
+				hoverParent: {
+					file: folderNote,
+				},
+				targetEl: hoveredElement,
+				linktext: folderNote?.basename,
+				sourcePath: folderNote?.path,
+			});
+			this.hoverLinkTriggered = true;
+		});
+		
 
 		this.registerEvent(this.app.workspace.on('layout-change', () => {
 			this.loadFileClasses();
@@ -381,7 +435,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const data = await this.loadData();
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 		if (!data) { return; }
-		const overview =  (data as any).defaultOverview;
+		const overview = (data as any).defaultOverview;
 		if (!overview) { return; }
 		this.settings.defaultOverview = Object.assign({}, DEFAULT_SETTINGS.defaultOverview, overview);
 	}

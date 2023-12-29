@@ -230,7 +230,7 @@ export class Commands {
 				if (file instanceof TFile) {
 					// @ts-ignore
 					subMenu.addItem((item) => {
-						item.setTitle('Create folder note')
+						item.setTitle('Make folder note')
 							.setIcon('edit')
 							.onClick(async () => {
 								if (!folder) return;
@@ -255,7 +255,7 @@ export class Commands {
 					if (this.plugin.getFolderPathFromString(file.path) === '') return;
 					if (!(folder instanceof TFolder)) return;
 					subMenu.addItem((item) => {
-						item.setTitle('Turn into folder note')
+						item.setTitle(`Turn into folder note for ${folder?.name}`)
 							.setIcon('edit')
 							.onClick(() => {
 								if (!folder || !(folder instanceof TFolder)) return;
