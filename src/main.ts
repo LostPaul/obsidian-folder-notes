@@ -31,6 +31,10 @@ export default class FolderNotesPlugin extends Plugin {
 		document.body.classList.add('folder-notes-plugin');
 		if (this.settings.hideFolderNote) { document.body.classList.add('hide-folder-note'); }
 		if (this.settings.underlineFolder) { document.body.classList.add('folder-note-underline'); }
+		if (this.settings.boldName) { document.body.classList.add('folder-note-bold'); }
+		if (this.settings.cursiveName) { document.body.classList.add('folder-note-cursive'); }
+		if (this.settings.boldNameInPath) { document.body.classList.add('folder-note-bold-path'); }
+		if (this.settings.cursiveNameInPath) { document.body.classList.add('folder-note-cursive-path'); }
 		if (this.settings.underlineFolderInPath) { document.body.classList.add('folder-note-underline-path'); }
 		if (!this.settings.allowWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
 
@@ -175,7 +179,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 		this.registerEvent(this.app.workspace.on('file-open', (openFile: TFile | null) => {
 			if (this.activeFolderDom) {
-				this.activeFolderDom.removeClass('is-active');
+				this.activeFolderDom.removeClass('fn-is-active');
 				this.activeFolderDom = null;
 			}
 			if (!openFile || !openFile.basename) { return; }
@@ -183,7 +187,7 @@ export default class FolderNotesPlugin extends Plugin {
 			if (!folder) { return; }
 			if (extractFolderName(this.settings.folderNoteName, openFile.basename) !== folder.name) { return; }
 			this.activeFolderDom = this.getEL(folder.path);
-			if (this.activeFolderDom) this.activeFolderDom.addClass('is-active');
+			if (this.activeFolderDom) this.activeFolderDom.addClass('fn-is-active');
 		}));
 
 		this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {

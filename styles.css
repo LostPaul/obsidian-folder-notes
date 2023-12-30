@@ -14,6 +14,12 @@
     margin-top: 4px !important;
 }
 
+body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
+.tree-item-self.fn-is-active {
+  color: var(--nav-item-color-active);
+  background-color: var(--nav-item-background-active);
+  font-weight: var(--nav-item-weight-active);
+}
 
 .has-folder-note .nav-folder-title-content:hover,
 .has-folder-note.view-header-breadcrumb:hover {
@@ -214,18 +220,12 @@
     text-underline-offset: 2px;
 }
 
-.folder-note-bold .has-folder-note .nav-folder-title-content {
-    font-weight: bold;
-}
-
+.folder-note-bold .has-folder-note .nav-folder-title-content, 
 .folder-note-bold-path .has-folder-note.view-header-breadcrumb {
     font-weight: bold;
 }
 
-.folder-note-cursive .has-folder-note .nav-folder-title-content {
-    font-style: italic;
-}
-
+.folder-note-cursive .has-folder-note .nav-folder-title-content,
 .folder-note-cursive-path .has-folder-note.view-header-breadcrumb {
     font-style: italic;
 }
