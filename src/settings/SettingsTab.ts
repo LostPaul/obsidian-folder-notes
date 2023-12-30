@@ -46,6 +46,9 @@ export interface FolderNotesSettings {
 	cursiveName: boolean;
 	cursiveNameInPath: boolean;
 	disableOpenFolderNoteOnClick: boolean;
+	openByClick: boolean;
+	openWithCtrl: boolean;
+	openWithAlt: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -101,6 +104,9 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	cursiveName: false,
 	cursiveNameInPath: false,
 	disableOpenFolderNoteOnClick: false,
+	openByClick: true,
+	openWithCtrl: false,
+	openWithAlt: false,
 };
 
 export class SettingsTab extends PluginSettingTab {

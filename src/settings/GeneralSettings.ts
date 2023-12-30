@@ -215,6 +215,33 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                     settingsTab.display();
                 });
             });
+
+        new Setting(containerEl)
+            .setName('Key for opening folder note')
+            .setDesc('Select the combination to open a folder note')
+            .addDropdown((dropdown) => {
+                dropdown.addOption('click', 'Mouse Click');
+                if (!Platform.isMacOS) {
+                    dropdown.addOption('ctrl', 'Ctrl + Click');
+                } else {
+                    dropdown.addOption('ctrl', 'Cmd + Click');
+                }
+                dropdown.addOption('alt', 'Alt + Click');
+                if (settingsTab.plugin.settings.openByClick) {
+                    dropdown.setValue('click');
+                } else if (settingsTab.plugin.settings.openWithCtrl) {
+                    dropdown.setValue('ctrl');
+                } else {
+                    dropdown.setValue('alt');
+                }
+                dropdown.onChange(async (value) => {
+                    settingsTab.plugin.settings.openByClick = value === 'click';
+                    settingsTab.plugin.settings.openWithCtrl = value === 'ctrl';
+                    settingsTab.plugin.settings.openWithAlt = value === 'alt';
+                    await settingsTab.plugin.saveSettings();
+                    settingsTab.display();
+                });
+            });
     }
 
     new Setting(containerEl)

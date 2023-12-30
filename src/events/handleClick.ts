@@ -39,6 +39,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 
 	const folderPath = event.target.parentElement?.getAttribute('data-path');
 	if (!folderPath) { return; }
+
 	const excludedFolder = getExcludedFolder(plugin, folderPath);
 	if (excludedFolder?.disableFolderNote) {
 		event.target.onclick = null;
@@ -50,8 +51,19 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 	}
 
 	const folderNote = getFolderNote(plugin, folderPath);
+
 	if (folderNote) {
-		return openFolderNote(plugin, folderNote, event);
+		if (plugin.settings.openByClick) {
+			return openFolderNote(plugin, folderNote, event);
+		} else if (plugin.settings.openWithCtrl && Keymap.isModEvent(event) === 'tab') {
+			return openFolderNote(plugin, folderNote, event);
+		} else if (plugin.settings.openWithAlt && event.altKey) {
+			return openFolderNote(plugin, folderNote, event);
+		} else {
+			if (plugin.settings.enableCollapsing) return;
+			event.target.parentElement?.click()
+			return;
+		}
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 			await createFolderNote(plugin, folderPath, true, undefined, true);
@@ -59,7 +71,11 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 			plugin.removeCSSClassFromEL(folderPath, 'has-not-folder-note');
 			return;
 		}
+	} else if (!folderNote) {
+		if (plugin.settings.enableCollapsing) return;
+		return event.target.parentElement?.click();
 	}
+	
 	event.target.onclick = null;
 	event.target.click();
 }
