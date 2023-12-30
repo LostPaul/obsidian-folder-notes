@@ -113,6 +113,10 @@ body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
 
 /* Folder overview */
 
+.fn-folder-overview-collapse-icon {
+    display: block !important;
+}
+
 .fn-has-no-files .collapse-icon {
     display: none !important;
 }

@@ -233,6 +233,7 @@ export class FolderOverview {
                 if (folderNote) { this.pathBlacklist.push(folderNote.path); }
             }
         });
+
         if (tFolder instanceof TFolder) {
             this.addFiles(tFolder.children, root);
         } else if (yaml.folderPath.trim() === '/') {
@@ -244,6 +245,7 @@ export class FolderOverview {
             });
             this.addFiles(rootFiles, root);
         }
+
         newFolderElement.querySelectorAll('div.tree-item-icon').forEach((el) => {
             if (el instanceof HTMLElement) {
                 el.onclick = () => {
@@ -287,7 +289,7 @@ export class FolderOverview {
                 if (folderNote && child.children.length === 1 && this.yaml.disableCollapseIcon) { folderTitle.classList.add('fn-has-no-files') }
 
                 const collapseIcon = folderTitle.createDiv({
-                    cls: 'tree-item-icon collapse-icon nav-folder-collapse-indicator',
+                    cls: 'tree-item-icon collapse-icon nav-folder-collapse-indicator fn-folder-overview-collapse-icon',
                 });
 
                 if (child.collapsed) {
