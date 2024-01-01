@@ -2,7 +2,7 @@
 
 ## How to install the plugin
 
-The plugin can be downloaded by clicking on https://obsidian.md/plugins?id=folder-notes and then on install.
+The plugin can be downloaded by clicking on [https://obsidian.md/plugins?id=folder-notes](https://obsidian.md/plugins?id=folder-notes) and then on install.
 
 
 ## Basic features 
