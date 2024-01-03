@@ -190,6 +190,7 @@ export class Commands {
 			},
 		})
 	}
+	
 	fileCommands() {
 		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
 			let folder: TAbstractFile | TFolder | null = file.parent;

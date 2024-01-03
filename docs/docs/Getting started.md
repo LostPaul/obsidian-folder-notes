@@ -1,14 +1,9 @@
 # Getting started
 
 ## How to install the plugin
-
 The plugin can be downloaded by clicking on [https://obsidian.md/plugins?id=folder-notes](https://obsidian.md/plugins?id=folder-notes) and then on install.
-
-
 ## Basic features 
-
 ### Create folder overview
-
 Find more out about the folder overview feature on the [folder overview page](./Features/Folder%20overview.md)
 
 To create a folder overview in a note either use the command "Insert folder overview" or right click on pc and select "create folder overview"

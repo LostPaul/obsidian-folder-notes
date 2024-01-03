@@ -3,17 +3,18 @@ Folder notes is a plugin for the note taking app  [Obsidian](https://obsidian.md
 This plugin has some unique features that separate it from similar "Folder note" plugins like opening folder notes through the path, creating folder notes for every existing folder, templater/template support and more.
 ## Features
 - Open folder notes through the file explorer/path by clicking on folder names
-- Canvas folder notes (soon support for Excalidraw and more)
+- Only open folder notes through alt or ctrl + mouse click
+- Excalidraw, Canvas, ... folder notes unlimited file type folder notes
 - Sync folder note name with the folder name
 - Automatically create folder notes when creating folders
 - Turn every folder into a folder note
 - Folder overview code block with default settings in settings from the plugin
 - Hide folder notes in the file explorer
-- Underline folder names in the file explorer/path
+- Underline, bold and cursive folder names in the file explorer/path option
 - Stop collapsing of folders (with folder notes) in the file explorer
 - Only open folder note through the folder name and the rest collapses the folder
 - Front matter title plugin support
-
+- Exclude folders with regex, path and a pattern with \*
 ## Get started 
 
 Read the [Getting started page](Getting%20started.md) for further details.
