@@ -46,8 +46,6 @@ body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
 
 .add-exclude-folder-item {
     padding-bottom: 0 !important;
-    border-top: 0 !important;
-    padding-top: 0 !important;
 }
 
 .fn-exclude-folder-list {

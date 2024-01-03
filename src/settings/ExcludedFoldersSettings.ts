@@ -1,6 +1,8 @@
 import { addExcludeFolderListItem, ExcludedFolder, addExcludedFolder, ExcludePattern, addExcludePatternListItem } from '../excludedFolder';
 import { Setting } from 'obsidian';
 import { SettingsTab } from "./SettingsTab";
+import ExcludedFolderSettings from 'src/modals/ExcludeFolderSettings';
+import PatternSettings from 'src/modals/PatternSettings';
 
 
 export async function renderExcludeFolders(settingsTab: SettingsTab) {
@@ -27,6 +29,27 @@ export async function renderExcludeFolders(settingsTab: SettingsTab) {
     manageExcluded.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
     new Setting(containerEl)
+        .setName('Exclude folder default settings')
+        .addButton((cb) => {
+            cb.setButtonText('Manage')
+            cb.setCta()
+            cb.onClick(async () => {
+                new ExcludedFolderSettings(settingsTab.app, settingsTab.plugin, settingsTab.plugin.settings.excludeFolderDefaultSettings).open();
+            })
+        })
+
+    new Setting(containerEl)
+        .setName('Exclude pattern default settings')
+        .addButton((cb) => {
+            cb.setButtonText('Manage')
+            cb.setCta()
+            cb.onClick(async () => {
+                new PatternSettings(settingsTab.app, settingsTab.plugin, settingsTab.plugin.settings.excludePatternDefaultSettings).open();
+            })
+        })
+
+
+    new Setting(containerEl)
         .setName('Add excluded folder')
         .setClass('add-exclude-folder-item')
         .addButton((cb) => {
@@ -34,7 +57,7 @@ export async function renderExcludeFolders(settingsTab: SettingsTab) {
             cb.setClass('add-exclude-folder');
             cb.setTooltip('Add excluded folder');
             cb.onClick(() => {
-                const excludedFolder = new ExcludedFolder('', settingsTab.plugin.settings.excludeFolders.length);
+                const excludedFolder = new ExcludedFolder('', settingsTab.plugin.settings.excludeFolders.length, settingsTab.plugin);
                 addExcludeFolderListItem(settingsTab, containerEl, excludedFolder);
                 addExcludedFolder(settingsTab.plugin, excludedFolder);
                 settingsTab.display();

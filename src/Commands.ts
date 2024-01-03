@@ -230,7 +230,7 @@ export class Commands {
 				if (file instanceof TFile) {
 					// @ts-ignore
 					subMenu.addItem((item) => {
-						item.setTitle('Make folder note')
+						item.setTitle('Create folder note')
 							.setIcon('edit')
 							.onClick(async () => {
 								if (!folder) return;
@@ -282,7 +282,7 @@ export class Commands {
 					item.setTitle('Exclude folder from folder notes')
 						.setIcon('x-circle')
 						.onClick(() => {
-							const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length);
+							const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length, this.plugin);
 							this.plugin.settings.excludeFolders.push(excludedFolder);
 							this.plugin.saveSettings();
 							new Notice('Successfully excluded folder from folder notes');

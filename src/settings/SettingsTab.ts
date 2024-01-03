@@ -49,6 +49,8 @@ export interface FolderNotesSettings {
 	openByClick: boolean;
 	openWithCtrl: boolean;
 	openWithAlt: boolean;
+	excludeFolderDefaultSettings: ExcludedFolder;
+	excludePatternDefaultSettings: ExcludePattern;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -107,6 +109,30 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	openByClick: true,
 	openWithCtrl: false,
 	openWithAlt: false,
+	excludeFolderDefaultSettings: {
+		type: 'folder',
+		path: '',
+		subFolders: true,
+		disableSync: true,
+		disableAutoCreate: true,
+		disableFolderNote: false,
+		enableCollapsing: false,
+		position: 0,
+		excludeFromFolderOverview: false,
+		string: '',
+	},
+	excludePatternDefaultSettings: {
+		type: 'pattern',
+		path: '',
+		subFolders: true,
+		disableSync: true,
+		disableAutoCreate: true,
+		disableFolderNote: false,
+		enableCollapsing: false,
+		position: 0,
+		excludeFromFolderOverview: false,
+		string: '',
+	},
 };
 
 export class SettingsTab extends PluginSettingTab {

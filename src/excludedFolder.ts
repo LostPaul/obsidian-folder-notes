@@ -16,16 +16,16 @@ export class ExcludedFolder {
 	enableCollapsing: boolean;
 	position: number;
 	excludeFromFolderOverview: boolean;
-	constructor(path: string, position: number) {
+	constructor(path: string, position: number, plugin: FolderNotesPlugin) {
 		this.type = 'folder';
 		this.path = path;
-		this.subFolders = true;
-		this.disableSync = true;
-		this.disableAutoCreate = true;
-		this.disableFolderNote = false;
-		this.enableCollapsing = false;
+		this.subFolders = plugin.settings.excludeFolderDefaultSettings.subFolders;
+		this.disableSync = plugin.settings.excludeFolderDefaultSettings.disableSync;
+		this.disableAutoCreate = plugin.settings.excludeFolderDefaultSettings.disableAutoCreate;
+		this.disableFolderNote = plugin.settings.excludeFolderDefaultSettings.disableFolderNote;
+		this.enableCollapsing = plugin.settings.excludeFolderDefaultSettings.enableCollapsing;
 		this.position = position;
-		this.excludeFromFolderOverview = false;
+		this.excludeFromFolderOverview = plugin.settings.excludeFolderDefaultSettings.excludeFromFolderOverview;
 		this.string = '';
 	}
 }
@@ -41,16 +41,16 @@ export class ExcludePattern {
 	disableFolderNote: boolean;
 	enableCollapsing: boolean;
 	excludeFromFolderOverview: boolean;
-	constructor(pattern: string, position: number) {
+	constructor(pattern: string, position: number, plugin: FolderNotesPlugin) {
 		this.type = 'pattern';
 		this.string = pattern;
 		this.position = position;
-		this.subFolders = false;
-		this.disableSync = true;
-		this.disableAutoCreate = true;
-		this.disableFolderNote = false;
-		this.enableCollapsing = false;
-		this.excludeFromFolderOverview = false;
+		this.subFolders = plugin.settings.excludePatternDefaultSettings.subFolders;
+		this.disableSync = plugin.settings.excludePatternDefaultSettings.disableSync;
+		this.disableAutoCreate = plugin.settings.excludePatternDefaultSettings.disableAutoCreate;
+		this.disableFolderNote = plugin.settings.excludePatternDefaultSettings.disableFolderNote;
+		this.enableCollapsing = plugin.settings.excludePatternDefaultSettings.enableCollapsing;
+		this.excludeFromFolderOverview = plugin.settings.excludePatternDefaultSettings.excludeFromFolderOverview;
 		this.path = '';
 	}
 }
@@ -67,7 +67,7 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string) {
 export function getExcludedFolderByPattern(plugin: FolderNotesPlugin, folderName: string) {
 	return plugin.settings.excludeFolders.filter((s) => s.type == 'pattern').find((pattern) => {
 		if (!pattern.string) { return false; }
-		const string = pattern.string.toLocaleLowerCase().trim();
+		const string = pattern.string.trim();
 		if (!string.startsWith('{regex}') && !(string.startsWith('*') || string.endsWith('*'))) { return false; }
 		const regex = string.replace('{regex}', '').trim();
 		if (string.startsWith('{regex}') && regex === '') { return false; }
@@ -226,7 +226,7 @@ export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTM
 		cb.onChange((value) => {
 			if (value.startsWith('{regex}') || value.includes('*')) {
 				deleteExcludedFolder(plugin, excludedFolder);
-				const pattern = new ExcludePattern(value, plugin.settings.excludeFolders.length);
+				const pattern = new ExcludePattern(value, plugin.settings.excludeFolders.length, plugin);
 				addExcludedFolder(plugin, pattern);
 				addExcludePatternListItem(settings, containerEl, pattern);
 				setting.clear();
@@ -237,6 +237,7 @@ export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTM
 			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
 		});
 	});
+
 	setting.addButton((cb) => {
 		cb.setIcon('edit');
 		cb.setTooltip('Edit folder note');
@@ -264,6 +265,7 @@ export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTM
 			settings.display();
 		});
 	});
+
 	setting.addButton((cb) => {
 		cb.setIcon('down-chevron-glyph');
 		cb.setTooltip('Move down');
@@ -287,6 +289,7 @@ export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTM
 			settings.display();
 		});
 	});
+
 	setting.addButton((cb) => {
 		cb.setIcon('trash-2');
 		cb.setTooltip('Delete excluded folder');
