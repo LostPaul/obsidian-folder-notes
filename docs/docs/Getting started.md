@@ -6,7 +6,7 @@ The plugin can be downloaded by clicking on [https://obsidian.md/plugins?id=fold
 ### Create folder overview
 Find more out about the folder overview feature on the [folder overview page](./Features/Folder%20overview.md)
 
-To create a folder overview in a note either use the command "Insert folder overview" or right click on pc and select "create folder overview"
+To create a folder overview in a note either use the command "Insert folder overview" or on pc right click and select "create folder overview"
 
 ![Context menu](./assets/VyBTGhA5eJAVVFusZXIz.png){: style="max-width: 40%;max-height: 40%"}
 
