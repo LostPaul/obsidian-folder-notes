@@ -2,6 +2,7 @@
 
 ## Create overview 
 There are two options to create a folder overview in a note
+
 - Use the command "Insert folder overview" from the [command palette](https://help.obsidian.md/Plugins/Command+palette)
 - On desktop right click and click on the option "Create folder overview"
 ## Edit overview
