@@ -115,7 +115,7 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 
 		if (!excludedFolder) {
 			excludedFolderExisted = false;
-			excludedFolder = new ExcludedFolder(folder.path, plugin.settings.excludeFolders.length);
+			excludedFolder = new ExcludedFolder(folder.path, plugin.settings.excludeFolders.length, plugin);
 			addExcludedFolder(plugin, excludedFolder);
 		} else if (!excludedFolder.disableSync) {
 			disabledSync = false;
