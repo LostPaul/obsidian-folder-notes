@@ -1,4 +1,4 @@
-# Folder commands
+# Folder context menu commands
 
 ## Exclude folder from folder notes
 This will add the folder to the excluded folder list. [Click here to find more about excluded folders out.](Exclude%20folders.md)
