@@ -20,6 +20,7 @@ markdown_extensions:
   - def_list
   - pymdownx.tasklist:
       custom_checkbox: true
-  - plugins:
-    - social:
-      cards_layout: default
+
+plugins:
+  - social:
+    cards_layout: default
