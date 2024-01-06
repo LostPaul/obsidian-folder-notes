@@ -154,7 +154,7 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 
 export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractFile, evt?: MouseEvent) {
 	const path = file.path;
-	if (plugin.app.workspace.getActiveFile()?.path === path) { return; }
+	if (plugin.app.workspace.getActiveFile()?.path === path && !(Keymap.isModEvent(evt) == 'tab')) { return; }
 	const leaf = plugin.app.workspace.getLeaf(Keymap.isModEvent(evt) || plugin.settings.openInNewTab);
 	if (file instanceof TFile) {
 		await leaf.openFile(file);

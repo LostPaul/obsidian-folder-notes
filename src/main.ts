@@ -53,6 +53,10 @@ export default class FolderNotesPlugin extends Plugin {
 						.forEach((element: HTMLElement) => {
 							if (element.onclick) return;
 							if (Platform.isMobile && this.settings.disableOpenFolderNoteOnClick) return;
+							// handle middle click
+							element.addEventListener('auxclick', (event: MouseEvent) => {
+								handleFolderClick(event, this)
+							}, { capture: true });
 							element.onclick = (event: MouseEvent) => handleFolderClick(event, this);
 							this.registerDomEvent(element, 'pointerover', (event: MouseEvent) => {
 								this.hoveredElement = element;
