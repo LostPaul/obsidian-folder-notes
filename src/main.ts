@@ -55,9 +55,9 @@ export default class FolderNotesPlugin extends Plugin {
 							if (Platform.isMobile && this.settings.disableOpenFolderNoteOnClick) return;
 							// handle middle click
 							element.addEventListener('auxclick', (event: MouseEvent) => {
-       if (e.button == 1) {
-								handleFolderClick(event, this)
-       }
+								if (event.button == 1) {
+									handleFolderClick(event, this)
+								}
 							}, { capture: true });
 							element.onclick = (event: MouseEvent) => handleFolderClick(event, this);
 							this.registerDomEvent(element, 'pointerover', (event: MouseEvent) => {
@@ -134,11 +134,11 @@ export default class FolderNotesPlugin extends Plugin {
 			if (this.hoverLinkTriggered) return;
 			if (!hoveredElement) return;
 			if (!Keymap.isModEvent(event)) return;
-		
+
 			const folderPath = hoveredElement?.parentElement?.getAttribute('data-path') || '';
 			const folderNote = getFolderNote(this, folderPath);
 			if (!folderNote) return;
-		
+
 			this.app.workspace.trigger('hover-link', {
 				event: this.mouseEvent,
 				source: 'preview',
@@ -151,7 +151,7 @@ export default class FolderNotesPlugin extends Plugin {
 			});
 			this.hoverLinkTriggered = true;
 		});
-		
+
 
 		this.registerEvent(this.app.workspace.on('layout-change', () => {
 			this.loadFileClasses();
