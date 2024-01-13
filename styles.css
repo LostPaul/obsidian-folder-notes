@@ -16,9 +16,9 @@
 
 body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
 .tree-item-self.fn-is-active {
-  color: var(--nav-item-color-active);
-  background-color: var(--nav-item-background-active);
-  font-weight: var(--nav-item-weight-active);
+    color: var(--nav-item-color-active);
+    background-color: var(--nav-item-background-active);
+    font-weight: var(--nav-item-weight-active);
 }
 
 .has-folder-note .nav-folder-title-content:hover,
@@ -180,30 +180,30 @@ body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
 
 /* Setting tab style */
 .fn-settings-tab-bar {
-	display: flex;
-	flex-direction: row;
+    display: flex;
+    flex-direction: row;
 }
 
 .fn-settings-tab {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: var(--size-4-2);
-	padding: 10px;
-	border: 1px solid var(--background-modifier-border)
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--size-4-2);
+    padding: 10px;
+    border: 1px solid var(--background-modifier-border)
 }
 
 .fn-settings-tab-active {
-	background-color: var(--color-accent);
-	color: var(--text-on-accent);
+    background-color: var(--color-accent);
+    color: var(--text-on-accent);
 }
 
 .fn-settings-tab-name {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .fn-settings-tab-icon {
-	display: flex;
+    display: flex;
 }
 
 /* File explorer & path styles */
@@ -222,7 +222,7 @@ body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
     text-underline-offset: 2px;
 }
 
-.folder-note-bold .has-folder-note .nav-folder-title-content, 
+.folder-note-bold .has-folder-note .nav-folder-title-content,
 .folder-note-bold-path .has-folder-note.view-header-breadcrumb {
     font-weight: bold;
 }
@@ -231,3 +231,9 @@ body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
 .folder-note-cursive-path .has-folder-note.view-header-breadcrumb {
     font-style: italic;
 }
+
+.only-has-folder-note .tree-item-icon {
+    display: none;
+}
+
+

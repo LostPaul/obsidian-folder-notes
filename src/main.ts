@@ -403,6 +403,7 @@ export default class FolderNotesPlugin extends Plugin {
 			const folderNote = getFolderNote(this, file.path);
 			if (!folderNote) {
 				this.removeCSSClassFromEL(file?.path, 'has-folder-note');
+				this.removeCSSClassFromEL(file?.path, 'only-has-folder-note');
 				return;
 			}
 
@@ -412,9 +413,13 @@ export default class FolderNotesPlugin extends Plugin {
 			if (excludedFolder?.disableFolderNote) {
 				this.removeCSSClassFromEL(folderNote.path, 'is-folder-note');
 				this.removeCSSClassFromEL(file.path, 'has-folder-note');
+				this.removeCSSClassFromEL(file?.path, 'only-has-folder-note');
 			} else {
 				this.addCSSClassToTitleEL(folderNote.path, 'is-folder-note');
 				this.addCSSClassToTitleEL(file.path, 'has-folder-note');
+				if (file.children.length == 1) {
+					this.addCSSClassToTitleEL(file.path, 'only-has-folder-note');
+				}
 			}
 		});
 	}
