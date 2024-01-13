@@ -299,11 +299,21 @@ export class Commands {
 								deleteFolderNote(this.plugin, folderNote);
 							});
 					});
+					
 					subMenu.addItem((item) => {
 						item.setTitle('Open folder note')
 							.setIcon('chevron-right-square')
 							.onClick(() => {
 								openFolderNote(this.plugin, folderNote);
+							});
+					});
+
+					subMenu.addItem((item) => {
+						item.setTitle('Copy Obsidian URL')
+							.setIcon('link')
+							.onClick(() => {
+								// @ts-ignore
+								this.app.copyObsidianUrl(folderNote);
 							});
 					});
 				} else {
