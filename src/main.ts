@@ -37,6 +37,7 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.settings.cursiveNameInPath) { document.body.classList.add('folder-note-cursive-path'); }
 		if (this.settings.underlineFolderInPath) { document.body.classList.add('folder-note-underline-path'); }
 		if (!this.settings.allowWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
+		if (this.settings.hideCollapsingIcon) { document.body.classList.add('fn-hide-collapse-icon'); }
 
 		new Commands(this.app, this).registerCommands();
 

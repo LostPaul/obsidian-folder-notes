@@ -51,6 +51,7 @@ export interface FolderNotesSettings {
 	openWithAlt: boolean;
 	excludeFolderDefaultSettings: ExcludedFolder;
 	excludePatternDefaultSettings: ExcludePattern;
+	hideCollapsingIcon: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -133,6 +134,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		excludeFromFolderOverview: false,
 		string: '',
 	},
+	hideCollapsingIcon: false,
 };
 
 export class SettingsTab extends PluginSettingTab {
