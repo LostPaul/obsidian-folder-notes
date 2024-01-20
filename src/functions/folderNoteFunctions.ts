@@ -81,8 +81,9 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		}
 		file = await plugin.app.vault.create(path, content);
 	} else {
-		file = existingNote;
 		plugin.app.fileManager.renameFile(existingNote, path);
+		file = existingNote;
+		file.path = path;
 	}
 
 	if (openFile) {
@@ -92,7 +93,8 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		}
 	}
 
-	if (file && !existingNote && plugin.settings.folderNoteType !== '.excalidraw' && extension?.split('.').pop() == plugin.settings.templatePath.split('.').pop()) {
+	const matchingExtension = extension?.split('.').pop() == plugin.settings.templatePath.split('.').pop();
+	if (file && !existingNote && matchingExtension && plugin.settings.folderNoteType !== '.excalidraw') {
 		applyTemplate(plugin, file, leaf, plugin.settings.templatePath);
 	}
 
