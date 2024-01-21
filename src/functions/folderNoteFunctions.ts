@@ -81,12 +81,25 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		}
 		file = await plugin.app.vault.create(path, content);
 	} else {
-		plugin.app.fileManager.renameFile(existingNote, path);
 		file = existingNote;
-		file.path = path;
+		await plugin.app.fileManager.renameFile(existingNote, path).then(() => {
+			file = existingNote;
+		});
 	}
 
 	if (openFile) {
+		if (plugin.app.workspace.getActiveFile()?.path === path) { 
+			if (plugin.activeFolderDom) {
+				plugin.activeFolderDom.removeClass('fn-is-active');
+				plugin.activeFolderDom = null;
+			}
+			
+			const folder = getFolder(plugin, file);
+			if (!folder) { return; }
+
+			plugin.activeFolderDom = plugin.getEL(folder.path);
+			if (plugin.activeFolderDom) plugin.activeFolderDom.addClass('fn-is-active');
+		}
 		await leaf.openFile(file);
 		if (plugin.settings.folderNoteType === '.excalidraw' || extension === '.excalidraw') {
 			openExcalidrawView(leaf);

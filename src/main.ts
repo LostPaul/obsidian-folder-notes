@@ -199,10 +199,12 @@ export default class FolderNotesPlugin extends Plugin {
 				this.activeFolderDom.removeClass('fn-is-active');
 				this.activeFolderDom = null;
 			}
+			
 			if (!openFile || !openFile.basename) { return; }
+
 			const folder = getFolder(this, openFile);
 			if (!folder) { return; }
-			if (extractFolderName(this.settings.folderNoteName, openFile.basename) !== folder.name) { return; }
+
 			this.activeFolderDom = this.getEL(folder.path);
 			if (this.activeFolderDom) this.activeFolderDom.addClass('fn-is-active');
 		}));
