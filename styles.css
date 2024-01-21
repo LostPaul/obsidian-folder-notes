@@ -232,7 +232,7 @@ body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
     font-style: italic;
 }
 
-.fn-hide-collapse-icon .only-has-folder-note .tree-item-icon {
+.fn-hide-collapse-icon .has-folder-note.only-has-folder-note .tree-item-icon {
     display: none;
 }
 
