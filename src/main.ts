@@ -9,6 +9,7 @@ import { getExcludedFolder } from './excludedFolder';
 import { FrontMatterTitlePluginHandler } from './events/FrontMatterTitle';
 import { FolderOverviewSettings } from './folderOverview/ModalSettings';
 import { FolderOverview } from './folderOverview/FolderOverview';
+import { TabManager } from './events/TabManager';
 import './functions/ListComponent';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
@@ -20,6 +21,7 @@ export default class FolderNotesPlugin extends Plugin {
 	hoveredElement: HTMLElement | null = null;
 	mouseEvent: MouseEvent | null = null;
 	hoverLinkTriggered = false;
+	tabManager: TabManager;
 	async onload() {
 		console.log('loading folder notes plugin');
 		await this.loadSettings();
@@ -45,6 +47,8 @@ export default class FolderNotesPlugin extends Plugin {
 			if (this.settings.frontMatterTitle.enabled) {
 				this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
 			}
+			this.tabManager = new TabManager(this);
+			this.tabManager.updateTabs();
 		});
 
 		this.observer = new MutationObserver((mutations: MutationRecord[]) => {
@@ -153,9 +157,9 @@ export default class FolderNotesPlugin extends Plugin {
 			this.hoverLinkTriggered = true;
 		});
 
-
 		this.registerEvent(this.app.workspace.on('layout-change', () => {
 			this.loadFileClasses();
+			this.tabManager.updateTabs();
 		}));
 
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
@@ -205,6 +209,7 @@ export default class FolderNotesPlugin extends Plugin {
 				return;
 			}
 			if (file instanceof TFolder) {
+				this.tabManager.updateTab(file.path);
 				return handleFolderRename(file, oldPath, this);
 			} else if (file instanceof TFile) {
 				return handleFileRename(file, oldPath, this);

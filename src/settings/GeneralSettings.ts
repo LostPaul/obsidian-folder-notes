@@ -1,4 +1,4 @@
-import { Setting, Platform } from "obsidian";
+import { Setting, Platform, SettingTab } from "obsidian";
 import { SettingsTab } from "./SettingsTab";
 import ListComponent from '../functions/ListComponent';
 import AddSupportedFileModal from '../modals/AddSupportedFileType';
@@ -27,10 +27,32 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                 .setCta()
                 .onClick(async () => {
                     settingsTab.updateFolderNotes(settingsTab.plugin.settings.newFolderNoteName);
+                    settingsTab.display();
                 })
         );
     nameSetting.infoEl.appendText('Make sure to back up your vault before renaming all folder notes and restart Obsidian after renaming them');
     nameSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
+
+    if (settingsTab.plugin.settings.newFolderNoteName !== '{{folder_name}}') {
+        new Setting(containerEl)
+            .setName('Use folder name instead of folder note name in the tab title')
+            .setDesc('When you\'re using a folder note name like "folder note" and have multiple folder notes open you can\'t separate them anymore by their name. This setting uses the folder name instead and allows you to indentify the different files.')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(settingsTab.plugin.settings.tabManagerEnabled)
+                    .onChange(async (value) => {
+                        if (!value) {
+                            settingsTab.plugin.tabManager.resetTabs();
+                        } else {
+                            settingsTab.plugin.settings.tabManagerEnabled = value;
+                            settingsTab.plugin.tabManager.updateTabs();
+                        }
+                        settingsTab.plugin.settings.tabManagerEnabled = value;
+                        await settingsTab.plugin.saveSettings();
+                        settingsTab.display();
+                    })
+            );
+    }
 
     new Setting(containerEl)
         .setName('Default folder note type for new folder notes')
