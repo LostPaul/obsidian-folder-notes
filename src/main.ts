@@ -169,29 +169,34 @@ export default class FolderNotesPlugin extends Plugin {
 		}));
 
 		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
+			const folder = file.parent;
+			if (folder instanceof TFolder) {
+				if (folder.children.length == 1) {
+					this.addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
+				} else if (folder.children.length == 0 || folder.children.length > 1) {
+					this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+				}
+			}
+
 			if (file instanceof TFile) {
 				const folderName = extractFolderName(this.settings.folderNoteName, file.basename);
 				const folder = getFolder(this, file);
 				if (!(folder instanceof TFolder)) { return; }
 				if (folderName !== folder.name) { return; }
-				this.addCSSClassToTitleEL(folder.path, 'has-folder-note');
-				if (folder.children.length == 1) {
-					this.addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
-				}
-				this.addCSSClassToTitleEL(file.path, 'is-folder-note');
 			}
 			if (!this.app.workspace.layoutReady) return;
-			if (!this.settings.autoCreate) return;
+
 			if (!(file instanceof TFolder)) return;
+
+			if (!this.settings.autoCreate) return;
 			const excludedFolder = getExcludedFolder(this, file.path);
 			if (excludedFolder?.disableAutoCreate) return;
+
 			const folderNote = getFolderNote(this, file.path);
 			if (folderNote) return;
+
 			createFolderNote(this, file.path, true, undefined, true);
 			this.addCSSClassToTitleEL(file.path, 'has-folder-note');
-			if (file.children.length == 1) {
-				this.addCSSClassToTitleEL(file.path, 'only-has-folder-note');
-			}
 		}));
 
 		this.registerEvent(this.app.workspace.on('file-open', (openFile: TFile | null) => {
@@ -199,7 +204,7 @@ export default class FolderNotesPlugin extends Plugin {
 				this.activeFolderDom.removeClass('fn-is-active');
 				this.activeFolderDom = null;
 			}
-			
+
 			if (!openFile || !openFile.basename) { return; }
 
 			const folder = getFolder(this, openFile);
@@ -216,40 +221,50 @@ export default class FolderNotesPlugin extends Plugin {
 				this.removeCSSClassFromEL(file.path, 'is-folder-note');
 				return;
 			}
+			const folder = file.parent;
+			const oldFolder = this.app.vault.getAbstractFileByPath(this.getFolderPathFromString(oldPath));
+			if (folder instanceof TFolder) {
+				if (folder.children.length == 1) {
+					this.addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
+				} else if (folder.children.length == 0 || folder.children.length > 1) {
+					this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+				}
+			}
+
+			if (oldFolder instanceof TFolder) {
+				if (oldFolder.children.length == 1) {
+					this.addCSSClassToTitleEL(oldFolder.path, 'only-has-folder-note');
+				} else if (oldFolder.children.length == 0 || oldFolder.children.length > 1) {
+					this.removeCSSClassFromEL(oldFolder.path, 'only-has-folder-note');
+				}
+			}
+
 			if (file instanceof TFolder) {
 				this.tabManager.updateTab(file.path);
 				return handleFolderRename(file, oldPath, this);
+
 			} else if (file instanceof TFile) {
-				const folder = file.parent;
-				const oldFolder = this.app.vault.getAbstractFileByPath(this.getFolderPathFromString(oldPath));
-				console.log('oldFolder', oldFolder)
-
-				if (folder instanceof TFolder) {
-					if (folder.children.length == 1) {
-						this.addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
-					} else if (folder.children.length == 0 || folder.children.length > 1) {
-						this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
-					}
-				}
-
-				if (oldFolder instanceof TFolder) {
-					if (oldFolder.children.length == 1) {
-						this.addCSSClassToTitleEL(oldFolder.path, 'only-has-folder-note');
-					} else if (oldFolder.children.length == 0 || oldFolder.children.length > 1) {
-						this.removeCSSClassFromEL(oldFolder.path, 'only-has-folder-note');
-					}
-				}
 				return handleFileRename(file, oldPath, this);
 			}
 		}));
 
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
+			const folder = file.parent;
+			if (folder instanceof TFolder) { 
+				if (folder.children.length == 1) {
+					this.addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
+				} else if (folder.children.length == 0 || folder.children.length > 1) {
+					this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+				}
+			}
+
 			if (file instanceof TFile) {
 				const folder = getFolder(this, file);
 				if (!folder) { return; }
 				this.removeCSSClassFromEL(folder.path, 'has-folder-note');
 				this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
 			}
+
 			if (!(file instanceof TFolder)) { return; }
 			const folderNote = getFolderNote(this, file.path);
 			if (!folderNote) { return; }
