@@ -114,8 +114,22 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
                     } else {
                         document.body.classList.remove('fn-hide-collapse-icon');
                     }
+                    settingsTab.display();
                 })
         );
+
+    if (settingsTab.plugin.settings.hideCollapsingIcon) {
+        new Setting(containerEl)
+            .setName('Hide collapse icon also when the attachment folder is in the same folder')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(settingsTab.plugin.settings.ignoreAttachmentFolder)
+                    .onChange(async (value) => {
+                        settingsTab.plugin.settings.ignoreAttachmentFolder = value;
+                        await settingsTab.plugin.saveSettings();
+                    })
+            );
+    }
 
     new Setting(containerEl)
         .setName('Underline the name of folder notes')

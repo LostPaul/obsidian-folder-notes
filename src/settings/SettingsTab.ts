@@ -52,6 +52,7 @@ export interface FolderNotesSettings {
 	excludeFolderDefaultSettings: ExcludedFolder;
 	excludePatternDefaultSettings: ExcludePattern;
 	hideCollapsingIcon: boolean;
+	ignoreAttachmentFolder: boolean;
 	tabManagerEnabled: boolean;
 }
 
@@ -137,6 +138,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	},
 	hideCollapsingIcon: false,
 	tabManagerEnabled: true,
+	ignoreAttachmentFolder: true,
 };
 
 export class SettingsTab extends PluginSettingTab {

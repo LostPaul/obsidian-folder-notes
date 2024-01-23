@@ -171,7 +171,7 @@ export default class FolderNotesPlugin extends Plugin {
 		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
 			const folder = file.parent;
 			if (folder instanceof TFolder) {
-				if (folder.children.length == 1) {
+				if (this.isEmptyFolderNoteFolder(folder)) {
 					this.addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
 				} else if (folder.children.length == 0 || folder.children.length > 1) {
 					this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
@@ -224,7 +224,7 @@ export default class FolderNotesPlugin extends Plugin {
 			const folder = file.parent;
 			const oldFolder = this.app.vault.getAbstractFileByPath(this.getFolderPathFromString(oldPath));
 			if (folder instanceof TFolder) {
-				if (folder.children.length == 1) {
+				if (this.isEmptyFolderNoteFolder(folder)) {
 					this.addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
 				} else if (folder.children.length == 0 || folder.children.length > 1) {
 					this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
@@ -232,7 +232,7 @@ export default class FolderNotesPlugin extends Plugin {
 			}
 
 			if (oldFolder instanceof TFolder) {
-				if (oldFolder.children.length == 1) {
+				if (this.isEmptyFolderNoteFolder(oldFolder)) {
 					this.addCSSClassToTitleEL(oldFolder.path, 'only-has-folder-note');
 				} else if (oldFolder.children.length == 0 || oldFolder.children.length > 1) {
 					this.removeCSSClassFromEL(oldFolder.path, 'only-has-folder-note');
@@ -249,9 +249,9 @@ export default class FolderNotesPlugin extends Plugin {
 		}));
 
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
-			const folder = file.parent;
-			if (folder instanceof TFolder) { 
-				if (folder.children.length == 1) {
+			const folder = this.app.vault.getAbstractFileByPath(this.getFolderPathFromString(file.path));
+			if (folder instanceof TFolder) {
+				if (this.isEmptyFolderNoteFolder(folder)) {
 					this.addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
 				} else if (folder.children.length == 0 || folder.children.length > 1) {
 					this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
@@ -356,6 +356,31 @@ export default class FolderNotesPlugin extends Plugin {
 
 	getFileExplorerView() {
 		return this.getFileExplorer().view;
+	}
+
+	isEmptyFolderNoteFolder(folder: TFolder): boolean {
+		let attachmentFolderPath = this.app.vault.getConfig('attachmentFolderPath') as string;
+		const cleanAttachmentFolderPath = attachmentFolderPath?.replace('./', '') || '';
+		const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
+
+		if (folder.children.length == 1) {
+			return true;
+		} else if (folder.children.length > 1) {
+			if (attachmentsAreInRootFolder) {
+				return false;
+			} else if (this.settings.ignoreAttachmentFolder) {
+				const folderPath = `${folder.path}/${cleanAttachmentFolderPath}`
+				const attachmentFolder = this.app.vault.getAbstractFileByPath(folderPath);
+				
+				if (attachmentFolder instanceof TFolder) {
+					if (!folder.collapsed) {
+						this.getEL(folder.path)?.click();
+					}
+					return attachmentFolder.children.length <= 2;
+				}
+			}
+		}
+		return true;
 	}
 
 	async addCSSClassToTitleEL(path: string, cssClass: string, waitForCreate = false, count = 0) {
@@ -466,7 +491,7 @@ export default class FolderNotesPlugin extends Plugin {
 			} else {
 				this.addCSSClassToTitleEL(folderNote.path, 'is-folder-note');
 				this.addCSSClassToTitleEL(file.path, 'has-folder-note');
-				if (file.children.length == 1) {
+				if (this.isEmptyFolderNoteFolder(file)) {
 					this.addCSSClassToTitleEL(file.path, 'only-has-folder-note');
 				}
 			}
