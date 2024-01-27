@@ -210,7 +210,9 @@ export default class FolderNotesPlugin extends Plugin {
 
 			const folder = getFolder(this, openFile);
 			if (!folder) { return; }
-
+			const folderNote = getFolderNote(this, folder.path);
+			if (!folderNote) { return; }
+			if (folderNote.path !== openFile.path) { return; }
 			this.activeFolderDom = this.getEL(folder.path);
 			if (this.activeFolderDom) this.activeFolderDom.addClass('fn-is-active');
 		}));
