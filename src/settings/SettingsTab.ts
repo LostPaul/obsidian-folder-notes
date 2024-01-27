@@ -67,7 +67,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	excludeFolders: [],
 	showDeleteConfirmation: true,
 	underlineFolder: true,
-	stopWhitespaceCollapsing: false,
+	stopWhitespaceCollapsing: true,
 	underlineFolderInPath: true,
 	openFolderNoteOnClickInPath: true,
 	openInNewTab: false,
