@@ -22,6 +22,7 @@ export default class FolderNotesPlugin extends Plugin {
 	mouseEvent: MouseEvent | null = null;
 	hoverLinkTriggered = false;
 	tabManager: TabManager;
+	settingsOpened = false;
 	async onload() {
 		console.log('loading folder notes plugin');
 		await this.loadSettings();
@@ -38,7 +39,7 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.settings.boldNameInPath) { document.body.classList.add('folder-note-bold-path'); }
 		if (this.settings.cursiveNameInPath) { document.body.classList.add('folder-note-cursive-path'); }
 		if (this.settings.underlineFolderInPath) { document.body.classList.add('folder-note-underline-path'); }
-		if (!this.settings.allowWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
+		if (this.settings.stopWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
 		if (this.settings.hideCollapsingIcon) { document.body.classList.add('fn-hide-collapse-icon'); }
 
 		new Commands(this.app, this).registerCommands();
@@ -179,10 +180,10 @@ export default class FolderNotesPlugin extends Plugin {
 			}
 
 			if (file instanceof TFile) {
-				const folderName = extractFolderName(this.settings.folderNoteName, file.basename);
 				const folder = getFolder(this, file);
 				if (!(folder instanceof TFolder)) { return; }
-				if (folderName !== folder.name) { return; }
+				this.addCSSClassToTitleEL(folder.path, 'has-folder-note');
+				this.addCSSClassToTitleEL(file.path, 'is-folder-note');
 			}
 			if (!this.app.workspace.layoutReady) return;
 
@@ -368,16 +369,18 @@ export default class FolderNotesPlugin extends Plugin {
 		} else if (folder.children.length > 1) {
 			if (attachmentsAreInRootFolder) {
 				return false;
-			} else if (this.settings.ignoreAttachmentFolder) {
+			} else if (this.settings.ignoreAttachmentFolder && this.app.vault.getAbstractFileByPath(`${folder.path}/${cleanAttachmentFolderPath}`)) {
 				const folderPath = `${folder.path}/${cleanAttachmentFolderPath}`
 				const attachmentFolder = this.app.vault.getAbstractFileByPath(folderPath);
-				
+
 				if (attachmentFolder instanceof TFolder) {
 					if (!folder.collapsed) {
 						this.getEL(folder.path)?.click();
 					}
-					return attachmentFolder.children.length <= 2;
+					return folder.children.length <= 2;
 				}
+			} else {
+				return false;
 			}
 		}
 		return true;
@@ -532,6 +535,8 @@ export default class FolderNotesPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 		// cleanup any css if we need too
+		if (!this.settingsOpened) {
 		this.loadFileClasses(true);
+		}
 	}
 }

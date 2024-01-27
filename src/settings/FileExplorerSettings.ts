@@ -42,14 +42,14 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
         .setDesc('Only open folder notes in the file explorer by clicking on the folder name')
         .addToggle((toggle) =>
             toggle
-                .setValue(settingsTab.plugin.settings.allowWhitespaceCollapsing)
+                .setValue(!settingsTab.plugin.settings.stopWhitespaceCollapsing)
                 .onChange(async (value) => {
                     if (!value) {
                         document.body.classList.add('fn-whitespace-stop-collapsing');
                     } else {
                         document.body.classList.remove('fn-whitespace-stop-collapsing');
                     }
-                    settingsTab.plugin.settings.allowWhitespaceCollapsing = value;
+                    settingsTab.plugin.settings.stopWhitespaceCollapsing = !value;
                     await settingsTab.plugin.saveSettings();
                 })
         );

@@ -21,7 +21,7 @@ export interface FolderNotesSettings {
 	showDeleteConfirmation: boolean;
 	showRenameConfirmation: boolean;
 	underlineFolder: boolean;
-	allowWhitespaceCollapsing: boolean;
+	stopWhitespaceCollapsing: boolean;
 	underlineFolderInPath: boolean;
 	openFolderNoteOnClickInPath: boolean;
 	openInNewTab: boolean;
@@ -67,7 +67,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	excludeFolders: [],
 	showDeleteConfirmation: true,
 	underlineFolder: true,
-	allowWhitespaceCollapsing: false,
+	stopWhitespaceCollapsing: false,
 	underlineFolderInPath: true,
 	openFolderNoteOnClickInPath: true,
 	openInNewTab: false,
@@ -194,6 +194,7 @@ export class SettingsTab extends PluginSettingTab {
 	}
 
 	display(): void {
+		this.plugin.settingsOpened = true;
 		const { containerEl } = this;
 
 		containerEl.empty();
@@ -263,5 +264,9 @@ export class SettingsTab extends PluginSettingTab {
 			}
 		});
 		new Notice('Finished switching storage location');
+	}
+
+	onClose(): void {
+		this.plugin.settingsOpened = false;
 	}
 }

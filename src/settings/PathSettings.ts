@@ -35,24 +35,22 @@ export async function renderPath(settingsTab: SettingsTab) {
 
     settingsTab.settingsPage.createEl('h3', { text: 'Style settings' });
 
-    if (settingsTab.plugin.settings.openFolderNoteOnClickInPath) {
-        new Setting(containerEl)
-            .setName('Underline folders in the path')
-            .setDesc('Add an underline to folders that have a folder note in the path above a note')
-            .addToggle((toggle) =>
-                toggle
-                    .setValue(settingsTab.plugin.settings.underlineFolderInPath)
-                    .onChange(async (value) => {
-                        settingsTab.plugin.settings.underlineFolderInPath = value;
-                        if (value) {
-                            document.body.classList.add('folder-note-underline-path');
-                        } else {
-                            document.body.classList.remove('folder-note-underline-path');
-                        }
-                        await settingsTab.plugin.saveSettings();
-                    })
-            );
-    }
+    new Setting(containerEl)
+        .setName('Underline folders in the path')
+        .setDesc('Add an underline to folders that have a folder note in the path above a note')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.underlineFolderInPath)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.underlineFolderInPath = value;
+                    if (value) {
+                        document.body.classList.add('folder-note-underline-path');
+                    } else {
+                        document.body.classList.remove('folder-note-underline-path');
+                    }
+                    await settingsTab.plugin.saveSettings();
+                })
+        );
 
     new Setting(containerEl)
         .setName('Bold folders in the path')
@@ -87,5 +85,4 @@ export async function renderPath(settingsTab: SettingsTab) {
                     await settingsTab.plugin.saveSettings();
                 })
         );
-
 }
