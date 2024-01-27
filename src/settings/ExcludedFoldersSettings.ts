@@ -6,7 +6,6 @@ import PatternSettings from 'src/modals/PatternSettings';
 
 
 export async function renderExcludeFolders(settingsTab: SettingsTab) {
-    settingsTab.settingsPage.createEl('h1', { text: 'Exclude folders settings' });
     const containerEl = settingsTab.settingsPage;
     const manageExcluded = new Setting(containerEl)
         .setHeading()

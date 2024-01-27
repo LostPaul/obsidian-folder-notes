@@ -7,7 +7,6 @@ import ConfirmationModal from "../modals/ConfirmCreation";
 import { TemplateSuggest } from '../suggesters/TemplateSuggester';
 
 export async function renderGeneral(settingsTab: SettingsTab) {
-    settingsTab.settingsPage.createEl('h1', { text: 'General settings' });
     const containerEl = settingsTab.settingsPage;
     const nameSetting = new Setting(containerEl)
         .setName('Folder note name')
@@ -30,7 +29,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                     settingsTab.display();
                 })
         );
-    nameSetting.infoEl.appendText('Make sure to back up your vault before renaming all folder notes and restart Obsidian after renaming them');
+    nameSetting.infoEl.appendText('Requires a restart to take effect');
     nameSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
     if (settingsTab.plugin.settings.newFolderNoteName !== '{{folder_name}}') {

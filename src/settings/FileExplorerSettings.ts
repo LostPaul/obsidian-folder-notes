@@ -2,7 +2,6 @@ import { Setting } from "obsidian";
 import { SettingsTab } from "./SettingsTab";
 export async function renderFileExplorer(settingsTab: SettingsTab) {
     const containerEl = settingsTab.settingsPage;
-    settingsTab.settingsPage.createEl('h1', { text: 'File explorer settings' });
 
     new Setting(containerEl)
         .setName('Hide folder note')

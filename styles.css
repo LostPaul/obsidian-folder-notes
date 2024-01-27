@@ -182,6 +182,7 @@ body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
 .fn-settings-tab-bar {
     display: flex;
     flex-direction: row;
+    padding-bottom: 1rem;
 }
 
 .fn-settings-tab {

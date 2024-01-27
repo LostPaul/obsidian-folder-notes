@@ -3,7 +3,6 @@ import { SettingsTab } from "./SettingsTab";
 import { FolderOverviewSettings } from '../folderOverview/ModalSettings';
 
 export async function renderFolderOverview(settingsTab: SettingsTab) {
-    settingsTab.settingsPage.createEl('h1', { text: 'Folder overview settings' });
     const containerEl = settingsTab.settingsPage;
     new Setting(containerEl)
         .setName('Manage folder overview defaults')

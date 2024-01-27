@@ -1,7 +1,6 @@
 import { Setting } from "obsidian";
 import { SettingsTab } from "./SettingsTab";
 export async function renderPath(settingsTab: SettingsTab) {
-    settingsTab.settingsPage.createEl('h1', { text: 'Path settings' });
     const containerEl = settingsTab.settingsPage;
     new Setting(containerEl)
         .setName('Open folder note through path')
