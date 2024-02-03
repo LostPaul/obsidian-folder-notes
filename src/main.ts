@@ -165,10 +165,11 @@ export default class FolderNotesPlugin extends Plugin {
 		let attachmentFolderPath = this.app.vault.getConfig('attachmentFolderPath') as string;
 		const cleanAttachmentFolderPath = attachmentFolderPath?.replace('./', '') || '';
 		const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
+		const threshold = this.settings.storageLocation === 'insideFolder' ? 1 : 0;
 
-		if (folder.children.length == 1) {
+		if (folder.children.length == threshold) {
 			return true;
-		} else if (folder.children.length > 1) {
+		} else if (folder.children.length > threshold) {
 			if (attachmentsAreInRootFolder) {
 				return false;
 			} else if (this.settings.ignoreAttachmentFolder && this.app.vault.getAbstractFileByPath(`${folder.path}/${cleanAttachmentFolderPath}`)) {
@@ -178,7 +179,7 @@ export default class FolderNotesPlugin extends Plugin {
 					if (!folder.collapsed) {
 						getEl(folder.path)?.click();
 					}
-					return folder.children.length <= 2;
+					return folder.children.length <= threshold + 1;
 				}
 			} else {
 				return false;
