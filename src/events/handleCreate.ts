@@ -5,6 +5,8 @@ import { getExcludedFolder } from 'src/excludedFolder';
 import { removeCSSClassFromEL, addCSSClassToTitleEL } from 'src/functions/styleFunctions';
 
 export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
+    if (!plugin.app.workspace.layoutReady) return;
+    
     const folder = file.parent;
     if (folder instanceof TFolder) {
         if (plugin.isEmptyFolderNoteFolder(folder)) {
@@ -17,6 +19,8 @@ export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (file instanceof TFile) {
         const folder = getFolder(plugin, file);
         if (!(folder instanceof TFolder)) { return; }
+        const folderNote = getFolderNote(plugin, folder.path);
+        if (!folderNote) { return; }
         addCSSClassToTitleEL(folder.path, 'has-folder-note');
         addCSSClassToTitleEL(file.path, 'is-folder-note');
     }
