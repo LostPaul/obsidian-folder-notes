@@ -135,6 +135,7 @@ async function renameFolderOnFileRename(file: TFile, oldPath: string, oldFolder:
 		plugin.addCSSClassToTitleEL(file.path, 'is-folder-note');
 		return;
 	}
+	
 	let newFolderPath = '';
 	if (plugin.settings.storageLocation === 'insideFolder') {
 		newFolderPath = oldFolder.parent?.path + '/' + newFolderName;
@@ -146,9 +147,11 @@ async function renameFolderOnFileRename(file: TFile, oldPath: string, oldFolder:
 			newFolderPath = `${parentFolderPath}/${newFolderName}`;
 		}
 	}
-	if (plugin.app.vault.getAbstractFileByPath(newFolderPath) || plugin.app.vault.getAbstractFileByPath(newFolderName || '')) {
+
+	if (plugin.app.vault.getAbstractFileByPath(newFolderPath)) {
 		await plugin.app.fileManager.renameFile(file, oldPath);
 		return new Notice('A folder with the same name already exists');
 	}
 	plugin.app.fileManager.renameFile(oldFolder, newFolderPath);
 }
+
