@@ -28,6 +28,8 @@ export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) 
             addCSSClassToTitleEL(file.path, 'has-folder-note');
             if (plugin.isEmptyFolderNoteFolder(file)) {
                 addCSSClassToTitleEL(file.path, 'only-has-folder-note');
+            } else {
+                removeCSSClassFromEL(file.path, 'only-has-folder-note');
             }
         }
     });

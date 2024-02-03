@@ -6,12 +6,12 @@ import { removeCSSClassFromEL, addCSSClassToTitleEL } from 'src/functions/styleF
 
 export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (!plugin.app.workspace.layoutReady) return;
-    
+
     const folder = file.parent;
     if (folder instanceof TFolder) {
         if (plugin.isEmptyFolderNoteFolder(folder)) {
             addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
-        } else if (folder.children.length == 0 || folder.children.length > 1) {
+        } else {
             removeCSSClassFromEL(folder.path, 'only-has-folder-note');
         }
     }
@@ -20,9 +20,13 @@ export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
         const folder = getFolder(plugin, file);
         if (!(folder instanceof TFolder)) { return; }
         const folderNote = getFolderNote(plugin, folder.path);
-        if (!folderNote) { return; }
-        addCSSClassToTitleEL(folder.path, 'has-folder-note');
-        addCSSClassToTitleEL(file.path, 'is-folder-note');
+
+        if (folderNote && folderNote.path === file.path) {
+            addCSSClassToTitleEL(folder.path, 'has-folder-note');
+            addCSSClassToTitleEL(file.path, 'is-folder-note');
+            return;
+        }
+
     }
     if (!plugin.app.workspace.layoutReady) return;
 

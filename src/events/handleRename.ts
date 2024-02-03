@@ -17,7 +17,7 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 	if (folder instanceof TFolder) {
 		if (plugin.isEmptyFolderNoteFolder(folder)) {
 			addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
-		} else if (folder.children.length == 0 || folder.children.length > 1) {
+		} else {
 			removeCSSClassFromEL(folder.path, 'only-has-folder-note');
 		}
 	}
@@ -25,7 +25,7 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 	if (oldFolder instanceof TFolder) {
 		if (plugin.isEmptyFolderNoteFolder(oldFolder)) {
 			addCSSClassToTitleEL(oldFolder.path, 'only-has-folder-note');
-		} else if (oldFolder.children.length == 0 || oldFolder.children.length > 1) {
+		} else {
 			removeCSSClassFromEL(oldFolder.path, 'only-has-folder-note');
 		}
 	}

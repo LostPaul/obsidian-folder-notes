@@ -9,7 +9,7 @@ export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (folder instanceof TFolder) {
         if (plugin.isEmptyFolderNoteFolder(folder)) {
             addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
-        } else if (folder.children.length == 0 || folder.children.length > 1) {
+        } else {
             removeCSSClassFromEL(folder.path, 'only-has-folder-note');
         }
     }
@@ -17,6 +17,8 @@ export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (file instanceof TFile) {
         const folder = getFolder(plugin, file);
         if (!folder) { return; }
+        const folderNote = getFolderNote(plugin, folder.path);
+        if (folderNote) { return; }
         removeCSSClassFromEL(folder.path, 'has-folder-note');
         removeCSSClassFromEL(folder.path, 'only-has-folder-note');
     }
