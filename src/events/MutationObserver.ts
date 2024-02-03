@@ -3,32 +3,32 @@ import { Platform, Keymap } from 'obsidian';
 import { getFolderNote } from 'src/functions/folderNoteFunctions';
 import { handleFolderClick, handleViewHeaderClick } from './handleClick';
 
-export function addObserver(plugin: FolderNotesPlugin) {
+export async function addObserver(plugin: FolderNotesPlugin) {
     plugin.observer = new MutationObserver((mutations: MutationRecord[]) => {
         mutations.forEach((rec) => {
             if (rec.type === 'childList') {
                 (<Element>rec.target).querySelectorAll('div.nav-folder-title-content')
                     .forEach((element: HTMLElement) => {
                         if (element.onclick) return;
-                        if (Platform.isMobile && this.settings.disableOpenFolderNoteOnClick) return;
+                        if (Platform.isMobile && plugin.settings.disableOpenFolderNoteOnClick) return;
                         // handle middle click
                         element.addEventListener('auxclick', (event: MouseEvent) => {
                             if (event.button == 1) {
-                                handleFolderClick(event, this)
+                                handleFolderClick(event, plugin)
                             }
                         }, { capture: true });
-                        element.onclick = (event: MouseEvent) => handleFolderClick(event, this);
-                        this.registerDomEvent(element, 'pointerover', (event: MouseEvent) => {
-                            this.hoveredElement = element;
-                            this.mouseEvent = event;
+                        element.onclick = (event: MouseEvent) => handleFolderClick(event, plugin);
+                        plugin.registerDomEvent(element, 'pointerover', (event: MouseEvent) => {
+                            plugin.hoveredElement = element;
+                            plugin.mouseEvent = event;
                             if (!Keymap.isModEvent(event)) return;
                             if (!(event.target instanceof HTMLElement)) return;
 
                             const folderPath = event?.target?.parentElement?.getAttribute('data-path') || '';
-                            const folderNote = getFolderNote(this, folderPath);
+                            const folderNote = getFolderNote(plugin, folderPath);
                             if (!folderNote) return;
 
-                            this.app.workspace.trigger('hover-link', {
+                            plugin.app.workspace.trigger('hover-link', {
                                 event: event,
                                 source: 'preview',
                                 hoverParent: {
@@ -38,15 +38,15 @@ export function addObserver(plugin: FolderNotesPlugin) {
                                 linktext: folderNote?.basename,
                                 sourcePath: folderNote?.path,
                             });
-                            this.hoverLinkTriggered = true;
+                            plugin.hoverLinkTriggered = true;
                         });
-                        this.registerDomEvent(element, 'pointerout', () => {
-                            this.hoveredElement = null;
-                            this.mouseEvent = null;
-                            this.hoverLinkTriggered = false;
+                        plugin.registerDomEvent(element, 'pointerout', () => {
+                            plugin.hoveredElement = null;
+                            plugin.mouseEvent = null;
+                            plugin.hoverLinkTriggered = false;
                         });
                     });
-                if (!this.settings.openFolderNoteOnClickInPath) { return; }
+                if (!plugin.settings.openFolderNoteOnClickInPath) { return; }
                 (<Element>rec.target).querySelectorAll('span.view-header-breadcrumb')
                     .forEach((element: HTMLElement) => {
                         const breadcrumbs = element.parentElement?.querySelectorAll('span.view-header-breadcrumb');
@@ -60,12 +60,12 @@ export function addObserver(plugin: FolderNotesPlugin) {
                             }
                             const folderPath = path.slice(0, -1);
                             breadcrumb.setAttribute('data-path', folderPath);
-                            const folder = this.fmtpHandler?.modifiedFolders.get(folderPath);
-                            if (folder && this.settings.frontMatterTitle.path && this.settings.frontMatterTitle.enabled) {
+                            const folder = plugin.fmtpHandler?.modifiedFolders.get(folderPath);
+                            if (folder && plugin.settings.frontMatterTitle.path && plugin.settings.frontMatterTitle.enabled) {
                                 breadcrumb.setAttribute('old-name', folder.name || '');
                                 breadcrumb.innerText = folder.newName || '';
                             }
-                            const folderNote = getFolderNote(this, folderPath);
+                            const folderNote = getFolderNote(plugin, folderPath);
                             if (folderNote) {
                                 breadcrumb.classList.add('has-folder-note');
                             }
@@ -74,7 +74,7 @@ export function addObserver(plugin: FolderNotesPlugin) {
                         if (breadcrumbs.length > 0) {
                             breadcrumbs.forEach((breadcrumb: HTMLElement) => {
                                 if (breadcrumb.onclick) return;
-                                breadcrumb.onclick = (event: MouseEvent) => handleViewHeaderClick(event, this);
+                                breadcrumb.onclick = (event: MouseEvent) => handleViewHeaderClick(event, plugin);
                             });
                         }
                     });

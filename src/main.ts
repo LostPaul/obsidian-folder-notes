@@ -55,7 +55,7 @@ export default class FolderNotesPlugin extends Plugin {
 			this.tabManager.updateTabs();
 		});
 
-		addObserver(this);
+		await addObserver(this);
 
 		this.observer.observe(document.body, {
 			childList: true,
@@ -113,7 +113,7 @@ export default class FolderNotesPlugin extends Plugin {
 			const folderNote = getFolderNote(this, folder.path);
 			if (!folderNote) { return; }
 			if (folderNote.path !== openFile.path) { return; }
-			this.activeFolderDom = getEl(folder.path, this);
+			this.activeFolderDom = getEl(folder.path);
 			if (this.activeFolderDom) this.activeFolderDom.addClass('fn-is-active');
 		}));
 
@@ -176,7 +176,7 @@ export default class FolderNotesPlugin extends Plugin {
 				const attachmentFolder = this.app.vault.getAbstractFileByPath(folderPath);
 				if (attachmentFolder instanceof TFolder) {
 					if (!folder.collapsed) {
-						getEl(folder.path, this)?.click();
+						getEl(folder.path)?.click();
 					}
 					return folder.children.length <= 2;
 				}
@@ -189,7 +189,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 	async changeName(folder: TFolder, name: string | null | undefined, replacePath: boolean, waitForCreate = false, count = 0) {
 		if (!name) name = folder.name;
-		let fileExplorerItem = getEl(folder.path, this);
+		let fileExplorerItem = getEl(folder.path);
 		if (!fileExplorerItem) {
 			if (waitForCreate && count < 5) {
 				await new Promise((r) => setTimeout(r, 500));

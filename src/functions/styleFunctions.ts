@@ -9,14 +9,14 @@ export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) 
     plugin.activeFileExplorer = getFileExplorer();
     plugin.app.vault.getAllLoadedFiles().forEach((file) => {
         if (!(file instanceof TFolder)) { return; }
-        const folderNote = getFolderNote(this, file.path);
+        const folderNote = getFolderNote(plugin, file.path);
         if (!folderNote) {
             removeCSSClassFromEL(file?.path, 'has-folder-note');
             removeCSSClassFromEL(file?.path, 'only-has-folder-note');
             return;
         }
 
-        const excludedFolder = getExcludedFolder(this, file.path);
+        const excludedFolder = getExcludedFolder(plugin, file.path);
         // cleanup after ourselves
         // Incase settings have changed
         if (excludedFolder?.disableFolderNote) {
@@ -66,7 +66,7 @@ export function removeCSSClassesFromFolder(folder: TFolder) {
 }
 
 export async function addCSSClassToTitleEL(path: string, cssClass: string, waitForCreate = false, count = 0) {
-    const fileExplorerItem = this.getEl(path);
+    const fileExplorerItem = getEl(path);
     if (!fileExplorerItem) {
         if (waitForCreate && count < 5) {
             // sleep for a second for the file-explorer event to catch up
@@ -88,7 +88,7 @@ export async function addCSSClassToTitleEL(path: string, cssClass: string, waitF
 
 export function removeCSSClassFromEL(path: string | undefined, cssClass: string) {
     if (!path) return;
-    const fileExplorerItem = this.getEl(path);
+    const fileExplorerItem = getEl(path);
     const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);
     viewHeaderItems.forEach((item) => {
         item.removeClass(cssClass);
@@ -97,7 +97,7 @@ export function removeCSSClassFromEL(path: string | undefined, cssClass: string)
     fileExplorerItem.removeClass(cssClass);
 }
 
-export function getEl(path: string, plugin: FolderNotesPlugin): HTMLElement | null {
+export function getEl(path: string): HTMLElement | null {
     const fileExplorer = getFileExplorer();
     if (!fileExplorer) { return null; }
     const fileExplorerItem = fileExplorer.view.fileItems[path];

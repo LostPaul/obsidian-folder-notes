@@ -99,7 +99,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 			const folder = getFolder(plugin, file);
 			if (!folder) { return; }
 
-			plugin.activeFolderDom = getEl(folder.path, plugin);
+			plugin.activeFolderDom = getEl(folder.path);
 			if (plugin.activeFolderDom) plugin.activeFolderDom.addClass('fn-is-active');
 		}
 		await leaf.openFile(file);

@@ -15,7 +15,7 @@ export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
     }
 
     if (file instanceof TFile) {
-        const folder = getFolder(this, file);
+        const folder = getFolder(plugin, file);
         if (!(folder instanceof TFolder)) { return; }
         addCSSClassToTitleEL(folder.path, 'has-folder-note');
         addCSSClassToTitleEL(file.path, 'is-folder-note');
@@ -25,12 +25,12 @@ export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (!(file instanceof TFolder)) return;
 
     if (!plugin.settings.autoCreate) return;
-    const excludedFolder = getExcludedFolder(this, file.path);
+    const excludedFolder = getExcludedFolder(plugin, file.path);
     if (excludedFolder?.disableAutoCreate) return;
 
-    const folderNote = getFolderNote(this, file.path);
+    const folderNote = getFolderNote(plugin, file.path);
     if (folderNote) return;
 
-    createFolderNote(this, file.path, true, undefined, true);
+    createFolderNote(plugin, file.path, true, undefined, true);
     addCSSClassToTitleEL(file.path, 'has-folder-note');
 }
