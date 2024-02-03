@@ -90,12 +90,6 @@ export default class FolderNotesPlugin extends Plugin {
 			this.tabManager?.updateTabs();
 		}));
 
-		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
-			if (!(file instanceof TFile)) { return; }
-			const parentFolder = getFolder(this, file);
-			removeCSSClassFromEL(parentFolder?.path, 'has-folder-note');
-		}));
-
 		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
 			handleCreate(file, this);
 		}));
@@ -175,12 +169,12 @@ export default class FolderNotesPlugin extends Plugin {
 			} else if (this.settings.ignoreAttachmentFolder && this.app.vault.getAbstractFileByPath(`${folder.path}/${cleanAttachmentFolderPath}`)) {
 				const folderPath = `${folder.path}/${cleanAttachmentFolderPath}`
 				const attachmentFolder = this.app.vault.getAbstractFileByPath(folderPath);
-				if (attachmentFolder instanceof TFolder) {
-					if (!folder.collapsed) {
+				if (attachmentFolder instanceof TFolder && folder.children.length <= threshold + 1) {
+					if (!folder.collapsed ) {
 						getEl(folder.path)?.click();
 					}
-					return folder.children.length <= threshold + 1;
 				}
+				return folder.children.length <= threshold + 1;
 			} else {
 				return false;
 			}
@@ -280,4 +274,5 @@ export default class FolderNotesPlugin extends Plugin {
 			loadFileClasses(true, this);
 		}
 	}
+	
 }
