@@ -32,10 +32,10 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 
 	if (file instanceof TFolder) {
 		plugin.tabManager.updateTab(file.path);
-		return handleFolderRename(file, oldPath, this);
+		return handleFolderRename(file, oldPath, plugin);
 
 	} else if (file instanceof TFile) {
-		return handleFileRename(file, oldPath, this);
+		return handleFileRename(file, oldPath, plugin);
 	}
 }
 
