@@ -2,6 +2,8 @@ import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView,
 import FolderNotesPlugin from './main';
 import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './excludedFolder';
+import { getFolderPathFromString } from './functions/utils';
+
 export class Commands {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -153,7 +155,7 @@ export class Commands {
 						return;
 					}
 					let folder: TAbstractFile | null;
-					const folderPath = this.plugin.getFolderPathFromString(file.path);
+					const folderPath = getFolderPathFromString(file.path);
 					if (folderPath === '') {
 						folder = this.plugin.app.vault.getAbstractFileByPath(text);
 						if (folder instanceof TFolder) {
@@ -190,7 +192,7 @@ export class Commands {
 			},
 		})
 	}
-	
+
 	fileCommands() {
 		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
 			let folder: TAbstractFile | TFolder | null = file.parent;
@@ -253,7 +255,7 @@ export class Commands {
 								this.plugin.saveSettings();
 							});
 					});
-					if (this.plugin.getFolderPathFromString(file.path) === '') return;
+					if (getFolderPathFromString(file.path) === '') return;
 					if (!(folder instanceof TFolder)) return;
 					subMenu.addItem((item) => {
 						item.setTitle(`Turn into folder note for ${folder?.name}`)
@@ -299,7 +301,7 @@ export class Commands {
 								deleteFolderNote(this.plugin, folderNote);
 							});
 					});
-					
+
 					subMenu.addItem((item) => {
 						item.setTitle('Open folder note')
 							.setIcon('chevron-right-square')
@@ -316,6 +318,7 @@ export class Commands {
 								this.app.copyObsidianUrl(folderNote);
 							});
 					});
+
 				} else {
 					subMenu.addItem((item) => {
 						item.setTitle('Create markdown folder note')
@@ -339,6 +342,7 @@ export class Commands {
 			});
 		}));
 	}
+
 	editorCommands() {
 		this.plugin.registerEvent(this.plugin.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
 			const text = editor.getSelection().trim();
@@ -384,7 +388,7 @@ export class Commands {
 							return;
 						}
 						let folder: TAbstractFile | null;
-						const folderPath = this.plugin.getFolderPathFromString(file.path);
+						const folderPath = getFolderPathFromString(file.path);
 						const fileName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', text);
 						if (folderPath === '') {
 							folder = this.plugin.app.vault.getAbstractFileByPath(text);

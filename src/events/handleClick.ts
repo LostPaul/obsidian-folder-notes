@@ -2,6 +2,8 @@ import { Keymap } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { openFolderNote, createFolderNote, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getExcludedFolder } from 'src/excludedFolder';
+import { addCSSClassToTitleEL, removeCSSClassFromEL } from 'src/functions/styleFunctions';
+
 export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNotesPlugin) {
 	if (!(event.target instanceof HTMLElement)) return;
 	if (!plugin.settings.openFolderNoteOnClickInPath) return;
@@ -23,8 +25,8 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 			await createFolderNote(plugin, folderPath, true, undefined, true);
-			plugin.addCSSClassToTitleEL(folderPath, 'has-folder-note');
-			plugin.removeCSSClassFromEL(folderPath, 'has-not-folder-note');
+			addCSSClassToTitleEL(folderPath, 'has-folder-note');
+			removeCSSClassFromEL(folderPath, 'has-not-folder-note');
 			return;
 		}
 	}
@@ -67,8 +69,8 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 			await createFolderNote(plugin, folderPath, true, undefined, true);
-			plugin.addCSSClassToTitleEL(folderPath, 'has-folder-note');
-			plugin.removeCSSClassFromEL(folderPath, 'has-not-folder-note');
+			addCSSClassToTitleEL(folderPath, 'has-folder-note');
+			removeCSSClassFromEL(folderPath, 'has-not-folder-note');
 			return;
 		}
 	} else if (!folderNote) {

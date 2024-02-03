@@ -4,6 +4,7 @@ import ExcludedFolderSettings from './modals/ExcludeFolderSettings';
 import { FolderSuggest } from './suggesters/FolderSuggester';
 import { SettingsTab } from './settings/SettingsTab';
 import PatternSettings from './modals/PatternSettings';
+import { getFolderNameFromPathString, getFolderPathFromString } from './functions/utils';
 
 export class ExcludedFolder {
 	type: string;
@@ -56,7 +57,7 @@ export class ExcludePattern {
 }
 
 export function getExcludedFolder(plugin: FolderNotesPlugin, path: string) {
-	const folderName = plugin.getFolderNameFromPathString(path);
+	const folderName = getFolderNameFromPathString(path);
 	const matchedPattern = getExcludedFolderByPattern(plugin, folderName);
 	if (matchedPattern) { return matchedPattern; }
 	const excludedFolder = getExcludedFolderByPath(plugin, path);
@@ -96,7 +97,7 @@ export function getExcludedFolderByPath(plugin: FolderNotesPlugin, path: string)
 	return plugin.settings.excludeFolders.find((excludedFolder) => {
 		if (excludedFolder.path === path) { return true; }
 		if (!excludedFolder.subFolders) { return false; }
-		return plugin.getFolderPathFromString(path).startsWith(excludedFolder.path);
+		return getFolderPathFromString(path).startsWith(excludedFolder.path);
 	});
 }
 

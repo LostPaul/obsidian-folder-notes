@@ -1,13 +1,14 @@
 import { App, Notice, PluginSettingTab, TFile, TFolder } from 'obsidian';
 import FolderNotesPlugin from '../main';
 import { ExcludedFolder, ExcludePattern } from '../excludedFolder';
-import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctions';
+import { getFolderNote } from '../functions/folderNoteFunctions';
 import { yamlSettings } from '../folderOverview/FolderOverview';
 import { renderGeneral } from './GeneralSettings';
 import { renderFileExplorer } from './FileExplorerSettings';
 import { renderPath } from './PathSettings';
 import { renderFolderOverview } from './FolderOverviewSettings';
 import { renderExcludeFolders } from './ExcludedFoldersSettings';
+import { getFolderPathFromString } from '../functions/utils';
 
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
@@ -246,14 +247,14 @@ export class SettingsTab extends PluginSettingTab {
 				if (folderNote instanceof TFile) {
 					if (this.plugin.settings.storageLocation === 'parentFolder') {
 						let newPath = '';
-						if (this.plugin.getFolderPathFromString(file.path).trim() === '') {
+						if (getFolderPathFromString(file.path).trim() === '') {
 							newPath = `${folderNote.name}`;
 						} else {
-							newPath = `${this.plugin.getFolderPathFromString(file.path)}/${folderNote.name}`;
+							newPath = `${getFolderPathFromString(file.path)}/${folderNote.name}`;
 						}
 						this.plugin.app.fileManager.renameFile(folderNote, newPath);
 					} else if (this.plugin.settings.storageLocation === 'insideFolder') {
-						if (this.plugin.getFolderPathFromString(folderNote.path) === file.path) {
+						if (getFolderPathFromString(folderNote.path) === file.path) {
 							return;
 						} else {
 							const newPath = `${file.path}/${folderNote.name}`;

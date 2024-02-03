@@ -4,6 +4,8 @@ import FolderNotesPlugin from '../main';
 import ListComponent from 'src/functions/ListComponent';
 import { updateYaml } from 'src/folderOverview/FolderOverview';
 import { FolderSuggest } from 'src/suggesters/FolderSuggester';
+import { getFolderPathFromString } from 'src/functions/utils';
+
 export class FolderOverviewSettings extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -21,7 +23,7 @@ export class FolderOverviewSettings extends Modal {
 			const includeTypes = yaml?.includeTypes || plugin.settings.defaultOverview.includeTypes || ['folder', 'markdown'];
 			this.yaml = {
 				id: yaml?.id || crypto.randomUUID(),
-				folderPath: yaml?.folderPath === undefined || yaml?.folderPath === null ? plugin.getFolderPathFromString(ctx.sourcePath) : yaml?.folderPath,
+				folderPath: yaml?.folderPath === undefined || yaml?.folderPath === null ? getFolderPathFromString(ctx.sourcePath) : yaml?.folderPath,
 				title: yaml?.title || plugin.settings.defaultOverview.title,
 				showTitle: yaml?.showTitle === undefined || yaml?.showTitle === null ? plugin.settings.defaultOverview.showTitle : yaml?.showTitle,
 				depth: yaml?.depth || plugin.settings.defaultOverview.depth,

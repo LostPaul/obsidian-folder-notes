@@ -2,6 +2,43 @@ import { TFile, TFolder, TAbstractFile, Notice } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { extractFolderName, getFolderNote, getFolderNoteFolder } from '../functions/folderNoteFunctions';
 import { getExcludedFolder, ExcludedFolder, addExcludedFolder, updateExcludedFolder, deleteExcludedFolder } from '../excludedFolder';
+import { removeCSSClassFromEL, addCSSClassToTitleEL } from 'src/functions/styleFunctions';
+import { getFolderPathFromString, removeExtension, getFileNameFromPathString } from 'src/functions/utils';
+
+export function handleRename(file: TAbstractFile, oldPath: string, plugin: FolderNotesPlugin) {
+	if (!plugin.settings.syncFolderName) {
+		// cleanup after ourselves
+		removeCSSClassFromEL(file.path, 'has-folder-note');
+		removeCSSClassFromEL(file.path, 'is-folder-note');
+		return;
+	}
+	const folder = file.parent;
+	const oldFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(oldPath));
+	if (folder instanceof TFolder) {
+		if (plugin.isEmptyFolderNoteFolder(folder)) {
+			addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
+		} else if (folder.children.length == 0 || folder.children.length > 1) {
+			removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+		}
+	}
+
+	if (oldFolder instanceof TFolder) {
+		if (plugin.isEmptyFolderNoteFolder(oldFolder)) {
+			addCSSClassToTitleEL(oldFolder.path, 'only-has-folder-note');
+		} else if (oldFolder.children.length == 0 || oldFolder.children.length > 1) {
+			removeCSSClassFromEL(oldFolder.path, 'only-has-folder-note');
+		}
+	}
+
+	if (file instanceof TFolder) {
+		plugin.tabManager.updateTab(file.path);
+		return handleFolderRename(file, oldPath, this);
+
+	} else if (file instanceof TFile) {
+		return handleFileRename(file, oldPath, this);
+	}
+}
+
 export function handleFolderRename(file: TFolder, oldPath: string, plugin: FolderNotesPlugin) {
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', file.name);
 	const folder = plugin.app.vault.getAbstractFileByPath(file.path);
@@ -30,13 +67,13 @@ export function handleFolderRename(file: TFolder, oldPath: string, plugin: Folde
 
 	const excludedFolder = getExcludedFolder(plugin, file.path);
 	if (excludedFolder?.disableSync && !folderNote) {
-		return plugin.removeCSSClassFromEL(file.path, 'has-folder-note');
+		return removeCSSClassFromEL(file.path, 'has-folder-note');
 	}
 
 	let newPath = '';
 	if (plugin.settings.storageLocation === 'parentFolder') {
-		const parentFolderPath = plugin.getFolderPathFromString(file.path);
-		const oldParentFolderPath = plugin.getFolderPathFromString(oldPath);
+		const parentFolderPath = getFolderPathFromString(file.path);
+		const oldParentFolderPath = getFolderPathFromString(oldPath);
 		if (parentFolderPath !== oldParentFolderPath) {
 			if (!plugin.settings.syncMove) { return; }
 			newPath = `${parentFolderPath}/${fileName}.${folderNote.extension}`;
@@ -55,7 +92,7 @@ export function handleFolderRename(file: TFolder, oldPath: string, plugin: Folde
 }
 
 export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNotesPlugin) {
-	const oldFileName = plugin.removeExtension(plugin.getFileNameFromPathString(oldPath));
+	const oldFileName = removeExtension(getFileNameFromPathString(oldPath));
 	const oldFolder = getFolderNoteFolder(plugin, oldPath, oldFileName);
 	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename) || file.basename;
 	const oldFolderName = extractFolderName(plugin.settings.folderNoteName, oldFileName) || oldFileName;
@@ -64,12 +101,12 @@ export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNot
 	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
 
 	if (excludedFolder?.disableSync && folderName === newFolder?.name) {
-		plugin.addCSSClassToTitleEL(file.path, 'is-folder-note');
-		plugin.addCSSClassToTitleEL(newFolder.path, 'has-folder-note');
+		addCSSClassToTitleEL(file.path, 'is-folder-note');
+		addCSSClassToTitleEL(newFolder.path, 'has-folder-note');
 		return;
 	} else if (excludedFolder?.disableSync) {
-		plugin.removeCSSClassFromEL(file.path, 'is-folder-note');
-		plugin.removeCSSClassFromEL(newFolder?.path || '', 'has-folder-note');
+		removeCSSClassFromEL(file.path, 'is-folder-note');
+		removeCSSClassFromEL(newFolder?.path || '', 'has-folder-note');
 		return;
 	}
 
@@ -99,9 +136,9 @@ export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNot
 		});
 	}
 	if (folderName === newFolder?.name) {
-		plugin.addCSSClassToTitleEL(file.path, 'is-folder-note');
-		plugin.addCSSClassToTitleEL(newFolder.path, 'has-folder-note');
-		plugin.removeCSSClassFromEL(oldFolder?.path, 'has-folder-note');
+		addCSSClassToTitleEL(file.path, 'is-folder-note');
+		removeCSSClassFromEL(oldFolder?.path, 'has-folder-note');
+		addCSSClassToTitleEL(newFolder.path, 'has-folder-note');
 		return;
 	}
 
@@ -118,30 +155,34 @@ export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNot
 	// the note has been moved somewhere and is no longer a folder note
 	// cleanup css on the folder and note
 	if (oldFolder.name === oldFileName && newFolder?.path !== oldFolder.path) {
-		plugin.removeCSSClassFromEL(oldFolder.path, 'has-folder-note');
-		plugin.removeCSSClassFromEL(file.path, 'is-folder-note');
-		plugin.removeCSSClassFromEL(oldPath, 'is-folder-note');
+		removeCSSClassFromEL(oldFolder.path, 'has-folder-note');
+		removeCSSClassFromEL(file.path, 'is-folder-note');
+		removeCSSClassFromEL(oldPath, 'is-folder-note');
 	}
 }
 
 async function renameFolderOnFileRename(file: TFile, oldPath: string, oldFolder: TAbstractFile, plugin: FolderNotesPlugin) {
 	const newFolderName = extractFolderName(plugin.settings.folderNoteName, file.basename);
 	if (!newFolderName) {
-		plugin.removeCSSClassFromEL(oldFolder.path, 'has-folder-note');
-		plugin.removeCSSClassFromEL(file.path, 'is-folder-note');
+		removeCSSClassFromEL(oldFolder.path, 'has-folder-note');
+		removeCSSClassFromEL(file.path, 'is-folder-note');
 		return;
 	} else if (newFolderName === oldFolder.name) {
-		plugin.addCSSClassToTitleEL(oldFolder.path, 'has-folder-note');
-		plugin.addCSSClassToTitleEL(file.path, 'is-folder-note');
+		addCSSClassToTitleEL(oldFolder.path, 'has-folder-note');
+		addCSSClassToTitleEL(file.path, 'is-folder-note');
 		return;
 	}
-	
+
 	let newFolderPath = '';
 	if (plugin.settings.storageLocation === 'insideFolder') {
-		newFolderPath = oldFolder.parent?.path + '/' + newFolderName;
+		if (oldFolder.parent?.path === '/') {
+			newFolderPath = `${newFolderName}`;
+		} else {
+			newFolderPath = oldFolder.parent?.path + '/' + newFolderName;
+		}
 	} else {
-		const parentFolderPath = plugin.getFolderPathFromString(file.path);
-		if (parentFolderPath.trim() === '') {
+		const parentFolderPath = getFolderPathFromString(file.path);
+		if (parentFolderPath.trim() === '' || parentFolderPath.trim() === '/') {
 			newFolderPath = `${newFolderName}`;
 		} else {
 			newFolderPath = `${parentFolderPath}/${newFolderName}`;

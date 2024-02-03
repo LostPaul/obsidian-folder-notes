@@ -5,6 +5,7 @@ import AddSupportedFileModal from '../modals/AddSupportedFileType';
 import { FrontMatterTitlePluginHandler } from '../events/FrontMatterTitle';
 import ConfirmationModal from "../modals/ConfirmCreation";
 import { TemplateSuggest } from '../suggesters/TemplateSuggester';
+import { loadFileClasses } from "../functions/styleFunctions";
 
 export async function renderGeneral(settingsTab: SettingsTab) {
     const containerEl = settingsTab.settingsPage;
@@ -166,7 +167,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                     settingsTab.plugin.settings.storageLocation = value;
                     await settingsTab.plugin.saveSettings();
                     settingsTab.display();
-                    settingsTab.plugin.loadFileClasses();
+                    loadFileClasses(undefined, settingsTab.plugin);
                 })
         );
     storageLocation.infoEl.appendText('Requires a restart to take effect');

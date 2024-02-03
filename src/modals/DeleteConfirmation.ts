@@ -1,6 +1,7 @@
 import { App, Modal, Setting, TFile, Platform } from 'obsidian';
 import FolderNotesPlugin from '../main';
 import { getFolder } from 'src/functions/folderNoteFunctions';
+import { removeCSSClassFromEL } from 'src/functions/styleFunctions';
 export default class DeleteConfirmationModal extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -31,7 +32,7 @@ export default class DeleteConfirmationModal extends Modal {
 				this.close();
 				const folder = getFolder(this.plugin, this.file);
 				if (!folder) return;
-				this.plugin.removeCSSClassFromEL(folder?.path, 'has-folder-note');
+				removeCSSClassFromEL(folder?.path, 'has-folder-note');
 				this.app.vault.delete(this.file);
 			});
 		} else {
@@ -56,7 +57,7 @@ export default class DeleteConfirmationModal extends Modal {
 			this.close();
 			const folder = getFolder(this.plugin, this.file);
 			if (!folder) return;
-			this.plugin.removeCSSClassFromEL(folder.path, 'has-folder-note');
+			removeCSSClassFromEL(folder.path, 'has-folder-note');
 			this.app.vault.delete(this.file);
 		});
 		button.focus();

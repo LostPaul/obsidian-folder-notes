@@ -3,7 +3,9 @@ import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctio
 import FolderNotesPlugin from '../main';
 import { FolderOverviewSettings } from './ModalSettings';
 import { getExcludedFolder } from '../excludedFolder';
-import * as path from 'path';
+import { getFolderPathFromString } from '../functions/utils';
+import { getEl } from 'src/functions/styleFunctions';
+
 
 export type includeTypes = 'folder' | 'markdown' | 'canvas' | 'other' | 'pdf' | 'image' | 'audio' | 'video' | 'all';
 
@@ -46,7 +48,7 @@ export class FolderOverview {
         this.sourceFilePath = this.ctx.sourcePath
         this.yaml = {
             id: yaml?.id || crypto.randomUUID(),
-            folderPath: yaml?.folderPath === undefined || yaml?.folderPath === null ? plugin.getFolderPathFromString(ctx.sourcePath) : yaml?.folderPath,
+            folderPath: yaml?.folderPath === undefined || yaml?.folderPath === null ? getFolderPathFromString(ctx.sourcePath) : yaml?.folderPath,
             title: yaml?.title || plugin.settings.defaultOverview.title,
             showTitle: yaml?.showTitle === undefined || yaml?.showTitle === null ? plugin.settings.defaultOverview.showTitle : yaml?.showTitle,
             depth: yaml?.depth || plugin.settings.defaultOverview.depth,
@@ -73,12 +75,12 @@ export class FolderOverview {
         let files: TAbstractFile[] = [];
         const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
         if (!sourceFile) return;
-        let sourceFolderPath = this.yaml.folderPath || plugin.getFolderPathFromString(ctx.sourcePath);
+        let sourceFolderPath = this.yaml.folderPath || getFolderPathFromString(ctx.sourcePath);
         let sourceFolder: TFolder | undefined;
 
         if (sourceFolderPath !== '/') {
             if (this.yaml.folderPath === '') {
-                sourceFolder = plugin.app.vault.getAbstractFileByPath(plugin.getFolderPathFromString(ctx.sourcePath)) as TFolder;
+                sourceFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath)) as TFolder;
             } else {
                 sourceFolder = plugin.app.vault.getAbstractFileByPath(this.yaml.folderPath) as TFolder;
             }
@@ -202,11 +204,11 @@ export class FolderOverview {
     }
 
     cloneFileExplorerView(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: yamlSettings, pathBlacklist: string[]) {
-        const folder = plugin.getEL(this.yaml.folderPath)
+        const folder = getEl(this.yaml.folderPath, plugin)
         let folderElement = folder?.parentElement;
         let tFolder = plugin.app.vault.getAbstractFileByPath(this.yaml.folderPath);
         if (!tFolder && yaml.folderPath.trim() == '') {
-            tFolder = plugin.app.vault.getAbstractFileByPath(plugin.getFolderPathFromString(ctx.sourcePath));
+            tFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath));
         }
         if (!folderElement && yaml.folderPath.trim() !== '') return;
         folderElement = document.querySelector('div.nav-files-container') as HTMLElement;
@@ -407,7 +409,7 @@ export class FolderOverview {
     filterFiles(files: TAbstractFile[], plugin: FolderNotesPlugin, sourceFolderPath: string, depth: number, pathBlacklist: string[]) {
         return files.filter((file) => {
             if (pathBlacklist.includes(file.path) && !this.yaml.showFolderNotes) { return false; }
-            const folderPath = plugin.getFolderPathFromString(file.path);
+            const folderPath = getFolderPathFromString(file.path);
             if (!folderPath.startsWith(sourceFolderPath) && sourceFolderPath !== '/') { return false; }
             if (file.path === this.sourceFilePath) { return false; }
             const excludedFolder = getExcludedFolder(plugin, file.path);
