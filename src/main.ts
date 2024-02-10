@@ -170,7 +170,7 @@ export default class FolderNotesPlugin extends Plugin {
 				const folderPath = `${folder.path}/${cleanAttachmentFolderPath}`
 				const attachmentFolder = this.app.vault.getAbstractFileByPath(folderPath);
 				if (attachmentFolder instanceof TFolder && folder.children.length <= threshold + 1) {
-					if (!folder.collapsed ) {
+					if (!folder.collapsed) {
 						getEl(folder.path)?.click();
 					}
 				}
@@ -255,7 +255,7 @@ export default class FolderNotesPlugin extends Plugin {
 			if (data.allowWhitespaceCollapsing === false) {
 				data.stopWhitespaceCollapsing = false;
 				delete data.allowWhitespaceCollapsing;
-			} else {
+			} else if (data.allowWhitespaceCollapsing === true) {
 				data.stopWhitespaceCollapsing = true;
 				delete data.allowWhitespaceCollapsing;
 			}
@@ -274,5 +274,5 @@ export default class FolderNotesPlugin extends Plugin {
 			loadFileClasses(true, this);
 		}
 	}
-	
+
 }
