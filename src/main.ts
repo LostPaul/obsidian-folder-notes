@@ -252,10 +252,10 @@ export default class FolderNotesPlugin extends Plugin {
 	async loadSettings() {
 		const data = await this.loadData();
 		if (data) {
-			if (data.allowWhitespaceCollapsing === false) {
+			if (data.allowWhitespaceCollapsing === true) {
 				data.stopWhitespaceCollapsing = false;
 				delete data.allowWhitespaceCollapsing;
-			} else if (data.allowWhitespaceCollapsing === true) {
+			} else if (data.allowWhitespaceCollapsing === false) {
 				data.stopWhitespaceCollapsing = true;
 				delete data.allowWhitespaceCollapsing;
 			}
