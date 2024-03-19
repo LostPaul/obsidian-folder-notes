@@ -5,7 +5,7 @@ import { Setting } from 'obsidian';
 import { SettingsTab } from "./SettingsTab";
 import ExcludedFolderSettings from 'src/ExcludeFolders/modals/ExcludeFolderSettings';
 import PatternSettings from 'src/ExcludeFolders/modals/PatternSettings';
-import ExcludedFoldersWhitelist from 'src/ExcludeFolders/modals/WhitelistModal';
+// import ExcludedFoldersWhitelist from 'src/ExcludeFolders/modals/WhitelistModal';
 
 export async function renderExcludeFolders(settingsTab: SettingsTab) {
     const containerEl = settingsTab.settingsPage;
