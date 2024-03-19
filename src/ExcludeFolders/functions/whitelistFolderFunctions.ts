@@ -1,3 +1,4 @@
+export {}
 // import FolderNotesPlugin from '../../main';
 // import { getFolderNameFromPathString, getFolderPathFromString } from '../../functions/utils';
 // import { WhitelistedFolder } from '../WhitelistFolder';
