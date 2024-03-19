@@ -1,3 +1,4 @@
+export {}
 // import { App, Modal, Setting } from 'obsidian';
 // import FolderNotesPlugin from '../../main';
 // import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';

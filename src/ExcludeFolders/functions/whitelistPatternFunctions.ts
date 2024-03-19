@@ -1,3 +1,4 @@
+export {}
 // import FolderNotesPlugin from '../../main';
 // import { ExcludePattern } from '../ExcludePattern';
 // import { Setting } from 'obsidian';

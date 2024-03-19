@@ -1,3 +1,4 @@
+export {}
 // import { App, ButtonComponent, Modal, Setting, TFolder, Notice } from 'obsidian';
 // import { SettingsTab } from 'src/settings/SettingsTab';
 // import FolderNotesPlugin from '../../main';
