@@ -1,7 +1,7 @@
 import { TAbstractFile, TFolder, TFile } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { createFolderNote, getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
-import { getExcludedFolder } from 'src/excludedFolder';
+import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { removeCSSClassFromEL, addCSSClassToTitleEL } from 'src/functions/styleFunctions';
 
 export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {

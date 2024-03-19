@@ -1,7 +1,7 @@
 import { Keymap } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { openFolderNote, createFolderNote, getFolderNote } from 'src/functions/folderNoteFunctions';
-import { getExcludedFolder } from 'src/excludedFolder';
+import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { addCSSClassToTitleEL, removeCSSClassFromEL } from 'src/functions/styleFunctions';
 
 export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNotesPlugin) {

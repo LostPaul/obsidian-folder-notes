@@ -1,6 +1,6 @@
 import { App, Modal, Setting } from 'obsidian';
-import FolderNotesPlugin from '../main';
-import { ExcludedFolder } from 'src/excludedFolder';
+import FolderNotesPlugin from '../../main';
+import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 export default class ExcludedFolderSettings extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -26,7 +26,7 @@ export default class ExcludedFolderSettings extends Modal {
 					.setValue(this.excludedFolder.subFolders)
 					.onChange(async (value) => {
 						this.excludedFolder.subFolders = value;
-						await this.plugin.saveSettings();
+						await this.plugin.saveSettings(true);
 					})
 			);
 
@@ -75,7 +75,7 @@ export default class ExcludedFolderSettings extends Modal {
 					.setValue(this.excludedFolder.disableFolderNote)
 					.onChange(async (value) => {
 						this.excludedFolder.disableFolderNote = value;
-						await this.plugin.saveSettings();
+						await this.plugin.saveSettings(true);
 						this.display();
 					})
 			);

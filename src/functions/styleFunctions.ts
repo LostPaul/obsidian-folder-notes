@@ -1,6 +1,6 @@
 import { TFile, TFolder } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
-import { getExcludedFolder } from 'src/excludedFolder';
+import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getFileExplorer } from './utils';
 

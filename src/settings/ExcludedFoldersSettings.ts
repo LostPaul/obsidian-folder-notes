@@ -1,9 +1,11 @@
-import { addExcludeFolderListItem, ExcludedFolder, addExcludedFolder, ExcludePattern, addExcludePatternListItem } from '../excludedFolder';
+import { addExcludeFolderListItem, addExcludedFolder} from 'src/ExcludeFolders/functions/folderFunctions';
+import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
+import { addExcludePatternListItem } from 'src/ExcludeFolders/functions/patternFunctions';
 import { Setting } from 'obsidian';
 import { SettingsTab } from "./SettingsTab";
-import ExcludedFolderSettings from 'src/modals/ExcludeFolderSettings';
-import PatternSettings from 'src/modals/PatternSettings';
-
+import ExcludedFolderSettings from 'src/ExcludeFolders/modals/ExcludeFolderSettings';
+import PatternSettings from 'src/ExcludeFolders/modals/PatternSettings';
+import ExcludedFoldersWhitelist from 'src/ExcludeFolders/modals/WhitelistModal';
 
 export async function renderExcludeFolders(settingsTab: SettingsTab) {
     const containerEl = settingsTab.settingsPage;
@@ -26,6 +28,18 @@ export async function renderExcludeFolders(settingsTab: SettingsTab) {
     manageExcluded.infoEl.createEl('br');
     manageExcluded.infoEl.appendText('If you want to switch to a folder path delete the pattern first.');
     manageExcluded.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
+
+    // ***Soon***
+    // new Setting(containerEl)
+    //     .setName('Whitelisted folders')
+    //     .setDesc('Folders that will override the excluded folders/patterns')
+    //     .addButton((cb) => {
+    //         cb.setButtonText('Manage')
+    //         cb.setCta()
+    //         cb.onClick(async () => {
+    //             new ExcludedFoldersWhitelist(settingsTab.app, settingsTab.plugin).open();
+    //         })
+    //     })
 
     new Setting(containerEl)
         .setName('Exclude folder default settings')

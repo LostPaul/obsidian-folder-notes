@@ -260,6 +260,7 @@ export default class FolderNotesPlugin extends Plugin {
 				delete data.allowWhitespaceCollapsing;
 			}
 		}
+		
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 		if (!data) { return; }
 		const overview = (data as any).defaultOverview;
@@ -267,10 +268,10 @@ export default class FolderNotesPlugin extends Plugin {
 		this.settings.defaultOverview = Object.assign({}, DEFAULT_SETTINGS.defaultOverview, overview);
 	}
 
-	async saveSettings() {
+	async saveSettings(reloadStyles?: boolean) {
 		await this.saveData(this.settings);
 		// cleanup any css if we need too
-		if (!this.settingsOpened) {
+		if (!this.settingsOpened || reloadStyles === true) {
 			loadFileClasses(true, this);
 		}
 	}

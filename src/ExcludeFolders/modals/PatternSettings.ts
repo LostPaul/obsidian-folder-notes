@@ -1,6 +1,7 @@
 import { App, Modal, Setting } from 'obsidian';
-import FolderNotesPlugin from '../main';
-import { ExcludePattern } from 'src/excludedFolder';
+import FolderNotesPlugin from '../../main';
+import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
+
 export default class PatternSettings extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;

@@ -1,6 +1,7 @@
 import { App, Notice, PluginSettingTab, TFile, TFolder } from 'obsidian';
 import FolderNotesPlugin from '../main';
-import { ExcludedFolder, ExcludePattern } from '../excludedFolder';
+import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
+import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 import { getFolderNote } from '../functions/folderNoteFunctions';
 import { yamlSettings } from '../folderOverview/FolderOverview';
 import { renderGeneral } from './GeneralSettings';
@@ -9,6 +10,8 @@ import { renderPath } from './PathSettings';
 import { renderFolderOverview } from './FolderOverviewSettings';
 import { renderExcludeFolders } from './ExcludedFoldersSettings';
 import { getFolderPathFromString } from '../functions/utils';
+import { WhitelistedFolder } from 'src/ExcludeFolders/WhitelistFolder';
+import { WhitelistedPattern } from 'src/ExcludeFolders/WhitelistPattern';
 
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
@@ -19,6 +22,7 @@ export interface FolderNotesSettings {
 	autoCreate: boolean;
 	enableCollapsing: boolean;
 	excludeFolders: (ExcludePattern | ExcludedFolder)[];
+	whitelistFolders: (WhitelistedFolder | WhitelistedPattern)[];
 	showDeleteConfirmation: boolean;
 	showRenameConfirmation: boolean;
 	underlineFolder: boolean;
@@ -66,6 +70,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	autoCreate: false,
 	enableCollapsing: false,
 	excludeFolders: [],
+	whitelistFolders: [],
 	showDeleteConfirmation: true,
 	underlineFolder: true,
 	stopWhitespaceCollapsing: true,
@@ -124,6 +129,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		position: 0,
 		excludeFromFolderOverview: false,
 		string: '',
+		hideInSettings: false,
 	},
 	excludePatternDefaultSettings: {
 		type: 'pattern',
@@ -136,6 +142,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		position: 0,
 		excludeFromFolderOverview: false,
 		string: '',
+		hideInSettings: false,
 	},
 	hideCollapsingIcon: false,
 	tabManagerEnabled: true,

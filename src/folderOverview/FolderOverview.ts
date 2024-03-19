@@ -1,8 +1,8 @@
 import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile, stringifyYaml, Notice } from 'obsidian';
-import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctions';
+import { getFolderNote } from '../functions/folderNoteFunctions';
 import FolderNotesPlugin from '../main';
 import { FolderOverviewSettings } from './ModalSettings';
-import { getExcludedFolder } from '../excludedFolder';
+import { getExcludedFolder } from '../ExcludeFolders/functions/folderFunctions';
 import { getFolderPathFromString } from '../functions/utils';
 import { getEl } from 'src/functions/styleFunctions';
 

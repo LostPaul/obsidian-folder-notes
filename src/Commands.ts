@@ -1,7 +1,7 @@
 import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform, stringifyYaml } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName } from './functions/folderNoteFunctions';
-import { ExcludedFolder } from './excludedFolder';
+import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString } from './functions/utils';
 
 export class Commands {
