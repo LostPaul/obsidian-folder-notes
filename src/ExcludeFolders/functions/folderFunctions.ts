@@ -9,12 +9,9 @@ import ExcludedFolderSettings from '../modals/ExcludeFolderSettings';
 import { updatePattern, getExcludedFolderByPattern, addExcludePatternListItem } from './patternFunctions';
 
 export function getExcludedFolder(plugin: FolderNotesPlugin, path: string) {
-	console.log('get excluded folder', path);
 	const folderName = getFolderNameFromPathString(path);
 	const matchedPattern = getExcludedFolderByPattern(plugin, folderName);
 	if (matchedPattern) { return matchedPattern; }
-	console.log('test 3', path);
-	console.log('test 4', folderName)
 	const excludedFolder = getExcludedFolderByPath(plugin, path);
 	if (excludedFolder?.path === '') { return; }
 	return excludedFolder;
