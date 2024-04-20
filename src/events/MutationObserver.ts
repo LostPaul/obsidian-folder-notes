@@ -85,7 +85,7 @@ export async function addObserver(plugin: FolderNotesPlugin) {
                                             handleViewHeaderClick(event, plugin);
                                         } else {
                                             // Necessary if open folder in path disabled after breadcrumb rendered
-                                            breadcrumb.dispatchEvent(new PointerEvent(event.type, event));
+                                            breadcrumb.dispatchEvent(new MouseEvent(event.type, event));
                                         }
                                     }
                                 }
