@@ -24,7 +24,7 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 		return openFolderNote(plugin, folderNote, event);
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
-			await createFolderNote(plugin, folderPath, true, undefined, true);
+			await createFolderNote(plugin, folderPath, true, plugin.settings.folderNoteType, true);
 			addCSSClassToTitleEL(folderPath, 'has-folder-note');
 			removeCSSClassFromEL(folderPath, 'has-not-folder-note');
 			return;
@@ -68,7 +68,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 		}
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
-			await createFolderNote(plugin, folderPath, true, undefined, true);
+			await createFolderNote(plugin, folderPath, true, plugin.settings.folderNoteType, true);
 			addCSSClassToTitleEL(folderPath, 'has-folder-note');
 			removeCSSClassFromEL(folderPath, 'has-not-folder-note');
 			return;
