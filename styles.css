@@ -238,3 +238,16 @@ body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
 }
 
 
+.fn-suggestion-container {
+    position: absolute;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-primary);
+    max-width: 500px;
+    max-height: 300px;
+    border-radius: var(--radius-m);
+    border: 1px solid var(--background-modifier-border);
+    box-shadow: var(--shadow-s);
+    z-index: var(--layer-notice);
+}
