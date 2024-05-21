@@ -246,7 +246,6 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.fmtpHandler) {
 			this.fmtpHandler.deleteEvent();
 		}
-
 	}
 
 	async loadSettings() {
@@ -260,7 +259,7 @@ export default class FolderNotesPlugin extends Plugin {
 				delete data.allowWhitespaceCollapsing;
 			}
 		}
-		
+
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 		if (!data) { return; }
 		const overview = (data as any).defaultOverview;

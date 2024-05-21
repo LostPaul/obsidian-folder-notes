@@ -285,7 +285,7 @@ export class Commands {
 					item.setTitle('Exclude folder from folder notes')
 						.setIcon('x-circle')
 						.onClick(() => {
-							const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length, this.plugin);
+							const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length, undefined, this.plugin);
 							this.plugin.settings.excludeFolders.push(excludedFolder);
 							this.plugin.saveSettings();
 							new Notice('Successfully excluded folder from folder notes');

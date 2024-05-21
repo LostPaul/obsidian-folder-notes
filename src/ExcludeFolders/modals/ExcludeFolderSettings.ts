@@ -66,7 +66,6 @@ export default class ExcludedFolderSettings extends Modal {
 					})
 			);
 
-
 		new Setting(contentEl)
 			.setName('Disable open folder note')
 			.setDesc('Choose if the folder note should be opened when the folder is opened')

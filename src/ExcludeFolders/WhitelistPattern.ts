@@ -1,18 +1,20 @@
 import FolderNotesPlugin from '../main';
 export class WhitelistedPattern {
 	type: string;
+	id: string;
 	string: string;
 	path: string;
 	position: number;
 	subFolders: boolean;
-	disableSync: boolean;
-	disableAutoCreate: boolean;
-	disableFolderNote: boolean;
+	enableSync: boolean;
+	enableAutoCreate: boolean;
+	enableFolderNote: boolean;
 	enableCollapsing: boolean;
-	allowAll: boolean;
+	showInFolderOverview: boolean;
     hideInSettings: boolean;
-	constructor(pattern: string, position: number, plugin: FolderNotesPlugin) {
+	constructor(pattern: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
 		this.type = 'pattern';
+		this.id = id || crypto.randomUUID();
 		this.subFolders = plugin.settings.excludePatternDefaultSettings.subFolders;
 		this.position = position;
 		this.string = pattern;
