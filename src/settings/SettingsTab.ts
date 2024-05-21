@@ -121,6 +121,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	excludeFolderDefaultSettings: {
 		type: 'folder',
 		path: '',
+		id: crypto.randomUUID(),
 		subFolders: true,
 		disableSync: true,
 		disableAutoCreate: true,
@@ -134,6 +135,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	excludePatternDefaultSettings: {
 		type: 'pattern',
 		path: '',
+		id: crypto.randomUUID(),
 		subFolders: true,
 		disableSync: true,
 		disableAutoCreate: true,
