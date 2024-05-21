@@ -7,18 +7,46 @@ import { WhitelistedPattern } from '../WhitelistPattern';
 import { addWhitelistedFolder, updateWhitelistedFolder } from './whitelistFolderFunctions';
 
 export function updateWhitelistedPattern(plugin: FolderNotesPlugin, pattern: WhitelistedPattern, newPattern: WhitelistedPattern) {
-    plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter((folder) => folder.id !== pattern.id);
+    plugin.settings.whitelistFolders = plugin.settings.whitelistFolders.filter((folder) => folder.id !== pattern.id);
     addWhitelistedFolder(plugin, newPattern);
 }
 
 export function deletePattern(plugin: FolderNotesPlugin, pattern: WhitelistedPattern) {
-    plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter((folder) => folder.id !== pattern.id || folder.type === 'folder');
-    plugin.saveSettings();
+    plugin.settings.whitelistFolders = plugin.settings.whitelistFolders.filter((folder) => folder.id !== pattern.id || folder.type === 'folder');
+    plugin.saveSettings(true);
     resyncArray(plugin);
 }
 
 export function getWhitelistedFolderByPattern(plugin: FolderNotesPlugin, folderName: string) {
     return plugin.settings.whitelistFolders.filter((s) => s.type == 'pattern').find((pattern) => {
+        if (!pattern.string) { return false; }
+        const string = pattern.string.trim();
+        if (!string.startsWith('{regex}') && !(string.startsWith('*') || string.endsWith('*'))) { return false; }
+        const regex = string.replace('{regex}', '').trim();
+        if (string.startsWith('{regex}') && regex === '') { return false; }
+        if (regex !== undefined && string.startsWith('{regex}')) {
+            const match = new RegExp(regex).exec(folderName);
+            if (match) {
+                return true;
+            }
+        } else if (string.startsWith('*') && string.endsWith('*')) {
+            if (folderName.includes(string.slice(1, -1))) {
+                return true;
+            }
+        } else if (string.startsWith('*')) {
+            if (folderName.endsWith(string.slice(1))) {
+                return true;
+            }
+        } else if (string.endsWith('*')) {
+            if (folderName.startsWith(string.slice(0, -1))) {
+                return true;
+            }
+        }
+    });
+}
+
+export function getWhitelistedFoldersByPattern(plugin: FolderNotesPlugin, folderName: string) {
+    return plugin.settings.whitelistFolders.filter((s) => s.type == 'pattern').filter((pattern) => {
         if (!pattern.string) { return false; }
         const string = pattern.string.trim();
         if (!string.startsWith('{regex}') && !(string.startsWith('*') || string.endsWith('*'))) { return false; }
@@ -55,7 +83,7 @@ export function addWhitelistedPatternListItem(settings: SettingsTab, containerEl
         cb.setPlaceholder('Pattern');
         cb.setValue(pattern.string);
         cb.onChange((value) => {
-            if (plugin.settings.excludeFolders.find((folder) => folder.string === value)) { return; }
+            if (plugin.settings.whitelistFolders.find((folder) => folder.string === value)) { return; }
             pattern.string = value;
             updateWhitelistedPattern(plugin, pattern, pattern);
         });
@@ -92,7 +120,7 @@ export function addWhitelistedPatternListItem(settings: SettingsTab, containerEl
         cb.setIcon('down-chevron-glyph');
         cb.setTooltip('Move down');
         cb.onClick(() => {
-            if (pattern.position === plugin.settings.excludeFolders.length - 1) {
+            if (pattern.position === plugin.settings.whitelistFolders.length - 1) {
                 return;
             }
             pattern.position += 1;

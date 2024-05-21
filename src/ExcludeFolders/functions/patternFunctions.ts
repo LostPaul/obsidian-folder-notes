@@ -12,7 +12,7 @@ export function updatePattern(plugin: FolderNotesPlugin, pattern: ExcludePattern
 
 export function deletePattern(plugin: FolderNotesPlugin, pattern: ExcludePattern) {
     plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter((folder) => folder.id !== pattern.id || folder.type === 'folder');
-    plugin.saveSettings();
+    plugin.saveSettings(true);
     resyncArray(plugin);
 }
 

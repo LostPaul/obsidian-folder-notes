@@ -7,19 +7,45 @@ import { FolderSuggest } from '../../suggesters/FolderSuggester';
 import { SettingsTab } from '../../settings/SettingsTab';
 import WhitelistededFoldersSettings from '../modals/WhitelistedFoldersSettings';
 import WhitelistFolderSettings from '../modals/WhitelistFolderSettings';
-import { updateWhitelistedPattern, getWhitelistedFolderByPattern, addWhitelistedPatternListItem } from './whitelistPatternFunctions';
+import { updateWhitelistedPattern, getWhitelistedFoldersByPattern, addWhitelistedPatternListItem } from './whitelistPatternFunctions';
 
 export function getWhitelistedFolder(plugin: FolderNotesPlugin, path: string) {
+	let whitelistedFolder = {} as WhitelistedFolder | WhitelistedPattern | undefined;
 	const folderName = getFolderNameFromPathString(path);
-	const matchedPattern = getWhitelistedFolderByPattern(plugin, folderName);
-	if (matchedPattern) { return matchedPattern; }
-	const whitelistedFolder = getWhitelistedFolderByPath(plugin, path);
-	if (whitelistedFolder?.path === '') { return; }
+	const matchedPatterns = getWhitelistedFoldersByPattern(plugin, folderName);
+	const whitelistedFolders = getWhitelistedFoldersByPath(plugin, path);
+	const combinedWhitelistedFolders = [...matchedPatterns, ...whitelistedFolders];
+	const propertiesToCopy: (keyof WhitelistedFolder)[] = [
+		'enableAutoCreate',
+		'enableFolderNote',
+		'enableSync',
+		'showInFolderOverview'
+	];
+
+	if (combinedWhitelistedFolders.length > 0) {
+		for (const matchedFolder of combinedWhitelistedFolders) {
+			propertiesToCopy.forEach(property => {
+				if (matchedFolder[property] === true) {
+					(whitelistedFolder as any)[property] = true;
+				} else if (!matchedFolder[property]) {
+					(whitelistedFolder as any)[property] = false;
+				}
+			});
+		}
+	}
 	return whitelistedFolder;
 }
 
 export function getWhitelistedFolderByPath(plugin: FolderNotesPlugin, path: string) {
 	return plugin.settings.whitelistFolders.find((whitelistedFolder) => {
+		if (whitelistedFolder.path === path) { return true; }
+		if (!whitelistedFolder.subFolders) { return false; }
+		return getFolderPathFromString(path).startsWith(whitelistedFolder.path);
+	});
+}
+
+export function getWhitelistedFoldersByPath(plugin: FolderNotesPlugin, path: string) {
+	return plugin.settings.whitelistFolders.filter((whitelistedFolder) => {
 		if (whitelistedFolder.path === path) { return true; }
 		if (!whitelistedFolder.subFolders) { return false; }
 		return getFolderPathFromString(path).startsWith(whitelistedFolder.path);
@@ -33,7 +59,7 @@ export function addWhitelistedFolder(plugin: FolderNotesPlugin, whitelistedFolde
 
 export function deleteWhitelistedFolder(plugin: FolderNotesPlugin, whitelistedFolder: WhitelistedFolder) {
 	plugin.settings.whitelistFolders = plugin.settings.whitelistFolders.filter((folder) => folder.id !== whitelistedFolder.id || folder.type === 'pattern');
-	plugin.saveSettings();
+	plugin.saveSettings(true);
 	resyncArray(plugin);
 }
 
@@ -68,7 +94,7 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 		cb.onChange((value) => {
 			if (value.startsWith('{regex}') || value.includes('*')) {
 				deleteWhitelistedFolder(plugin, whitelistedFolder);
-				const pattern = new WhitelistedFolder(value, plugin.settings.whitelistFolders.length, whitelistedFolder.id, plugin);
+				const pattern = new WhitelistedPattern(value, plugin.settings.whitelistFolders.length, undefined, plugin);
 				addWhitelistedFolder(plugin, pattern);
 				addWhitelistedPatternListItem(settings, containerEl, pattern);
 				setting.clear();
