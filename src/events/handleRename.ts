@@ -48,7 +48,7 @@ export function handleFolderRename(file: TFolder, oldPath: string, plugin: Folde
 
 	if (!(folder instanceof TFolder)) return;
 	const excludedFolders = plugin.settings.excludeFolders.filter(
-		(excludedFolder) => excludedFolder.path.includes(oldPath)
+		(excludedFolder) => excludedFolder.path?.includes(oldPath)
 	);
 
 	excludedFolders.forEach((excludedFolder) => {
@@ -56,6 +56,7 @@ export function handleFolderRename(file: TFolder, oldPath: string, plugin: Folde
 			excludedFolder.path = folder.path;
 			return;
 		}
+		if (!excludedFolder.path) return;
 		const folders = excludedFolder.path.split('/');
 		if (folders.length < 1) {
 			folders.push(excludedFolder.path);
@@ -119,7 +120,7 @@ export function handleFileRename(file: TFile, oldPath: string, plugin: FolderNot
 
 		if (!excludedFolder) {
 			excludedFolderExisted = false;
-			excludedFolder = new ExcludedFolder(oldFolder?.path || '', plugin.settings.excludeFolders.length, plugin);
+			excludedFolder = new ExcludedFolder(oldFolder?.path || '', plugin.settings.excludeFolders.length, undefined, plugin);
 			addExcludedFolder(plugin, excludedFolder);
 		} else if (!excludedFolder.disableSync) {
 			disabledSync = false;
