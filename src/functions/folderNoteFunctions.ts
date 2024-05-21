@@ -186,7 +186,7 @@ export async function deleteFolderNote(plugin: FolderNotesPlugin, file: TFile) {
 	const folder = getFolder(plugin, file);
 	if (!folder) return;
 	removeCSSClassFromEL(folder.path, 'has-folder-note');
-	await plugin.app.vault.delete(file);
+	await plugin.app.vault.trash(file, true);
 }
 
 export function extractFolderName(template: string, changedFileName: string) {

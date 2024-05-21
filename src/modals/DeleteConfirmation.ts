@@ -33,7 +33,7 @@ export default class DeleteConfirmationModal extends Modal {
 				const folder = getFolder(this.plugin, this.file);
 				if (!folder) return;
 				removeCSSClassFromEL(folder?.path, 'has-folder-note');
-				this.app.vault.delete(this.file);
+				this.app.vault.trash(this.file, true);
 			});
 		} else {
 			const checkbox = buttonContainer.createEl('input', { type: 'checkbox' });
@@ -58,7 +58,7 @@ export default class DeleteConfirmationModal extends Modal {
 			const folder = getFolder(this.plugin, this.file);
 			if (!folder) return;
 			removeCSSClassFromEL(folder.path, 'has-folder-note');
-			this.app.vault.delete(this.file);
+			this.app.vault.trash(this.file, true);
 		});
 		button.focus();
 		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });

@@ -28,5 +28,5 @@ export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (!folderNote) { return; }
     removeCSSClassFromEL(folderNote.path, 'is-folder-note');
     if (!plugin.settings.syncDelete) { return; }
-    plugin.app.vault.delete(folderNote);
+    plugin.app.vault.trash(folderNote, true);
 }
