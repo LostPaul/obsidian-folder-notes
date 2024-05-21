@@ -17,7 +17,7 @@ export default class WhitelistFolderSettings extends Modal {
 	display() {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl('h2', { text: 'Excluded folder settings' });
+		contentEl.createEl('h2', { text: 'Whitelisted folder settings' });
 		new Setting(contentEl)
 			.setName('Include subfolders')
 			.setDesc('Choose if the subfolders of the folder should also be whitelisted')
@@ -43,7 +43,7 @@ export default class WhitelistFolderSettings extends Modal {
 			);
 
 		new Setting(contentEl)
-			.setName('Don\'t show folder in folder overview')
+			.setName('Show folder in folder overview')
 			.setDesc('Choose if the folder should be shown in the folder overview')
 			.addToggle((toggle) =>
 				toggle
@@ -56,7 +56,6 @@ export default class WhitelistFolderSettings extends Modal {
 
 		new Setting(contentEl)
 			.setName('Allow auto creation of folder notes in this folder')
-			.setDesc('Choose if a folder note should be created when a new folder is created')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.whitelistedFolder.enableAutoCreate)
@@ -68,7 +67,7 @@ export default class WhitelistFolderSettings extends Modal {
 
 
 		new Setting(contentEl)
-			.setName('Enable open folder note')
+			.setName('Open folder note when clicking on the folder')
 			.setDesc('Choose if the folder note should be opened when the folder is opened')
 			.addToggle((toggle) =>
 				toggle

@@ -18,7 +18,7 @@ export default class WhitelistPatternSettings extends Modal {
 	display() {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.createEl('h2', { text: 'Pattern settings' });
+		contentEl.createEl('h2', { text: 'Whitelisted pattern settings' });
 		new Setting(contentEl)
 			.setName('Enable folder name sync')
 			.setDesc('Choose if the name of a folder note should be renamed when the folder name is changed')
@@ -33,7 +33,6 @@ export default class WhitelistPatternSettings extends Modal {
 
 		new Setting(contentEl)
 			.setName('Allow auto creation of folder notes in this folder')
-			.setDesc('Choose if a folder note should be created when a new folder is created that matches this pattern')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.pattern.enableAutoCreate)
@@ -57,7 +56,7 @@ export default class WhitelistPatternSettings extends Modal {
 
 
 		new Setting(contentEl)
-			.setName('Open folder note when clicking on folder')
+			.setName('Open folder note when clicking on the folder')
 			.setDesc('Choose if the folder note should be opened when you click on the folder')
 			.addToggle((toggle) =>
 				toggle
