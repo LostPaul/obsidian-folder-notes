@@ -19,6 +19,7 @@ export default class PatternSettings extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.createEl('h2', { text: 'Pattern settings' });
+
 		new Setting(contentEl)
 			.setName('Disable folder name sync')
 			.setDesc('Choose if the folder name should be renamed when the file name has been changed')
@@ -55,7 +56,6 @@ export default class PatternSettings extends Modal {
 					})
 			);
 
-
 		new Setting(contentEl)
 			.setName('Disable open folder note')
 			.setDesc('Choose if the folder note should be opened when the folder is opened')
@@ -64,7 +64,7 @@ export default class PatternSettings extends Modal {
 					.setValue(this.pattern.disableFolderNote)
 					.onChange(async (value) => {
 						this.pattern.disableFolderNote = value;
-						await this.plugin.saveSettings();
+						await this.plugin.saveSettings(true);
 						this.display();
 					})
 			);
