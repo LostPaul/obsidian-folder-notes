@@ -1,10 +1,13 @@
-import { Keymap } from 'obsidian';
+import { Keymap, Platform } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { openFolderNote, createFolderNote, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { addCSSClassToTitleEL, removeCSSClassFromEL } from 'src/functions/styleFunctions';
 
 export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNotesPlugin) {
+	event.stopImmediatePropagation();
+	event.preventDefault();
+	event.stopPropagation();
 	if (!(event.target instanceof HTMLElement)) return;
 	if (!plugin.settings.openFolderNoteOnClickInPath) return;
 
@@ -19,9 +22,19 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 		event.target.onclick = null;
 		event.target.click();
 	}
+
 	const folderNote = getFolderNote(plugin, folderPath);
 	if (folderNote) {
-		return openFolderNote(plugin, folderNote, event);
+		await openFolderNote(plugin, folderNote, event).then(async () => {
+			// @ts-ignore
+			const fileExplorerPlugin = plugin.app.internalPlugins.getEnabledPluginById('file-explorer');
+			if (fileExplorerPlugin && Platform.isMobile && plugin.settings.openSidebarWhenClickingOnPath) {
+				setTimeout(() => { fileExplorerPlugin.revealInFolder(folderNote); }, 200);
+			} else if (fileExplorerPlugin) {
+				fileExplorerPlugin.revealInFolder(folderNote);
+			}
+		});
+		return;
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 			await createFolderNote(plugin, folderPath, true, undefined, true);
@@ -77,7 +90,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 		if (plugin.settings.enableCollapsing) return;
 		return event.target.parentElement?.click();
 	}
-	
+
 	event.target.onclick = null;
 	event.target.click();
 }

@@ -74,21 +74,9 @@ export async function addObserver(plugin: FolderNotesPlugin) {
                         if (breadcrumbs.length > 0) {
                             breadcrumbs.forEach((breadcrumb: HTMLElement) => {
                                 if (breadcrumb.onclick) return;
-                                breadcrumb.onclick = (event: MouseEvent) => handleViewHeaderClick(event, plugin);
-
-                                // Remove existing event listener(s) for folder note header breadcrumb when open folder in path enabled
-                                if (breadcrumb.classList.contains('has-folder-note')) {
-                                    const clonedBreadcrumb = breadcrumb.cloneNode(true) as HTMLElement;
-                                    breadcrumb.parentElement?.replaceChild(clonedBreadcrumb, breadcrumb);
-                                    clonedBreadcrumb.onclick = (event: MouseEvent) => {
-                                        if (plugin.settings.openFolderNoteOnClickInPath) {
-                                            handleViewHeaderClick(event, plugin);
-                                        } else {
-                                            // Necessary if open folder in path disabled after breadcrumb rendered
-                                            breadcrumb.dispatchEvent(new MouseEvent(event.type, event));
-                                        }
-                                    }
-                                }
+                                breadcrumb.addEventListener('click', (e) => {
+                                    handleViewHeaderClick(e, plugin);
+                                }, { capture: true });
                             });
                         }
                     });
