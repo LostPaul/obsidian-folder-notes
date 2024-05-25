@@ -16,6 +16,18 @@ export async function renderPath(settingsTab: SettingsTab) {
         );
 
     new Setting(containerEl)
+        .setName('Open sidebar when opening a folder note through path (Mobile only)')
+        .setDesc('Open the sidebar when opening a folder note through the path on mobile')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.openSidebarWhenClickingOnPath)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.openSidebarWhenClickingOnPath = value;
+                    await settingsTab.plugin.saveSettings();
+                })
+        );
+
+    new Setting(containerEl)
         .setName('Change folder name in the path')
         .setDesc('Automatically rename a folder name in the path above a note when the folder note is renamed')
         .addToggle((toggle) =>

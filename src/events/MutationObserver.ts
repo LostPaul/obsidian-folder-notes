@@ -74,7 +74,9 @@ export async function addObserver(plugin: FolderNotesPlugin) {
                         if (breadcrumbs.length > 0) {
                             breadcrumbs.forEach((breadcrumb: HTMLElement) => {
                                 if (breadcrumb.onclick) return;
-                                breadcrumb.onclick = (event: MouseEvent) => handleViewHeaderClick(event, plugin);
+                                breadcrumb.addEventListener('click', (e) => {
+                                    handleViewHeaderClick(e, plugin);
+                                }, { capture: true });
                             });
                         }
                     });

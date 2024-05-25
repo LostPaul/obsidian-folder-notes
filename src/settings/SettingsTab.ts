@@ -59,6 +59,7 @@ export interface FolderNotesSettings {
 	hideCollapsingIcon: boolean;
 	ignoreAttachmentFolder: boolean;
 	tabManagerEnabled: boolean;
+	openSidebarWhenClickingOnPath: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -149,6 +150,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	hideCollapsingIcon: false,
 	tabManagerEnabled: true,
 	ignoreAttachmentFolder: true,
+	openSidebarWhenClickingOnPath: false,
 };
 
 export class SettingsTab extends PluginSettingTab {
