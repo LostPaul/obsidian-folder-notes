@@ -16,8 +16,8 @@ export async function renderPath(settingsTab: SettingsTab) {
         );
 
     new Setting(containerEl)
-        .setName('Open sidebar when opening a folder note through path (Mobile only)')
-        .setDesc('Open the sidebar when opening a folder note through the path on mobile')
+        .setName('Open sidebar when opening a folder note through path')
+        .setDesc('Open the sidebar when opening a folder note through the path')
         .addToggle((toggle) =>
             toggle
                 .setValue(settingsTab.plugin.settings.openSidebarWhenClickingOnPath)

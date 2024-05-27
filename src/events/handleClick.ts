@@ -1,4 +1,4 @@
-import { Keymap, Platform } from 'obsidian';
+import { Keymap } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { openFolderNote, createFolderNote, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
@@ -28,9 +28,7 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 		await openFolderNote(plugin, folderNote, event).then(async () => {
 			// @ts-ignore
 			const fileExplorerPlugin = plugin.app.internalPlugins.getEnabledPluginById('file-explorer');
-			if (fileExplorerPlugin && Platform.isMobile && plugin.settings.openSidebarWhenClickingOnPath) {
-				setTimeout(() => { fileExplorerPlugin.revealInFolder(folderNote); }, 200);
-			} else if (fileExplorerPlugin) {
+			if (fileExplorerPlugin && plugin.settings.openSidebarWhenClickingOnPath) {
 				fileExplorerPlugin.revealInFolder(folderNote);
 			}
 		});
