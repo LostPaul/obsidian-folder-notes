@@ -21,6 +21,7 @@ export interface FolderNotesSettings {
 	templatePath: string;
 	autoCreate: boolean;
 	autoCreateForAttachmentFolder: boolean;
+	autoCreateFocusFiles: boolean;
 	enableCollapsing: boolean;
 	excludeFolders: (ExcludePattern | ExcludedFolder)[];
 	whitelistFolders: (WhitelistedFolder | WhitelistedPattern)[];
@@ -73,6 +74,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	hideFolderNote: true,
 	templatePath: '',
 	autoCreate: false,
+	autoCreateFocusFiles: true,
 	autoCreateForAttachmentFolder: false,
 	enableCollapsing: false,
 	excludeFolders: [],

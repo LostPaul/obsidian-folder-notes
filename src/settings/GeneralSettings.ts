@@ -346,6 +346,19 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 
     if (settingsTab.plugin.settings.autoCreate) {
         new Setting(containerEl)
+            .setName('Open folder note after creating')
+            .setDesc('Automatically open the folder note after automatically creating it')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(settingsTab.plugin.settings.autoCreateFocusFiles)
+                    .onChange(async (value) => {
+                        settingsTab.plugin.settings.autoCreateFocusFiles = value;
+                        await settingsTab.plugin.saveSettings();
+                        settingsTab.display();
+                    })
+            );
+
+        new Setting(containerEl)
             .setName('Auto create folder note for attachment folder')
             .setDesc('Automatically create a folder note for the attachment folder when you attach a file to a note and the attachment folder gets created')
             .addToggle((toggle) =>

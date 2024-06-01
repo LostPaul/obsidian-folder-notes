@@ -33,7 +33,7 @@ export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (!(file instanceof TFolder)) return;
 
     if (!plugin.settings.autoCreate) return;
-    let openFile = true;
+    let openFile = plugin.settings.autoCreateFocusFiles;
 
     const attachmentFolderPath = plugin.app.vault.getConfig('attachmentFolderPath') as string;
     const cleanAttachmentFolderPath = attachmentFolderPath?.replace('./', '') || '';
