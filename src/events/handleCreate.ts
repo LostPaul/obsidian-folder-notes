@@ -41,7 +41,7 @@ export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
 
     if (!plugin.settings.autoCreateForAttachmentFolder) {
         if (!attachmentsAreInRootFolder && cleanAttachmentFolderPath === file.name) return;
-    } else {
+    } else if (!attachmentsAreInRootFolder && cleanAttachmentFolderPath === file.name) {
         openFile = false;
     }
 
