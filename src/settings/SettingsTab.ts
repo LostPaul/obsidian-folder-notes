@@ -20,6 +20,7 @@ export interface FolderNotesSettings {
 	hideFolderNote: boolean;
 	templatePath: string;
 	autoCreate: boolean;
+	autoCreateForAttachmentFolder: boolean;
 	enableCollapsing: boolean;
 	excludeFolders: (ExcludePattern | ExcludedFolder)[];
 	whitelistFolders: (WhitelistedFolder | WhitelistedPattern)[];
@@ -72,6 +73,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	hideFolderNote: true,
 	templatePath: '',
 	autoCreate: false,
+	autoCreateForAttachmentFolder: false,
 	enableCollapsing: false,
 	excludeFolders: [],
 	whitelistFolders: [],
