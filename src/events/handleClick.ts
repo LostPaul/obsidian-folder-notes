@@ -28,9 +28,9 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 		await openFolderNote(plugin, folderNote, event).then(async () => {
 			// @ts-ignore
 			const fileExplorerPlugin = plugin.app.internalPlugins.getEnabledPluginById('file-explorer');
-			if (fileExplorerPlugin && Platform.isMobile && plugin.settings.openSidebarWhenClickingOnPath) {
+			if (fileExplorerPlugin && Platform.isMobile && plugin.settings.openSidebar.mobile) {
 				setTimeout(() => { fileExplorerPlugin.revealInFolder(folderNote); }, 200);
-			} else if (fileExplorerPlugin) {
+			} else if (fileExplorerPlugin && Platform.isDesktop && plugin.settings.openSidebar.desktop) {
 				fileExplorerPlugin.revealInFolder(folderNote);
 			}
 		});

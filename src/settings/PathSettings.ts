@@ -20,9 +20,21 @@ export async function renderPath(settingsTab: SettingsTab) {
         .setDesc('Open the sidebar when opening a folder note through the path on mobile')
         .addToggle((toggle) =>
             toggle
-                .setValue(settingsTab.plugin.settings.openSidebarWhenClickingOnPath)
+                .setValue(settingsTab.plugin.settings.openSidebar.mobile)
                 .onChange(async (value) => {
-                    settingsTab.plugin.settings.openSidebarWhenClickingOnPath = value;
+                    settingsTab.plugin.settings.openSidebar.mobile = value;
+                    await settingsTab.plugin.saveSettings();
+                })
+        );
+
+    new Setting(containerEl)
+        .setName('Open sidebar when opening a folder note through path (Desktop only)')
+        .setDesc('Open the sidebar when opening a folder note through the path on desktop')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.openSidebar.desktop)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.openSidebar.desktop = value;
                     await settingsTab.plugin.saveSettings();
                 })
         );
