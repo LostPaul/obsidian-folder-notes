@@ -44,6 +44,7 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.settings.underlineFolderInPath) { document.body.classList.add('folder-note-underline-path'); }
 		if (this.settings.stopWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
 		if (this.settings.hideCollapsingIcon) { document.body.classList.add('fn-hide-collapse-icon'); }
+		if (!this.settings.highlightFolder) { document.body.classList.add('disable-folder-highlight'); }
 
 		new Commands(this.app, this).registerCommands();
 

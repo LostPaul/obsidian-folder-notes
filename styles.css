@@ -15,7 +15,7 @@
 }
 
 body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
-.tree-item-self.fn-is-active {
+body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     color: var(--nav-item-color-active);
     background-color: var(--nav-item-background-active);
     font-weight: var(--nav-item-weight-active);

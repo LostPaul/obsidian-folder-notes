@@ -65,6 +65,7 @@ export interface FolderNotesSettings {
 		mobile: boolean;
 		desktop: boolean;
 	}
+	highlightFolder: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -160,7 +161,8 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	openSidebar: {
 		mobile: false,
 		desktop: true,
-	}
+	},
+	highlightFolder: true,
 };
 
 export class SettingsTab extends PluginSettingTab {

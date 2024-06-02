@@ -100,6 +100,23 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
     settingsTab.settingsPage.createEl('h3', { text: 'Style settings' });
 
     new Setting(containerEl)
+        .setName('Highlight folder in the file explorer')
+        .setDesc('Highlight the folder name in the file explorer when you click on a folder that has a folder note')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.highlightFolder)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.highlightFolder = value;
+                    if (!value) {
+                        document.body.classList.add('disable-folder-highlight');
+                    } else {
+                        document.body.classList.remove('disable-folder-highlight');
+                    }
+                    await settingsTab.plugin.saveSettings();
+                })
+        );
+
+    new Setting(containerEl)
         .setName('Hide collapse icon')
         .setDesc('Hide the collapse icon in the file explorer next to the name of a folder when a folder only contains a folder note')
         .addToggle((toggle) =>
