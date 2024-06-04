@@ -1,4 +1,8 @@
 # https://github.com/SilentVoid13/Templater/blob/master/.github/workflows/release.yml
+- name: Set Release Name
+  id: set_release_name
+  run: echo "RELEASE_NAME=$(echo $GITHUB_REF | sed 's/refs\/tags\///')" >> $GITHUB_ENV
+---
 name: Plugin-beta release
 on:
   push:
@@ -18,7 +22,7 @@ jobs:
       - name: Plugin beta release
         uses: ncipollo/release-action@v1.12.0
         with:
-          name: Beta release ${{ replace(github.ref, 'refs/tags/', '') }}
+          name: Beta Release ${{ env.RELEASE_NAME }}
           prerelease: true
           artifacts: "main.js,manifest.json,styles.css"
           token: ${{ secrets.GITHUB_TOKEN }}
