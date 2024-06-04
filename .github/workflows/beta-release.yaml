@@ -18,7 +18,7 @@ jobs:
       - name: Plugin beta release
         uses: ncipollo/release-action@v1.12.0
         with:
-          release_name: Beta Release ${{ github.ref }}
+          name: Beta Release ${{ github.ref }}
           prerelease: true
           artifacts: "main.js,manifest.json,styles.css"
           token: ${{ secrets.GITHUB_TOKEN }}
