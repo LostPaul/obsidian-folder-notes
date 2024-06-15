@@ -12,6 +12,8 @@ export class ExcludePattern {
 	enableCollapsing: boolean;
 	excludeFromFolderOverview: boolean;
     hideInSettings: boolean;
+	detached: boolean;
+	detachedFilePath?: string;
 	constructor(pattern: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
 		this.type = 'pattern';
 		this.id = id || crypto.randomUUID();

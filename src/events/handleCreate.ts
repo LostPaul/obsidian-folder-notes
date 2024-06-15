@@ -45,7 +45,7 @@ export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
         openFile = false;
     }
 
-    const excludedFolder = getExcludedFolder(plugin, file.path);
+    const excludedFolder = getExcludedFolder(plugin, file.path, true);
     if (excludedFolder?.disableAutoCreate) return;
 
     const folderNote = getFolderNote(plugin, file.path);

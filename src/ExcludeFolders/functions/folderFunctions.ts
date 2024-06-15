@@ -11,22 +11,27 @@ import { getWhitelistedFolder } from './whitelistFolderFunctions';
 import { WhitelistedFolder } from '../WhitelistFolder';
 import { WhitelistedPattern } from '../WhitelistPattern';
 
-export function getExcludedFolder(plugin: FolderNotesPlugin, path: string) {
+export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, includeDetached: boolean, pathOnly?: boolean, ignoreWhitelist?: boolean) {
 	let excludedFolder = {} as ExcludedFolder | ExcludePattern | undefined;
 	const whitelistedFolder = getWhitelistedFolder(plugin, path) as WhitelistedFolder | WhitelistedPattern | undefined;
 	const folderName = getFolderNameFromPathString(path);
-	const matchedPatterns = getExcludedFoldersByPattern(plugin, folderName);
+	let matchedPatterns = getExcludedFoldersByPattern(plugin, folderName);
 	const excludedFolders = getExcludedFoldersByPath(plugin, path);
-	const combinedExcludedFolders = [...matchedPatterns, ...excludedFolders];
-	console.log('excludedFolders', excludedFolders)
-	console.log('combinedExcludedFolders', combinedExcludedFolders)
+	if (pathOnly) { matchedPatterns = []; }
+	let combinedExcludedFolders = [...matchedPatterns, ...excludedFolders];
+
+	if (!includeDetached) {
+		combinedExcludedFolders = combinedExcludedFolders.filter(f => !f.detached)
+	}
 
 	const propertiesToCopy: (keyof ExcludedFolder)[] = [
 		'disableAutoCreate',
 		'disableFolderNote',
 		'disableSync',
 		'enableCollapsing',
-		'excludeFromFolderOverview'
+		'excludeFromFolderOverview',
+		'detached',
+		'hideInSettings'
 	];
 
 	if (combinedExcludedFolders.length > 0) {
@@ -39,16 +44,21 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string) {
 				}
 			});
 		}
+	} else {
+		excludedFolder = undefined;
 	}
-	console.log('excludedFolder', excludedFolder)
 
-	if (whitelistedFolder && excludedFolder) {
+	if (excludedFolder?.detached) { ignoreWhitelist = true; }
+
+	if (whitelistedFolder && excludedFolder && !ignoreWhitelist) {
+		console.log('whitelistedFolder', whitelistedFolder)
 		excludedFolder.disableAutoCreate ? excludedFolder.disableAutoCreate = !whitelistedFolder.enableAutoCreate : '';
 		excludedFolder.disableFolderNote ? excludedFolder.disableFolderNote = !whitelistedFolder.enableFolderNote : '';
 		excludedFolder.disableSync ? excludedFolder.disableSync = !whitelistedFolder.enableSync : '';
 		excludedFolder.enableCollapsing = whitelistedFolder.enableCollapsing;
 		excludedFolder.excludeFromFolderOverview ? excludedFolder.excludeFromFolderOverview = !whitelistedFolder.showInFolderOverview : '';
 	} else if (excludedFolder && Object.keys(excludedFolder).length === 0) {
+		console.log('Hello from the other side')
 		excludedFolder = {
 			type: 'folder',
 			id: '',
@@ -61,12 +71,18 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string) {
 			enableCollapsing: false,
 			position: 0,
 			excludeFromFolderOverview: false,
-			hideInSettings: false
+			hideInSettings: false,
+			detached: false
 		}
 	}
 
 	return excludedFolder;
 }
+
+export function getDetachedFolder(plugin: FolderNotesPlugin, path: string) {
+	return plugin.settings.excludeFolders.find(f => f.path == path && f.detached);
+}
+
 
 export function getExcludedFolderByPath(plugin: FolderNotesPlugin, path: string) {
 	return plugin.settings.excludeFolders.find((excludedFolder) => {
@@ -87,7 +103,6 @@ export function getExcludedFolderByPath(plugin: FolderNotesPlugin, path: string)
 
 export function getExcludedFoldersByPath(plugin: FolderNotesPlugin, path: string) {
 	return plugin.settings.excludeFolders.filter((excludedFolder) => {
-		console.log('excludedFolder path', excludedFolder.path)
 		if (path.trim() === '' || !excludedFolder.path) { return false; }
 		if (excludedFolder.path === path) { return true; }
 		if (!excludedFolder.subFolders) { return false; }

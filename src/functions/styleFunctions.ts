@@ -16,7 +16,7 @@ export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) 
             return;
         }
 
-        const excludedFolder = getExcludedFolder(plugin, file.path);
+        const excludedFolder = getExcludedFolder(plugin, file.path, true);
         // cleanup after ourselves
         // Incase settings have changed
         if (excludedFolder?.disableFolderNote) {

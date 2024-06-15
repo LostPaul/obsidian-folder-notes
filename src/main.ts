@@ -14,6 +14,7 @@ import { TabManager } from './events/TabManager';
 import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
 import { getEl, loadFileClasses, removeCSSClassFromEL } from './functions/styleFunctions';
+import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -105,6 +106,8 @@ export default class FolderNotesPlugin extends Plugin {
 
 			const folder = getFolder(this, openFile);
 			if (!folder) { return; }
+			const excludedFolder = getExcludedFolder(this, folder.path, true)
+			if (excludedFolder?.disableFolderNote) return;
 			const folderNote = getFolderNote(this, folder.path);
 			if (!folderNote) { return; }
 			if (folderNote.path !== openFile.path) { return; }

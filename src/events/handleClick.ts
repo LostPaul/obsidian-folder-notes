@@ -13,7 +13,7 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 
 	const folderPath = event.target.getAttribute('data-path');
 	if (!folderPath) { return; }
-	const excludedFolder = getExcludedFolder(plugin, folderPath);
+	const excludedFolder = getExcludedFolder(plugin, folderPath, true);
 	if (excludedFolder?.disableFolderNote) {
 		event.target.onclick = null;
 		event.target.click();
@@ -51,11 +51,12 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 	if (!(event.target instanceof HTMLElement)) return;
 	if (!event || !event.target) return;
 	event.stopImmediatePropagation();
+	console.log('handleFolderClick', event.target);
 
 	const folderPath = event.target.parentElement?.getAttribute('data-path');
 	if (!folderPath) { return; }
 
-	const excludedFolder = getExcludedFolder(plugin, folderPath);
+	const excludedFolder = getExcludedFolder(plugin, folderPath, true);
 	if (excludedFolder?.disableFolderNote) {
 		event.target.onclick = null;
 		event.target.click();
@@ -66,6 +67,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 	}
 
 	const folderNote = getFolderNote(plugin, folderPath);
+	console.log('folderNote', folderNote);
 
 	if (folderNote) {
 		if (plugin.settings.openByClick) {
