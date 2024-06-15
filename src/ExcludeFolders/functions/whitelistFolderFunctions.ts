@@ -33,6 +33,9 @@ export function getWhitelistedFolder(plugin: FolderNotesPlugin, path: string) {
 			});
 		}
 	}
+
+	if ((whitelistedFolder instanceof Object) && Object.keys(whitelistedFolder).length === 0) { whitelistedFolder = undefined;}
+
 	return whitelistedFolder;
 }
 
