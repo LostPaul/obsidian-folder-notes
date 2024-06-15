@@ -78,7 +78,7 @@ export async function renderExcludeFolders(settingsTab: SettingsTab) {
             });
         });
 
-    settingsTab.plugin.settings.excludeFolders.sort((a, b) => a.position - b.position).forEach((excludedFolder) => {
+    settingsTab.plugin.settings.excludeFolders.filter((folder) => !folder.hideInSettings).sort((a, b) => a.position - b.position).forEach((excludedFolder) => {
         if (excludedFolder.string?.trim() !== '' && excludedFolder.path?.trim() === '') {
             addExcludePatternListItem(settingsTab, containerEl, excludedFolder);
         } else {
