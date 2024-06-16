@@ -35,7 +35,7 @@ export class FolderSuggest extends TextInputSuggest<TFolder> {
 		if (this.folder) {
 			files = this.folder.children;
 		} else {
-			files = this.plugin.app.vault.getAllLoadedFiles();
+			files = this.plugin.app.vault.getAllLoadedFiles().slice(0,100);
 		}
 		files.forEach((folder: TAbstractFile) => {
 			if (
