@@ -140,6 +140,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		excludeFromFolderOverview: false,
 		string: '',
 		hideInSettings: false,
+		detached: false,
 	},
 	excludePatternDefaultSettings: {
 		type: 'pattern',
@@ -154,6 +155,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		excludeFromFolderOverview: false,
 		string: '',
 		hideInSettings: false,
+		detached: false,
 	},
 	hideCollapsingIcon: false,
 	tabManagerEnabled: true,
