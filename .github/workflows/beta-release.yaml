@@ -22,6 +22,21 @@ jobs:
       - name: Checkout main branch
         run: git checkout main
 
+      - name: Update manifest-beta.json
+        run: |
+          VERSION=${{ github.ref }} # Extract version from tag
+          VERSION=${VERSION#refs/tags/} # Remove refs/tags/ prefix
+          jq --arg version "$VERSION" '.version = $version' manifest-beta.json > manifest-beta-temp.json
+          mv manifest-beta-temp.json manifest-beta.json
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add manifest-beta.json
+          git commit -m "Update manifest-beta.json to version $VERSION"
+          git push origin main
+
       - name: npm build
         run: |
           npm install
