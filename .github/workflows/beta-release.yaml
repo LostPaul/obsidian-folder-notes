@@ -22,10 +22,13 @@ jobs:
       - name: Checkout main branch
         run: git checkout main
 
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
       - name: Update manifest-beta.json
         run: |
-          VERSION=${{ github.ref }} # Extract version from tag
-          VERSION=${VERSION#refs/tags/} # Remove refs/tags/ prefix
+          VERSION=${{ env.VERSION }}
           jq --arg version "$VERSION" '.version = $version' manifest-beta.json > manifest-beta-temp.json
           mv manifest-beta-temp.json manifest-beta.json
 
@@ -34,7 +37,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add manifest-beta.json
-          git commit -m "Update manifest-beta.json to version $VERSION"
+          git commit -m "Update manifest-beta.json to version ${{ env.VERSION }}"
           git push origin main
 
       - name: npm build
@@ -43,8 +46,7 @@ jobs:
           npm run build --if-present
 
       - name: Set Release Name
-        id: set_release_name
-        run: echo "RELEASE_NAME=$(echo $GITHUB_REF | sed 's/refs\/tags\///')" >> $GITHUB_ENV
+        run: echo "RELEASE_NAME=${{ env.VERSION%-beta}}" >> $GITHUB_ENV
 
       - name: Create Plugin beta release
         uses: ncipollo/release-action@v1.12.0
@@ -53,4 +55,4 @@ jobs:
           prerelease: true
           artifacts: "main.js,manifest.json,styles.css"
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ env.RELEASE_NAME }}
+          tag: ${{ env.VERSION }}
