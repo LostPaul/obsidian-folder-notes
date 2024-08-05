@@ -1,3 +1,5 @@
+# https://github.com/SilentVoid13/Templater/blob/master/.github/workflows/release.yml
+
 name: Plugin-beta release
 on:
   push:
