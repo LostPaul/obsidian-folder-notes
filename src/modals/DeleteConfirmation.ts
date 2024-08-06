@@ -1,6 +1,6 @@
 import { App, Modal, Setting, TFile, Platform } from 'obsidian';
 import FolderNotesPlugin from '../main';
-import { getFolder } from 'src/functions/folderNoteFunctions';
+import { deleteFolderNote, getFolder } from 'src/functions/folderNoteFunctions';
 import { removeCSSClassFromEL } from 'src/functions/styleFunctions';
 export default class DeleteConfirmationModal extends Modal {
 	plugin: FolderNotesPlugin;
@@ -13,59 +13,60 @@ export default class DeleteConfirmationModal extends Modal {
 		this.file = file;
 	}
 	onOpen() {
-		const { contentEl } = this;
-		contentEl.createEl('h2', { text: 'Delete folder note' });
-		const setting = new Setting(contentEl);
-		setting.infoEl.createEl('p', { text: `Are you sure you want to delete the folder note "${this.file.name}" ?` });
-		setting.infoEl.createEl('p', { text: 'It will be moved to your system trash.' });
+		const { contentEl, plugin } = this;
+		const modalTitle = contentEl.createDiv({ cls: 'fn-modal-title' });
+		const modalContent = contentEl.createDiv({ cls: 'fn-modal-content' });
+		modalTitle.createEl('h2', { text: 'Delete folder note' });
+		modalContent.createEl('p', { text: `Are you sure you want to delete the folder note "${this.file.name}" ?` });
+		switch (plugin.settings.deleteFilesAction) {
+			case 'trash':
+				modalContent.createEl('p', { text: 'It will be moved to your system trash.' });
+				break;
+			case 'obsidianTrash':
+				modalContent.createEl('p', { text: 'It will be moved to your Obsidian trash, which is located in the ".trash" hidden folder in your vault.' });
+				break;
+			case 'delete':
+				modalContent.createEl('p', { text: 'It will be permanently deleted.' }).setCssStyles({ color: 'red' });
+				break;
+		}
 
-		setting.infoEl.parentElement?.classList.add('fn-delete-confirmation-modal');
+		const buttonContainer = contentEl.createEl('div', { cls: 'modal-button-container' });
 
-		// Create a container for the buttons and the checkbox
-		const buttonContainer = setting.infoEl.createEl('div', { cls: 'fn-delete-confirmation-modal-buttons' });
-		if (Platform.isMobileApp) {
-			const confirmButton = buttonContainer.createEl('button', { text: 'Delete and don\'t ask again' });
-			confirmButton.classList.add('mod-warning', 'fn-confirmation-modal-button');
-			confirmButton.addEventListener('click', async () => {
-				this.plugin.settings.showDeleteConfirmation = false;
-				this.plugin.saveSettings();
-				this.close();
-				const folder = getFolder(this.plugin, this.file);
-				if (!folder) return;
-				removeCSSClassFromEL(folder?.path, 'has-folder-note');
-				this.app.vault.delete(this.file);
-			});
-		} else {
-			const checkbox = buttonContainer.createEl('input', { type: 'checkbox' });
-			checkbox.addEventListener('change', (e) => {
+		if (!Platform.isMobile) {
+			const checkbox = buttonContainer.createEl('label', { cls: 'mod-checkbox'  })
+			checkbox.tabIndex = -1
+			const input = checkbox.createEl('input', { type: 'checkbox' });
+			checkbox.appendText('Don\'t ask again')
+			input.addEventListener('change', (e) => {
 				const target = e.target as HTMLInputElement;
 				if (target.checked) {
-					this.plugin.settings.showDeleteConfirmation = false;
+					plugin.settings.showDeleteConfirmation = false;
 				} else {
-					this.plugin.settings.showDeleteConfirmation = true;
+					plugin.settings.showDeleteConfirmation = true;
 				}
-				this.plugin.saveSettings();
+				plugin.saveSettings();
 			});
-			const checkBoxText = buttonContainer.createEl('span', { text: 'Don\'t ask again' });
-			checkBoxText.addEventListener('click', () => {
-				checkbox.click();
+		} else {
+			const confirmButton = buttonContainer.createEl('button', { text: 'Delete and don\'t ask again', cls: 'mod-destructive' });
+			confirmButton.addEventListener('click', async () => {
+				plugin.settings.showDeleteConfirmation = false;
+				plugin.saveSettings();
+				this.close();
+				deleteFolderNote(plugin, this.file, false);
 			});
 		}
-		const button = buttonContainer.createEl('button', { text: 'Delete' });
-		button.classList.add('mod-warning', 'fn-confirmation-modal-button');
-		button.addEventListener('click', async () => {
+
+		const deleteButton = buttonContainer.createEl('button', { text: 'Delete', cls: 'mod-warning' });
+		deleteButton.addEventListener('click', async () => {
 			this.close();
-			const folder = getFolder(this.plugin, this.file);
-			if (!folder) return;
-			removeCSSClassFromEL(folder.path, 'has-folder-note');
-			this.app.vault.delete(this.file);
+			deleteFolderNote(plugin, this.file, false);
 		});
-		button.focus();
-		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
+		deleteButton.focus();
+
+		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel', cls: 'mod-cancel' });
 		cancelButton.addEventListener('click', async () => {
 			this.close();
 		});
-
 	}
 	onClose() {
 		const { contentEl } = this;

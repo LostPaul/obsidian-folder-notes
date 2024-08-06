@@ -179,14 +179,25 @@ export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractF
 	}
 }
 
-export async function deleteFolderNote(plugin: FolderNotesPlugin, file: TFile) {
-	if (plugin.settings.showDeleteConfirmation) {
+export async function deleteFolderNote(plugin: FolderNotesPlugin, file: TFile, displayModal: boolean) {
+	if (plugin.settings.showDeleteConfirmation && displayModal) {
 		return new DeleteConfirmationModal(plugin.app, plugin, file).open();
 	}
 	const folder = getFolder(plugin, file);
 	if (!folder) return;
 	removeCSSClassFromEL(folder.path, 'has-folder-note');
-	await plugin.app.vault.delete(file);
+	switch (plugin.settings.deleteFilesAction) {
+		case 'trash':
+			await plugin.app.vault.trash(file, true);
+			break;
+		case 'obsidianTrash':
+			console.log('obsidianTrash');
+			await plugin.app.vault.trash(file, false);
+			break;
+		case 'delete':
+			await plugin.app.vault.delete(file);
+			break;
+	}
 }
 
 export function extractFolderName(template: string, changedFileName: string) {

@@ -278,6 +278,35 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                     settingsTab.display();
                 })
         );
+
+    new Setting(containerEl)
+        .setName('Confirm folder note deletion')
+        .setDesc('Ask for confirmation before deleting a folder note')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.showDeleteConfirmation)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.showDeleteConfirmation = value;
+                    await settingsTab.plugin.saveSettings();
+                    settingsTab.display();
+                })
+        );
+
+    new Setting(containerEl)
+        .setName('Deleted folder notes')
+        .setDesc('What happens to the folder note after you delete it')
+        .addDropdown((dropdown) => {
+            dropdown.addOption('trash', 'Move to system trash');
+            dropdown.addOption('obsidianTrash', 'Move to Obsidian trash (.trash folder)');
+            dropdown.addOption('delete', 'Delete permanently');
+            dropdown.setValue(settingsTab.plugin.settings.deleteFilesAction);
+            dropdown.onChange(async (value: 'trash' | 'delete' | 'obsidianTrash') => {
+                settingsTab.plugin.settings.deleteFilesAction = value;
+                await settingsTab.plugin.saveSettings();
+                settingsTab.display();
+            });
+        });
+    
     if (Platform.isDesktop) {
         const setting3 = new Setting(containerEl);
         setting3.setName('Open folder note in a new tab by default');

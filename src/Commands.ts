@@ -90,7 +90,7 @@ export class Commands {
 				if (!(folder instanceof TFolder)) return;
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				if (!(folderNote instanceof TFile)) return;
-				deleteFolderNote(this.plugin, folderNote);
+				deleteFolderNote(this.plugin, folderNote, true);
 			}
 		});
 		this.plugin.addCommand({
@@ -298,7 +298,7 @@ export class Commands {
 						item.setTitle('Delete folder note')
 							.setIcon('trash')
 							.onClick(() => {
-								deleteFolderNote(this.plugin, folderNote);
+								deleteFolderNote(this.plugin, folderNote, true);
 							});
 					});
 

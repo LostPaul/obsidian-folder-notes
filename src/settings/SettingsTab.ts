@@ -59,6 +59,7 @@ export interface FolderNotesSettings {
 	hideCollapsingIcon: boolean;
 	ignoreAttachmentFolder: boolean;
 	tabManagerEnabled: boolean;
+	deleteFilesAction: 'delete' | 'trash' | 'obsidianTrash';
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -147,6 +148,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	hideCollapsingIcon: false,
 	tabManagerEnabled: true,
 	ignoreAttachmentFolder: true,
+	deleteFilesAction: 'trash',
 };
 
 export class SettingsTab extends PluginSettingTab {

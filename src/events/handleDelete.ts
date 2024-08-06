@@ -1,6 +1,6 @@
 import { TAbstractFile, TFolder, TFile } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
-import { getFolderNote, getFolder } from 'src/functions/folderNoteFunctions';
+import { getFolderNote, getFolder, deleteFolderNote } from 'src/functions/folderNoteFunctions';
 import { removeCSSClassFromEL, addCSSClassToTitleEL } from 'src/functions/styleFunctions';
 import { getFolderPathFromString } from 'src/functions/utils';
 
@@ -28,5 +28,5 @@ export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (!folderNote) { return; }
     removeCSSClassFromEL(folderNote.path, 'is-folder-note');
     if (!plugin.settings.syncDelete) { return; }
-    plugin.app.vault.delete(folderNote);
+    deleteFolderNote(plugin, folderNote, false);
 }
