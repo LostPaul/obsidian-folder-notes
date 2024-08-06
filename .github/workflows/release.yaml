@@ -11,10 +11,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Extract branch name
         id: extract_branch
-        run: echo "BRANCH_NAME=$(git branch --contains ${GITHUB_SHA} | grep -v 'detached' | xargs)" >> $GITHUB_ENV
+        run: echo "BRANCH_NAME=$(git branch -r --contains ${GITHUB_SHA} | grep -v 'detached' | sed 's|origin/||' | xargs)" >> $GITHUB_ENV
 
       - name: Update manifest.json
         run: |
