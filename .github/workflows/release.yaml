@@ -9,13 +9,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "BRANCH_NAME=$(git branch --contains ${GITHUB_REF} | grep -v 'detached' | xargs)" >> $GITHUB_ENV
+
+      - name: Update manifest.json
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          jq --arg version "$VERSION" '.version = $version' manifest.json > manifest-temp.json
+          mv manifest-temp.json manifest.json
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add manifest.json
+          git commit -m "Update manifest.json to version $VERSION"
+          git push origin HEAD:${{ env.BRANCH_NAME }}
+
       - name: npm build
         run: |
           npm install
           npm run build --if-present
-      - name: Plugin release
+
+      - name: Create Plugin release
         uses: ncipollo/release-action@v1.12.0
         with:
           artifacts: "main.js,manifest.json,styles.css"
           token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ GITHUB_REF#refs/tags/ }}
