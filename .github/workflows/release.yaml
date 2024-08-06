@@ -14,7 +14,7 @@ jobs:
 
       - name: Extract branch name
         id: extract_branch
-        run: echo "BRANCH_NAME=$(git branch --contains ${GITHUB_REF} | grep -v 'detached' | xargs)" >> $GITHUB_ENV
+        run: echo "BRANCH_NAME=$(git branch --contains ${GITHUB_SHA} | grep -v 'detached' | xargs)" >> $GITHUB_ENV
 
       - name: Update manifest.json
         run: |
@@ -40,4 +40,4 @@ jobs:
         with:
           artifacts: "main.js,manifest.json,styles.css"
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ GITHUB_REF#refs/tags/ }}
+          tag: ${{ github.ref_name }}
