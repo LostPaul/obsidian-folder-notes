@@ -28,8 +28,8 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add manifest-beta.json
-          git commit -m "Update manifest-beta.json to version $VERSION"
+          git add manifest.json
+          git commit -m "Update manifest.json to version $VERSION"
           git push origin main
 
       - name: npm build
