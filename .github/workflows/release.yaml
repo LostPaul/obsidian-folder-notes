@@ -14,13 +14,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract branch name
-        id: extract_branch
-        run: echo "BRANCH_NAME=$(git branch -r --contains ${GITHUB_SHA} | grep -v 'detached' | sed 's|origin/||' | xargs)" >> $GITHUB_ENV
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Update manifest.json
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${{ env.VERSION }}
           jq --arg version "$VERSION" '.version = $version' manifest.json > manifest-temp.json
           mv manifest-temp.json manifest.json
 
@@ -28,9 +28,9 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add manifest.json
-          git commit -m "Update manifest.json to version $VERSION"
-          git push origin HEAD:${{ env.BRANCH_NAME }}
+          git add manifest-beta.json
+          git commit -m "Update manifest-beta.json to version $VERSION"
+          git push origin main
 
       - name: npm build
         run: |
