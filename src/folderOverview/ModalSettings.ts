@@ -104,7 +104,7 @@ export class FolderOverviewSettings extends Modal {
 			.setName('Folder path for the overview')
 			.setDesc('Choose the folder path for the overview')
 			.addSearch((search) => {
-				new FolderSuggest(search.inputEl, this.plugin)
+				new FolderSuggest(search.inputEl, this.plugin, false)
 				search
 					.setPlaceholder('Folder path')
 					.setValue(this.yaml?.folderPath || '')

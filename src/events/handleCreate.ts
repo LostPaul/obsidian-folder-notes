@@ -33,12 +33,24 @@ export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (!(file instanceof TFolder)) return;
 
     if (!plugin.settings.autoCreate) return;
-    const excludedFolder = getExcludedFolder(plugin, file.path);
+    let openFile = plugin.settings.autoCreateFocusFiles;
+
+    const attachmentFolderPath = plugin.app.vault.getConfig('attachmentFolderPath') as string;
+    const cleanAttachmentFolderPath = attachmentFolderPath?.replace('./', '') || '';
+    const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
+
+    if (!plugin.settings.autoCreateForAttachmentFolder) {
+        if (!attachmentsAreInRootFolder && cleanAttachmentFolderPath === file.name) return;
+    } else if (!attachmentsAreInRootFolder && cleanAttachmentFolderPath === file.name) {
+        openFile = false;
+    }
+
+    const excludedFolder = getExcludedFolder(plugin, file.path, true);
     if (excludedFolder?.disableAutoCreate) return;
 
     const folderNote = getFolderNote(plugin, file.path);
     if (folderNote) return;
 
-    createFolderNote(plugin, file.path, true, undefined, true);
+    createFolderNote(plugin, file.path, openFile, undefined, true);
     addCSSClassToTitleEL(file.path, 'has-folder-note');
 }

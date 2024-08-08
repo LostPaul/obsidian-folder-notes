@@ -1,6 +1,7 @@
 import FolderNotesPlugin from '../main';
 export class ExcludedFolder {
 	type: string;
+	id: string;
 	path: string;
 	string: string;
 	subFolders: boolean;
@@ -11,8 +12,11 @@ export class ExcludedFolder {
 	position: number;
 	excludeFromFolderOverview: boolean;
     hideInSettings: boolean;
-	constructor(path: string, position: number, plugin: FolderNotesPlugin) {
+	detached: boolean;
+	detachedFilePath?: string;
+	constructor(path: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
 		this.type = 'folder';
+		this.id = id || crypto.randomUUID();
 		this.path = path;
 		this.subFolders = plugin.settings.excludeFolderDefaultSettings.subFolders;
 		this.disableSync = plugin.settings.excludeFolderDefaultSettings.disableSync;

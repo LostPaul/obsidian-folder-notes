@@ -20,6 +20,8 @@ export interface FolderNotesSettings {
 	hideFolderNote: boolean;
 	templatePath: string;
 	autoCreate: boolean;
+	autoCreateForAttachmentFolder: boolean;
+	autoCreateFocusFiles: boolean;
 	enableCollapsing: boolean;
 	excludeFolders: (ExcludePattern | ExcludedFolder)[];
 	whitelistFolders: (WhitelistedFolder | WhitelistedPattern)[];
@@ -60,6 +62,11 @@ export interface FolderNotesSettings {
 	ignoreAttachmentFolder: boolean;
 	tabManagerEnabled: boolean;
 	deleteFilesAction: 'delete' | 'trash' | 'obsidianTrash';
+	openSidebar: {
+		mobile: boolean;
+		desktop: boolean;
+	}
+	highlightFolder: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -69,6 +76,8 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	hideFolderNote: true,
 	templatePath: '',
 	autoCreate: false,
+	autoCreateFocusFiles: true,
+	autoCreateForAttachmentFolder: false,
 	enableCollapsing: false,
 	excludeFolders: [],
 	whitelistFolders: [],
@@ -122,6 +131,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	excludeFolderDefaultSettings: {
 		type: 'folder',
 		path: '',
+		id: crypto.randomUUID(),
 		subFolders: true,
 		disableSync: true,
 		disableAutoCreate: true,
@@ -131,10 +141,12 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		excludeFromFolderOverview: false,
 		string: '',
 		hideInSettings: false,
+		detached: false,
 	},
 	excludePatternDefaultSettings: {
 		type: 'pattern',
 		path: '',
+		id: crypto.randomUUID(),
 		subFolders: true,
 		disableSync: true,
 		disableAutoCreate: true,
@@ -144,11 +156,17 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		excludeFromFolderOverview: false,
 		string: '',
 		hideInSettings: false,
+		detached: false,
 	},
 	hideCollapsingIcon: false,
 	tabManagerEnabled: true,
 	ignoreAttachmentFolder: true,
 	deleteFilesAction: 'trash',
+	openSidebar: {
+		mobile: false,
+		desktop: true,
+	},
+	highlightFolder: true,
 };
 
 export class SettingsTab extends PluginSettingTab {

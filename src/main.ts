@@ -14,6 +14,7 @@ import { TabManager } from './events/TabManager';
 import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
 import { getEl, loadFileClasses, removeCSSClassFromEL } from './functions/styleFunctions';
+import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -44,6 +45,7 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.settings.underlineFolderInPath) { document.body.classList.add('folder-note-underline-path'); }
 		if (this.settings.stopWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
 		if (this.settings.hideCollapsingIcon) { document.body.classList.add('fn-hide-collapse-icon'); }
+		if (!this.settings.highlightFolder) { document.body.classList.add('disable-folder-highlight'); }
 
 		new Commands(this.app, this).registerCommands();
 
@@ -104,6 +106,8 @@ export default class FolderNotesPlugin extends Plugin {
 
 			const folder = getFolder(this, openFile);
 			if (!folder) { return; }
+			const excludedFolder = getExcludedFolder(this, folder.path, true)
+			if (excludedFolder?.disableFolderNote) return;
 			const folderNote = getFolderNote(this, folder.path);
 			if (!folderNote) { return; }
 			if (folderNote.path !== openFile.path) { return; }
@@ -246,7 +250,6 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.fmtpHandler) {
 			this.fmtpHandler.deleteEvent();
 		}
-
 	}
 
 	async loadSettings() {
@@ -260,7 +263,7 @@ export default class FolderNotesPlugin extends Plugin {
 				delete data.allowWhitespaceCollapsing;
 			}
 		}
-		
+
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 		if (!data) { return; }
 		const overview = (data as any).defaultOverview;

@@ -323,18 +323,6 @@ export async function renderGeneral(settingsTab: SettingsTab) {
         setting3.infoEl.appendText('Requires a restart to take effect');
         setting3.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
     }
-    new Setting(containerEl)
-        .setName('Automatically create folder notes')
-        .setDesc('Automatically create a folder note when a new folder is created')
-        .addToggle((toggle) =>
-            toggle
-                .setValue(settingsTab.plugin.settings.autoCreate)
-                .onChange(async (value) => {
-                    settingsTab.plugin.settings.autoCreate = value;
-                    await settingsTab.plugin.saveSettings();
-                    settingsTab.display();
-                })
-        );
 
     new Setting(containerEl)
         .setName('Enable front matter title plugin integration')
@@ -371,4 +359,45 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                 new ConfirmationModal(settingsTab.app, settingsTab.plugin).open();
             });
         });
+
+    new Setting(containerEl)
+        .setName('Automatically create folder notes')
+        .setDesc('Automatically create a folder note when a new folder is created')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.autoCreate)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.autoCreate = value;
+                    await settingsTab.plugin.saveSettings();
+                    settingsTab.display();
+                })
+        );
+
+    if (settingsTab.plugin.settings.autoCreate) {
+        new Setting(containerEl)
+            .setName('Open folder note after creating')
+            .setDesc('Automatically open the folder note after automatically creating it')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(settingsTab.plugin.settings.autoCreateFocusFiles)
+                    .onChange(async (value) => {
+                        settingsTab.plugin.settings.autoCreateFocusFiles = value;
+                        await settingsTab.plugin.saveSettings();
+                        settingsTab.display();
+                    })
+            );
+
+        new Setting(containerEl)
+            .setName('Auto create folder note for attachment folder')
+            .setDesc('Automatically create a folder note for the attachment folder when you attach a file to a note and the attachment folder gets created')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(settingsTab.plugin.settings.autoCreateForAttachmentFolder)
+                    .onChange(async (value) => {
+                        settingsTab.plugin.settings.autoCreateForAttachmentFolder = value;
+                        await settingsTab.plugin.saveSettings();
+                        settingsTab.display();
+                    })
+            );
+    }
 }

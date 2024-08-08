@@ -1,8 +1,13 @@
 import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform, stringifyYaml } from 'obsidian';
 import FolderNotesPlugin from './main';
-import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName } from './functions/folderNoteFunctions';
+import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName, detachFolderNote } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString } from './functions/utils';
+import { getExcludedFolderByPattern } from './ExcludeFolders/functions/patternFunctions';
+import { getDetachedFolder, getExcludedFolder, getExcludedFoldersByPath } from './ExcludeFolders/functions/folderFunctions';
+import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSettings'
+import { ExcludePattern } from './ExcludeFolders/ExcludePattern';
+import PatternSettings from './ExcludeFolders/modals/PatternSettings';
 
 export class Commands {
 	plugin: FolderNotesPlugin;
@@ -209,13 +214,16 @@ export class Commands {
 						}
 					}
 				}
+
 				if (folder instanceof TFolder) {
 					const folderNote = getFolderNote(this.plugin, folder.path);
-					if (folderNote?.path === file.path) { return; }
+					const excludedFolder = getExcludedFolder(this.plugin, folder.path, true)
+					if (folderNote?.path === file.path && !excludedFolder?.detached) { return; }
 				} else if (file.parent instanceof TFolder) {
 					folder = file.parent;
 				}
 			}
+
 			menu.addItem((item) => {
 				if (Platform.isDesktop && !Platform.isTablet && this.plugin.settings.useSubmenus) {
 					item
@@ -268,14 +276,31 @@ export class Commands {
 					});
 				}
 				if (!(file instanceof TFolder)) return;
-				if (this.plugin.settings.excludeFolders.find((folder) => folder.path === file.path)) {
+				const excludedFolder = getExcludedFolder(this.plugin, file.path, false)
+				const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path)
+				
+				if (excludedFolder) {
+					// I'm not sure if I'm ever going to add this because of the possibility that a folder got more than one excluded
+					// subMenu.addItem((item) => {
+					// 	item.setTitle('Manage excluded folder')
+					// 		.setIcon('settings-2')
+					// 		.onClick(() => {
+					// 			console.log('excludedFolder', excludedFolder)
+					// 			console.log('2', getExcludedFolder(this.plugin, file.path, false))
+					// 			if (excludedFolder instanceof ExcludedFolder) {
+					// 				new ExcludedFolderSettings(this.plugin.app, this.plugin, excludedFolder).open();
+					// 			} else if (excludedFolder instanceof ExcludePattern) {
+					// 				new PatternSettings(this.plugin.app, this.plugin, excludedFolder).open();
+					// 			}
+					// 		})
+					// })
 					subMenu.addItem((item) => {
 						item.setTitle('Remove folder from excluded folders')
 							.setIcon('trash')
 							.onClick(() => {
 								this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter(
-									(folder) => folder.path !== file.path);
-								this.plugin.saveSettings();
+									(folder) => (folder.path !== file.path) || folder.detached);
+								this.plugin.saveSettings(true);
 								new Notice('Successfully removed folder from excluded folders');
 							});
 					});
@@ -285,15 +310,15 @@ export class Commands {
 					item.setTitle('Exclude folder from folder notes')
 						.setIcon('x-circle')
 						.onClick(() => {
-							const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length, this.plugin);
+							const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length, undefined, this.plugin);
 							this.plugin.settings.excludeFolders.push(excludedFolder);
-							this.plugin.saveSettings();
+							this.plugin.saveSettings(true);
 							new Notice('Successfully excluded folder from folder notes');
 						});
 				});
 				if (!(file instanceof TFolder)) return;
 				const folderNote = getFolderNote(this.plugin, file.path);
-				if (folderNote instanceof TFile) {
+				if (folderNote instanceof TFile && !detachedExcludedFolder) {
 					subMenu.addItem((item) => {
 						item.setTitle('Delete folder note')
 							.setIcon('trash')
@@ -307,6 +332,15 @@ export class Commands {
 							.setIcon('chevron-right-square')
 							.onClick(() => {
 								openFolderNote(this.plugin, folderNote);
+							});
+					});
+
+					subMenu.addItem((item) => {
+						item.setTitle('Detach folder note')
+							.setIcon('unlink')
+							.onClick(() => {
+								console.log('folderNote', folderNote)
+								detachFolderNote(this.plugin, folderNote);
 							});
 					});
 

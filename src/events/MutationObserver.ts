@@ -2,6 +2,7 @@ import FolderNotesPlugin from 'src/main';
 import { Platform, Keymap } from 'obsidian';
 import { getFolderNote } from 'src/functions/folderNoteFunctions';
 import { handleFolderClick, handleViewHeaderClick } from './handleClick';
+import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 
 export async function addObserver(plugin: FolderNotesPlugin) {
     plugin.observer = new MutationObserver((mutations: MutationRecord[]) => {
@@ -65,6 +66,8 @@ export async function addObserver(plugin: FolderNotesPlugin) {
                                 breadcrumb.setAttribute('old-name', folder.name || '');
                                 breadcrumb.innerText = folder.newName || '';
                             }
+                            const excludedFolder = getExcludedFolder(plugin, folderPath, true)
+                            if (excludedFolder?.disableFolderNote) return;
                             const folderNote = getFolderNote(plugin, folderPath);
                             if (folderNote) {
                                 breadcrumb.classList.add('has-folder-note');
@@ -74,7 +77,9 @@ export async function addObserver(plugin: FolderNotesPlugin) {
                         if (breadcrumbs.length > 0) {
                             breadcrumbs.forEach((breadcrumb: HTMLElement) => {
                                 if (breadcrumb.onclick) return;
-                                breadcrumb.onclick = (event: MouseEvent) => handleViewHeaderClick(event, plugin);
+                                breadcrumb.addEventListener('click', (e) => {
+                                    handleViewHeaderClick(e, plugin);
+                                }, { capture: true });
                             });
                         }
                     });

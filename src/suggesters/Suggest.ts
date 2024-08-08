@@ -122,7 +122,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 		this.inputEl = inputEl;
 		this.scope = new Scope();
 
-		this.suggestEl = createDiv('suggestion-container');
+		this.suggestEl = createDiv('fn-suggestion-container');
 		const suggestion = this.suggestEl.createDiv('suggestion');
 		this.suggest = new Suggest(this, suggestion, this.scope);
 
@@ -133,7 +133,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 		this.inputEl.addEventListener('blur', this.close.bind(this));
 		this.suggestEl.on(
 			'mousedown',
-			'.suggestion-container',
+			'.fn-suggestion-container',
 			(event: MouseEvent) => {
 				event.preventDefault();
 			}

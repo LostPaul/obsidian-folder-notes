@@ -65,7 +65,7 @@ export default class ConfirmationModal extends Modal {
 					const folders = this.app.vault.getAllLoadedFiles().filter((file) => file.parent instanceof TFolder);
 					for (const folder of folders) {
 						if (folder instanceof TFolder) {
-							const excludedFolder = getExcludedFolder(this.plugin, folder.path);
+							const excludedFolder = getExcludedFolder(this.plugin, folder.path, true);
 							if (excludedFolder) continue;
 							if (folder.path === templateFolderPath) continue;
 							const folderNote = getFolderNote(this.plugin, folder.path);

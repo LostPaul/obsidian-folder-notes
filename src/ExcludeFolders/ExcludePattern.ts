@@ -1,6 +1,7 @@
 import FolderNotesPlugin from '../main';
 export class ExcludePattern {
 	type: string;
+	id: string;
 	string: string;
 	path: string;
 	position: number;
@@ -11,8 +12,11 @@ export class ExcludePattern {
 	enableCollapsing: boolean;
 	excludeFromFolderOverview: boolean;
     hideInSettings: boolean;
-	constructor(pattern: string, position: number, plugin: FolderNotesPlugin) {
+	detached: boolean;
+	detachedFilePath?: string;
+	constructor(pattern: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
 		this.type = 'pattern';
+		this.id = id || crypto.randomUUID();
 		this.string = pattern;
 		this.position = position;
 		this.subFolders = plugin.settings.excludePatternDefaultSettings.subFolders;

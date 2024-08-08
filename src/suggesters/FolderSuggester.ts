@@ -12,6 +12,7 @@ export class FolderSuggest extends TextInputSuggest<TFolder> {
 	constructor(
         public inputEl: HTMLInputElement,
         private plugin: FolderNotesPlugin,
+		private whitelistSuggester: boolean,
 		public folder?: TFolder,
 	) {
 		super(inputEl);
@@ -34,13 +35,13 @@ export class FolderSuggest extends TextInputSuggest<TFolder> {
 		if (this.folder) {
 			files = this.folder.children;
 		} else {
-			files = this.plugin.app.vault.getAllLoadedFiles();
+			files = this.plugin.app.vault.getAllLoadedFiles().slice(0,100);
 		}
 		files.forEach((folder: TAbstractFile) => {
 			if (
 				folder instanceof TFolder &&
                 folder.path.toLowerCase().contains(lower_input_str) &&
-                !this.plugin.settings.excludeFolders.find((f) => f.path === folder.path)
+                (!this.plugin.settings.excludeFolders.find((f) => f.path === folder.path) || this.whitelistSuggester) 
 			) {
 				folders.push(folder);
 			}
