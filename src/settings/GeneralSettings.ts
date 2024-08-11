@@ -1,6 +1,6 @@
 import { Setting, Platform, SettingTab } from "obsidian";
 import { SettingsTab } from "./SettingsTab";
-import ListComponent from '../functions/ListComponent';
+import { ListComponent } from '../functions/ListComponent';
 import AddSupportedFileModal from '../modals/AddSupportedFileType';
 import { FrontMatterTitlePluginHandler } from '../events/FrontMatterTitle';
 import ConfirmationModal from "../modals/ConfirmCreation";
@@ -90,10 +90,10 @@ export async function renderGeneral(settingsTab: SettingsTab) {
         'Adding more file types may cause performance issues becareful when adding more file types and don\'t add too many.',
     )
     setting0.setDesc(desc0);
-    const list = setting0.createList((list: ListComponent) => {
-        list.addSettings(settingsTab)
-        list.setValues(settingsTab.plugin.settings.supportedFileTypes || ['md', 'canvas']);
-        list.addResetButton();
+    const list = new ListComponent(setting0.settingEl,settingsTab.plugin.settings.supportedFileTypes || [], ['md', 'canvas'] );
+    list.on('update', async (values: string[]) => {
+        settingsTab.plugin.settings.supportedFileTypes = values;
+        await settingsTab.plugin.saveSettings();
     })
 
     if (!settingsTab.plugin.settings.supportedFileTypes.includes('md') || !settingsTab.plugin.settings.supportedFileTypes.includes('canvas') || !settingsTab.plugin.settings.supportedFileTypes.includes('excalidraw')) {
@@ -116,7 +116,6 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                 if (value === 'custom') {
                     return new AddSupportedFileModal(settingsTab.app, settingsTab.plugin, settingsTab, list as ListComponent).open();
                 }
-                // @ts-ignore
                 await list.addValue(value.toLowerCase());
                 settingsTab.display();
                 settingsTab.plugin.saveSettings();

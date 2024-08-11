@@ -1,7 +1,7 @@
 import { App, Modal, Setting, MarkdownPostProcessorContext, stringifyYaml, TFile, TFolder } from 'obsidian';
 import { yamlSettings, includeTypes, FolderOverview } from 'src/folderOverview/FolderOverview';
 import FolderNotesPlugin from '../main';
-import ListComponent from 'src/functions/ListComponent';
+import { ListComponent } from 'src/functions/ListComponent';
 import { updateYaml } from 'src/folderOverview/FolderOverview';
 import { FolderSuggest } from 'src/suggesters/FolderSuggester';
 import { getFolderPathFromString } from 'src/functions/utils';
@@ -152,12 +152,16 @@ export class FolderOverviewSettings extends Modal {
 		}
 		const setting = new Setting(contentEl);
 		setting.setName('Include types');
-		const list = setting.createList((list: ListComponent) =>
-			list
-				.addModal(this)
-				.setValues(this.yaml?.includeTypes || this.plugin.settings.defaultOverview.includeTypes || [])
-				.addResetButton()
-		);
+		const list = new ListComponent(setting.settingEl, this.yaml.includeTypes || [], ['markdown', 'folder']);
+		list.on('update', (values) => {
+			this.yaml.includeTypes = values;
+			if (this.defaultSettings) {
+				return this.plugin.saveSettings();
+			}
+			updateYaml(this.plugin, this.ctx, this.el, this.yaml);
+			this.display();
+		});
+
 		if ((this.yaml?.includeTypes?.length || 0) < 8 && !this.yaml.includeTypes?.includes('all')) {
 			setting.addDropdown((dropdown) => {
 				if (!this.yaml.includeTypes) this.yaml.includeTypes = this.plugin.settings.defaultOverview.includeTypes || [];
@@ -184,10 +188,8 @@ export class FolderOverviewSettings extends Modal {
 				dropdown.onChange(async (value) => {
 					if (value === 'all') {
 						this.yaml.includeTypes = this.yaml.includeTypes?.filter((type: string) => type === 'folder');
-						// @ts-ignore
 						list.setValues(this.yaml.includeTypes);
 					}
-					// @ts-ignore
 					await list.addValue(value.toLowerCase());
 					this.display();
 					if (this.defaultSettings) {
@@ -197,10 +199,12 @@ export class FolderOverviewSettings extends Modal {
 				});
 			});
 		}
+
 		let disableFileTag;
 		this.yaml.includeTypes?.forEach((type: string) => {
 			type === 'folder' || type === 'markdown' ? (disableFileTag = true) : null;
 		});
+
 		if (disableFileTag) {
 			new Setting(contentEl)
 				.setName('Disable file tag')
@@ -217,6 +221,7 @@ export class FolderOverviewSettings extends Modal {
 						});
 				});
 		}
+
 		new Setting(contentEl)
 			.setName('Show folder notes')
 			.setDesc('Choose if folder notes (the note itself and not the folder name) should be shown in the overview')
@@ -232,23 +237,21 @@ export class FolderOverviewSettings extends Modal {
 					})
 			);
 
-		if (this.yaml.style !== 'explorer') {
-			new Setting(contentEl)
-				.setName('File depth')
-				.setDesc('File & folder = +1 depth')
-				.addSlider((slider) =>
-					slider
-						.setValue(this.yaml?.depth || 2)
-						.setLimits(1, 10, 1)
-						.onChange(async (value) => {
-							this.yaml.depth = value;
-							if (this.defaultSettings) {
-								return this.plugin.saveSettings();
-							}
-							await updateYaml(this.plugin, this.ctx, this.el, this.yaml);
-						})
-				);
-		}
+		new Setting(contentEl)
+			.setName('File depth')
+			.setDesc('File & folder = +1 depth')
+			.addSlider((slider) =>
+				slider
+					.setValue(this.yaml?.depth || 2)
+					.setLimits(1, 10, 1)
+					.onChange(async (value) => {
+						this.yaml.depth = value;
+						if (this.defaultSettings) {
+							return this.plugin.saveSettings();
+						}
+						await updateYaml(this.plugin, this.ctx, this.el, this.yaml);
+					})
+			);
 
 		new Setting(contentEl)
 			.setName('Sort files by')
@@ -288,6 +291,7 @@ export class FolderOverviewSettings extends Modal {
 					await updateYaml(this.plugin, this.ctx, this.el, this.yaml);
 				});
 			});
+
 		if (this.yaml.style === 'list') {
 			new Setting(contentEl)
 				.setName('Show folder names of folders that appear empty in the folder overview')
