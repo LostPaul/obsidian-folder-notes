@@ -50,8 +50,11 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPlugin) {
 	if (!(event.target instanceof HTMLElement)) return;
 	if (!event || !event.target) return;
-	event.stopImmediatePropagation();
-	console.log('handleFolderClick', event.target);
+	if (!event.shiftKey) {
+		event.stopImmediatePropagation();
+	} else {
+		return;
+	}
 
 	const folderPath = event.target.parentElement?.getAttribute('data-path');
 	if (!folderPath) { return; }
