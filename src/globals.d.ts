@@ -22,6 +22,14 @@ declare module 'obsidian' {
 		newName: string | null;
 		collapsed: boolean;
 	}
+	interface MenuItem {
+		dom: HTMLElement;
+	}
+	interface FileManager {
+		promptForFileRename: (file: TAbstractFile) => void;
+		promptForDeletion: (file: TAbstractFile) => void;
+		promptForFolderDeletion: (folder: TFolder) => void;
+	}
 
 	class ListComponent {
 		containerEl: HTMLElement;

@@ -5,6 +5,8 @@ import { FolderOverviewSettings } from './ModalSettings';
 import { getExcludedFolder } from '../ExcludeFolders/functions/folderFunctions';
 import { getFolderPathFromString } from '../functions/utils';
 import { getEl } from 'src/functions/styleFunctions';
+import { renderFileExplorer } from './FileExplorer';
+import { renderListOverview } from './ListStyle';
 
 
 export type includeTypes = 'folder' | 'markdown' | 'canvas' | 'other' | 'pdf' | 'image' | 'audio' | 'video' | 'all';
@@ -37,6 +39,9 @@ export class FolderOverview {
     pathBlacklist: string[] = [];
     folders: TFolder[] = [];
     sourceFilePath: string;
+    sourceFolder: TFolder | undefined;
+    root: HTMLElement;
+    listEl: HTMLUListElement;
     constructor(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, source: string, el: HTMLElement) {
         let yaml: yamlSettings = parseYaml(source);
         if (!yaml) { yaml = {} as yamlSettings; }
@@ -46,6 +51,9 @@ export class FolderOverview {
         this.source = source;
         this.el = el;
         this.sourceFilePath = this.ctx.sourcePath
+        console.log(this.sourceFilePath)
+        console.log(plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath)))
+        this.sourceFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath)) as TFolder;
         this.yaml = {
             id: yaml?.id || crypto.randomUUID(),
             folderPath: yaml?.folderPath === undefined || yaml?.folderPath === null ? getFolderPathFromString(ctx.sourcePath) : yaml?.folderPath,
@@ -69,13 +77,18 @@ export class FolderOverview {
         el.empty();
         el.parentElement?.classList.add('folder-overview-container');
         const root = el.createEl('div', { cls: 'folder-overview' });
+        this.root = root;
         const titleEl = root.createEl('h1', { cls: 'folder-overview-title' });
         const ul = root.createEl('ul', { cls: 'folder-overview-list' });
+        this.listEl = ul;
         if (this.yaml.includeTypes.length === 0) { return this.addEditButton(root); }
         let files: TAbstractFile[] = [];
         const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
         if (!sourceFile) return;
         let sourceFolderPath = this.yaml.folderPath || getFolderPathFromString(ctx.sourcePath);
+        if (!ctx.sourcePath.includes('/')) {
+            sourceFolderPath = '/';
+        }
         let sourceFolder: TFolder | undefined;
 
         if (sourceFolderPath !== '/') {
@@ -149,26 +162,13 @@ export class FolderOverview {
                 }
             });
         } else if (this.yaml.style === 'list') {
-            const folders = this.sortFiles(files.filter(f => f instanceof TFolder));
-            files = this.sortFiles(files.filter(f => f instanceof TFile));
-            folders.forEach((file) => {
-                if (file instanceof TFolder) {
-                    const folderItem = this.addFolderList(plugin, ul, this.pathBlacklist, file);
-                    if (!folderItem) { return; }
-                    this.goThroughFolders(plugin, folderItem, file, this.yaml.depth, sourceFolderPath, ctx, this.yaml, this.pathBlacklist, this.yaml.includeTypes, this.yaml.disableFileTag);
-                }
-            });
-            files.forEach((file) => {
-                if (file instanceof TFile) {
-                    this.addFileList(plugin, ul, this.pathBlacklist, file, this.yaml.includeTypes, this.yaml.disableFileTag);
-                }
-            });
+            renderListOverview(plugin, ctx, root, this.yaml, this.pathBlacklist, this);
         } else if (this.yaml.style === 'explorer') {
             if (this.plugin.app.workspace.layoutReady) {
-                this.cloneFileExplorerView(plugin, ctx, root, this.yaml, this.pathBlacklist);
+                renderFileExplorer(plugin, ctx, root, this.yaml, this.pathBlacklist, this);
             } else {
                 this.plugin.app.workspace.onLayoutReady(() => {
-                    this.cloneFileExplorerView(plugin, ctx, root, this.yaml, this.pathBlacklist);
+                    renderFileExplorer(plugin, ctx, root, this.yaml, this.pathBlacklist, this);
                 });
             }
         }
@@ -201,209 +201,6 @@ export class FolderOverview {
             e.stopPropagation();
             new FolderOverviewSettings(this.plugin.app, this.plugin, this.yaml, this.ctx, this.el).open();
         }, { capture: true });
-    }
-
-    cloneFileExplorerView(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: yamlSettings, pathBlacklist: string[]) {
-        const folder = getEl(this.yaml.folderPath)
-        let folderElement = folder?.parentElement;
-        let tFolder = plugin.app.vault.getAbstractFileByPath(this.yaml.folderPath);
-        if (!tFolder && yaml.folderPath.trim() == '') {
-            tFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath));
-        }
-        if (!folderElement && yaml.folderPath.trim() !== '') return;
-        folderElement = document.querySelector('div.nav-files-container') as HTMLElement;
-        if (!folderElement) return;
-        const newFolderElement = folderElement.cloneNode(true) as HTMLElement;
-        newFolderElement.querySelectorAll('div.nav-folder-title ').forEach((el) => {
-            const folder = plugin.app.vault.getAbstractFileByPath(el.getAttribute('data-path') || '');
-            if (!(folder instanceof TFolder)) return;
-            if (this.yaml.storeFolderCondition) {
-                if (folder.collapsed) {
-                    el.classList.add('is-collapsed');
-                } else {
-                    el.classList.remove('is-collapsed');
-                }
-            } else {
-                if (el.parentElement?.classList.contains('is-collapsed')) {
-                    folder.collapsed = true;
-                } else {
-                    folder.collapsed = false;
-                }
-            }
-            if (el.classList.contains('has-folder-note')) {
-                const folderNote = getFolderNote(plugin, folder.path);
-                if (folderNote) { this.pathBlacklist.push(folderNote.path); }
-            }
-        });
-
-        if (tFolder instanceof TFolder) {
-            this.addFiles(tFolder.children, root);
-        } else if (yaml.folderPath.trim() === '/') {
-            const rootFiles: TAbstractFile[] = [];
-            plugin.app.vault.getAllLoadedFiles().filter(f => f instanceof TFolder).forEach((file) => {
-                if (!file.path.includes('/')) {
-                    rootFiles.push(file);
-                }
-            });
-            this.addFiles(rootFiles, root);
-        }
-
-        newFolderElement.querySelectorAll('div.tree-item-icon').forEach((el) => {
-            if (el instanceof HTMLElement) {
-                el.onclick = () => {
-                    const path = el.parentElement?.getAttribute('data-path');
-                    if (!path) return;
-                    const folder = plugin.app.vault.getAbstractFileByPath(path);
-                    this.handleCollapseClick(el, plugin, yaml, pathBlacklist, this.source, folder);
-                }
-            }
-        });
-    }
-
-    async addFiles(files: TAbstractFile[], childrenElement: HTMLElement) {
-        const folders = this.sortFiles(files.filter((file) => file instanceof TFolder));
-        const filesWithoutFolders = this.sortFiles(files.filter((file) => !(file instanceof TFolder)));
-        for (const child of folders) {
-            if (child instanceof TFolder) {
-                const folderNote = getFolderNote(this.plugin, child.path);
-                if (folderNote) { this.pathBlacklist.push(folderNote.path); }
-                const excludedFolder = getExcludedFolder(this.plugin, child.path, true);
-                if (excludedFolder?.excludeFromFolderOverview) { continue; }
-                const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon right-triangle"><path d="M3 8L12 17L21 8"></path></svg>';
-                const folderElement = childrenElement.createDiv({
-                    cls: 'tree-item nav-folder',
-                });
-                const folderTitle = folderElement.createDiv({
-                    cls: 'tree-item-self is-clickable nav-folder-title',
-                    attr: {
-                        'data-path': child.path,
-                        'draggable': 'true'
-                    },
-                })
-                if (!child.collapsed) {
-                    folderTitle.classList.remove('is-collapsed');
-                    const childrenElement = folderElement?.createDiv({ cls: 'tree-item-children nav-folder-children' });
-                    this.addFiles(child.children, childrenElement);
-                } else {
-                    folderTitle.classList.add('is-collapsed');
-                }
-                if (folderNote) { folderTitle.classList.add('has-folder-note') }
-                if (folderNote && child.children.length === 1 && this.yaml.disableCollapseIcon) { folderTitle.classList.add('fn-has-no-files') }
-
-                const collapseIcon = folderTitle.createDiv({
-                    cls: 'tree-item-icon collapse-icon nav-folder-collapse-indicator fn-folder-overview-collapse-icon',
-                });
-
-                if (child.collapsed) {
-                    collapseIcon.classList.add('is-collapsed');
-                }
-
-                collapseIcon.innerHTML = svg;
-                collapseIcon.onclick = () => {
-                    this.handleCollapseClick(collapseIcon, this.plugin, this.yaml, this.pathBlacklist, this.source, child);
-                }
-
-                folderTitle.createDiv({
-                    cls: 'tree-item-inner nav-folder-title-content',
-                    text: child.name,
-                });
-            }
-        }
-        for (const child of filesWithoutFolders) {
-            if (child instanceof TFile) {
-                if (this.pathBlacklist.includes(child.path) && !this.yaml.showFolderNotes) { continue; }
-                const extension = child.extension.toLowerCase() == 'md' ? 'markdown' : child.extension.toLowerCase();
-                const includeTypes = this.yaml.includeTypes;
-
-                if (includeTypes.length > 0 && !includeTypes.includes('all')) {
-                    if ((extension === 'md' || extension === 'markdown') && !includeTypes.includes('markdown')) continue;
-                    if (extension === 'canvas' && !includeTypes.includes('canvas')) continue;
-                    if (extension === 'pdf' && !includeTypes.includes('pdf')) continue;
-                    const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
-                    if (imageTypes.includes(extension) && !includeTypes.includes('image')) continue;
-                    const videoTypes = ['mp4', 'webm', 'ogv', 'mov', 'mkv'];
-                    if (videoTypes.includes(extension) && !includeTypes.includes('video')) continue;
-                    const audioTypes = ['mp3', 'wav', 'm4a', '3gp', 'flac', 'ogg', 'oga', 'opus'];
-                    if (audioTypes.includes(extension) && includeTypes.includes('audio')) continue;
-                    const allTypes = ['markdown', 'md', 'canvas', 'pdf', ...imageTypes, ...videoTypes, ...audioTypes];
-                    if (!allTypes.includes(extension) && !includeTypes.includes('other')) continue;
-                }
-
-                const fileElement = childrenElement.createDiv({
-                    cls: 'tree-item nav-file',
-                });
-
-                const fileTitle = fileElement.createDiv({
-                    cls: 'tree-item-self is-clickable nav-file-title pointer-cursor',
-                    attr: {
-                        'data-path': child.path,
-                        'draggable': 'true'
-                    },
-                })
-
-                fileTitle.onclick = () => {
-                    this.plugin.app.workspace.openLinkText(child.path, child.path, true);
-                }
-
-                fileTitle.createDiv({
-                    cls: 'tree-item-inner nav-file-title-content',
-                    text: child.basename,
-                });
-
-                if (child.extension !== 'md') {
-                    fileTitle.createDiv({
-                        cls: 'nav-file-tag',
-                        text: child.extension
-                    });
-                }
-            }
-        }
-    }
-
-    handleCollapseClick(el: HTMLElement, plugin: FolderNotesPlugin, yaml: yamlSettings, pathBlacklist: string[], sourcePath: string, folder?: TFolder | undefined | null | TAbstractFile) {
-        el.classList.toggle('is-collapsed');
-        if (el.classList.contains('is-collapsed')) {
-            if (!(folder instanceof TFolder)) return;
-            folder.collapsed = true;
-            el.parentElement?.parentElement?.childNodes[1]?.remove();
-        } else {
-            if (!(folder instanceof TFolder)) return;
-            folder.collapsed = false;
-            const folderElement = el.parentElement?.parentElement;
-            if (!folderElement) return;
-            const childrenElement = folderElement.createDiv({ cls: 'tree-item-children nav-folder-children' });
-            let files = this.sortFiles(folder.children);
-            files = this.filterFiles(files, plugin, folder.path, this.yaml.depth || 1, pathBlacklist);
-            this.addFiles(files, childrenElement);
-        }
-    }
-
-
-    goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLUListElement, folder: TFolder,
-        depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: yamlSettings,
-        pathBlacklist: string[], includeTypes: string[], disableFileTag: boolean) {
-        if (sourceFolderPath === '') {
-            depth--;
-        }
-        let files = this.filterFiles(folder.children, plugin, sourceFolderPath, depth, pathBlacklist);
-        files = this.sortFiles(files.filter((file) => !(file instanceof TFolder)));
-        if (this.yaml.sortByAsc) {
-            files = files.reverse();
-        }
-        const folders = this.sortFiles(files.filter((file) => file instanceof TFolder));
-        const ul = list.createEl('ul', { cls: 'folder-overview-list' });
-        folders.forEach((file) => {
-            if (file instanceof TFolder) {
-                const folderItem = this.addFolderList(plugin, ul, pathBlacklist, file);
-                if (!folderItem) return;
-                this.goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist, includeTypes, disableFileTag);
-            }
-        });
-        files.forEach((file) => {
-            if (file instanceof TFile) {
-                this.addFileList(plugin, ul, pathBlacklist, file, includeTypes, disableFileTag);
-            }
-        });
     }
 
     filterFiles(files: TAbstractFile[], plugin: FolderNotesPlugin, sourceFolderPath: string, depth: number, pathBlacklist: string[]) {
@@ -484,46 +281,6 @@ export class FolderOverview {
             if (yaml.onlyIncludeSubfolders && depth === 1) { return; }
             el.remove();
         });
-    }
-
-    addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], folder: TFolder) {
-        const folderItem = list.createEl('li', { cls: 'folder-overview-list folder-list' });
-        const folderNote = getFolderNote(plugin, folder.path);
-        if (folderNote instanceof TFile) {
-            const folderNoteLink = folderItem.createEl('a', { cls: 'folder-overview-list-item folder-name-item internal-link', href: folderNote.path });
-            folderNoteLink.innerText = folder.name;
-            pathBlacklist.push(folderNote.path);
-        } else {
-            const folderName = folderItem.createEl('span', { cls: 'folder-overview-list-item folder-name-item' });
-            folderName.innerText = folder.name;
-        }
-        return folderItem;
-    }
-
-    addFileList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], file: TFile, includeTypes: string[], disableFileTag: boolean) {
-        if (includeTypes.length > 0 && !includeTypes.includes('all')) {
-            if (file.extension === 'md' && !includeTypes.includes('markdown')) return;
-            if (file.extension === 'canvas' && !includeTypes.includes('canvas')) return;
-            if (file.extension === 'pdf' && !includeTypes.includes('pdf')) return;
-            const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
-            if (imageTypes.includes(file.extension) && !includeTypes.includes('image')) return;
-            const videoTypes = ['mp4', 'webm', 'ogv', 'mov', 'mkv'];
-            if (videoTypes.includes(file.extension) && !includeTypes.includes('video')) return;
-            const audioTypes = ['mp3', 'wav', 'm4a', '3gp', 'flac', 'ogg', 'oga', 'opus'];
-            if (audioTypes.includes(file.extension) && includeTypes.includes('audio')) return;
-            const allTypes = ['md', 'canvas', 'pdf', ...imageTypes, ...videoTypes, ...audioTypes];
-            if (!allTypes.includes(file.extension) && !includeTypes.includes('other')) return;
-        }
-        if (!this.yaml.showFolderNotes) {
-            if (pathBlacklist.includes(file.path)) return;
-        }
-        const listItem = list.createEl('li', { cls: 'folder-overview-list file-link' });
-        const nameItem = listItem.createEl('div', { cls: 'folder-overview-list-item' });
-        const link = nameItem.createEl('a', { cls: 'internal-link', href: file.path });
-        link.innerText = file.basename;
-        if (file.extension !== 'md' && !disableFileTag) {
-            nameItem.createDiv({ cls: 'nav-file-tag' }).innerText = file.extension;
-        }
     }
 
     getAllFiles(files: TAbstractFile[], sourceFolderPath: string, depth: number) {
