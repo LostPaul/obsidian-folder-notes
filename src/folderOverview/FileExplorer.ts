@@ -142,33 +142,33 @@ async function addFiles(files: TAbstractFile[], childrenElement: HTMLElement, fo
                 plugin.app.workspace.openLinkText(child.path, child.path, true);
             }
 
-            // fileTitle.oncontextmenu = (e) => {
-            //     const fileMenu = new Menu();
-            //     fileMenu.addSeparator();
+            fileTitle.oncontextmenu = (e) => {
+                const fileMenu = new Menu();
+                fileMenu.addSeparator();
 
-            //     fileMenu.addItem((item) => {
-            //         item.setTitle('Rename');
-            //         item.setIcon('pencil');
-            //         item.onClick(async () => {
-            //             plugin.app.fileManager.promptForFileRename(child)
-            //         });
-            //     });
+                fileMenu.addItem((item) => {
+                    item.setTitle('Rename');
+                    item.setIcon('pencil');
+                    item.onClick(async () => {
+                        plugin.app.fileManager.promptForFileRename(child)
+                    });
+                });
 
-            //     fileMenu.addItem((item) => {
-            //         item.setTitle('Delete');
-            //         item.setIcon('trash');
-            //         item.dom.addClass('is-warning');
-            //         item.dom.setAttribute('data-section', 'danger')
-            //         item.onClick(() => {
-            //             plugin.app.fileManager.promptForDeletion(child)
-            //         });
-            //     });
+                fileMenu.addItem((item) => {
+                    item.setTitle('Delete');
+                    item.setIcon('trash');
+                    item.dom.addClass('is-warning');
+                    item.dom.setAttribute('data-section', 'danger')
+                    item.onClick(() => {
+                        plugin.app.fileManager.promptForDeletion(child)
+                    });
+                });
 
-            //     fileMenu.addSeparator();
+                fileMenu.addSeparator();
 
-            //     plugin.app.workspace.trigger('file-menu', fileMenu, child, "folder-overview-file-context-menu", null);
-            //     fileMenu.showAtPosition({ x: e.pageX, y: e.pageY });
-            // }
+                plugin.app.workspace.trigger('file-menu', fileMenu, child, "folder-overview-file-context-menu", null);
+                fileMenu.showAtPosition({ x: e.pageX, y: e.pageY });
+            }
 
             fileTitle.createDiv({
                 cls: 'tree-item-inner nav-file-title-content',
