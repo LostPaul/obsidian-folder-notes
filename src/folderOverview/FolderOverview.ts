@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile, stringifyYaml, Notice } from 'obsidian';
+import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile, stringifyYaml, Notice, Menu, MarkdownRenderChild } from 'obsidian';
 import { getFolderNote } from '../functions/folderNoteFunctions';
 import FolderNotesPlugin from '../main';
 import { FolderOverviewSettings } from './ModalSettings';
@@ -7,6 +7,8 @@ import { getFolderPathFromString } from '../functions/utils';
 import { getEl } from 'src/functions/styleFunctions';
 import { renderFileExplorer } from './FileExplorer';
 import { renderListOverview } from './ListStyle';
+import NewFolderNameModal from 'src/modals/NewFolderName';
+import { CustomEventEmitter } from 'src/events/EventEmitter';
 
 
 export type includeTypes = 'folder' | 'markdown' | 'canvas' | 'other' | 'pdf' | 'image' | 'audio' | 'video' | 'all';
@@ -30,6 +32,7 @@ export type yamlSettings = {
 };
 
 export class FolderOverview {
+    emitter: CustomEventEmitter;
     yaml: yamlSettings;
     plugin: FolderNotesPlugin;
     ctx: MarkdownPostProcessorContext;
@@ -42,7 +45,10 @@ export class FolderOverview {
     sourceFolder: TFolder | undefined;
     root: HTMLElement;
     listEl: HTMLUListElement;
+
+    private eventListeners: (() => void)[] = [];
     constructor(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, source: string, el: HTMLElement) {
+        this.emitter = new CustomEventEmitter();
         let yaml: yamlSettings = parseYaml(source);
         if (!yaml) { yaml = {} as yamlSettings; }
         const includeTypes = yaml?.includeTypes || plugin.settings.defaultOverview.includeTypes || ['folder', 'markdown'];
@@ -71,24 +77,72 @@ export class FolderOverview {
             showFolderNotes: yaml?.showFolderNotes === undefined || yaml?.showFolderNotes === null ? plugin.settings.defaultOverview.showFolderNotes : yaml?.showFolderNotes,
             disableCollapseIcon: yaml?.disableCollapseIcon === undefined || yaml?.disableCollapseIcon === null ? plugin.settings.defaultOverview.disableCollapseIcon : yaml?.disableCollapseIcon,
         }
+
+        const customChild = new CustomMarkdownRenderChild(el, this);
+        ctx.addChild(customChild);
+    }
+
+    on(event: string, listener: (data?: any) => void) {
+        this.emitter.on(event, listener);
+    }
+
+    off(event: string, listener: (data?: any) => void) {
+        this.emitter.off(event, listener);
+    }
+
+    private emit(event: string, data?: any) {
+        this.emitter.emit(event, data);
+    }
+
+    handleVaultChange(eventType: string) {
+        this.emit(`vault-change`, eventType);
+    }
+
+    disconnectListeners() {
+        this.eventListeners.forEach(unregister => unregister());
+        this.eventListeners = [];
+    }
+
+    registerListeners() {
+        const plugin = this.plugin;
+        const handleRename = () => this.handleVaultChange('renamed');
+        const handleCreate = () => this.handleVaultChange('created');
+        const handleDelete = () => this.handleVaultChange('deleted');
+
+        plugin.app.vault.on('rename', handleRename);
+        plugin.app.vault.on('create', handleCreate);
+        plugin.app.vault.on('delete', handleDelete);
+
+        this.eventListeners.push(() => plugin.app.vault.off('rename', handleRename));
+        this.eventListeners.push(() => plugin.app.vault.off('create', handleCreate));
+        this.eventListeners.push(() => plugin.app.vault.off('delete', handleDelete));
     }
 
     create(plugin: FolderNotesPlugin, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
         el.empty();
         el.parentElement?.classList.add('folder-overview-container');
+
         const root = el.createEl('div', { cls: 'folder-overview' });
         this.root = root;
+
         const titleEl = root.createEl('h1', { cls: 'folder-overview-title' });
+
         const ul = root.createEl('ul', { cls: 'folder-overview-list' });
         this.listEl = ul;
+
         if (this.yaml.includeTypes.length === 0) { return this.addEditButton(root); }
         let files: TAbstractFile[] = [];
+
         const sourceFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
         if (!sourceFile) return;
+
         let sourceFolderPath = this.yaml.folderPath || getFolderPathFromString(ctx.sourcePath);
         if (!ctx.sourcePath.includes('/')) {
             sourceFolderPath = '/';
         }
+
+        this.registerListeners();
+
         let sourceFolder: TFolder | undefined;
 
         if (sourceFolderPath !== '/') {
@@ -296,6 +350,64 @@ export class FolderOverview {
         });
         return allFiles;
     }
+
+    fileMenu(file: TFile, e: MouseEvent) {
+        const plugin = this.plugin;
+        const fileMenu = new Menu();
+        fileMenu.addSeparator();
+
+        fileMenu.addItem((item) => {
+            item.setTitle('Rename');
+            item.setIcon('pencil');
+            item.onClick(async () => {
+                plugin.app.fileManager.promptForFileRename(file)
+            });
+        });
+
+        fileMenu.addItem((item) => {
+            item.setTitle('Delete');
+            item.setIcon('trash');
+            item.dom.addClass('is-warning');
+            item.dom.setAttribute('data-section', 'danger')
+            item.onClick(() => {
+                plugin.app.fileManager.promptForDeletion(file)
+            });
+        });
+
+        fileMenu.addSeparator();
+
+        plugin.app.workspace.trigger('file-menu', fileMenu, file, "folder-overview-file-context-menu", null);
+        fileMenu.showAtPosition({ x: e.pageX, y: e.pageY });
+    }
+
+    folderMenu(folder: TFolder, e: MouseEvent) {
+        const plugin = this.plugin;
+        const folderMenu = new Menu();
+        folderMenu.addSeparator();
+
+        folderMenu.addItem((item) => {
+            item.setTitle('Rename');
+            item.setIcon('pencil');
+            item.onClick(async () => {
+                new NewFolderNameModal(plugin.app, plugin, folder).open();
+            });
+        });
+
+        folderMenu.addItem((item) => {
+            item.setTitle('Delete');
+            item.setIcon('trash');
+            item.dom.addClass('is-warning');
+            item.dom.setAttribute('data-section', 'danger')
+            item.onClick(() => {
+                plugin.app.fileManager.promptForFolderDeletion(folder)
+            });
+        });
+
+        folderMenu.addSeparator();
+
+        plugin.app.workspace.trigger('file-menu', folderMenu, folder, "folder-overview-folder-context-menu", null);
+        folderMenu.showAtPosition({ x: e.pageX, y: e.pageY });
+    }
 }
 
 export async function updateYaml(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, el: HTMLElement, yaml: yamlSettings) {
@@ -332,4 +444,17 @@ export function getCodeBlockEndLine(text: string, startLine: number, count = 1) 
         count++;
     }
     return line;
+}
+
+
+class CustomMarkdownRenderChild extends MarkdownRenderChild {
+    folderOverview: FolderOverview;
+    constructor(el: HTMLElement, folderOverview: FolderOverview) {
+        super(el);
+        this.folderOverview = folderOverview;
+    }
+
+    onunload() {
+        this.folderOverview.disconnectListeners();
+    }
 }

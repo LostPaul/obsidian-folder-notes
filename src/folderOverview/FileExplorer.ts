@@ -55,15 +55,9 @@ export async function renderFileExplorer(plugin: FolderNotesPlugin, ctx: Markdow
         }
     });
 
-    function handleVaultChange(eventType: string) {	
+    folderOverview.on('vault-change', async () => {
         renderFileExplorer(plugin, ctx, root, yaml, pathBlacklist, folderOverview);
-        console.log(eventType);
-    }
-
-    plugin.app.vault.on('rename', () => handleVaultChange('renamed'));
-    plugin.app.vault.on('create', () => handleVaultChange('created'));
-    plugin.app.vault.on('delete', () => handleVaultChange('deleted'));
-
+    });
 
     if (tFolder instanceof TFolder && !yaml.folderPath.trim().includes('/')) {
         addFiles(tFolder.children, overviewList, folderOverview);
@@ -143,31 +137,7 @@ async function addFiles(files: TAbstractFile[], childrenElement: HTMLElement, fo
             }
 
             fileTitle.oncontextmenu = (e) => {
-                const fileMenu = new Menu();
-                fileMenu.addSeparator();
-
-                fileMenu.addItem((item) => {
-                    item.setTitle('Rename');
-                    item.setIcon('pencil');
-                    item.onClick(async () => {
-                        plugin.app.fileManager.promptForFileRename(child)
-                    });
-                });
-
-                fileMenu.addItem((item) => {
-                    item.setTitle('Delete');
-                    item.setIcon('trash');
-                    item.dom.addClass('is-warning');
-                    item.dom.setAttribute('data-section', 'danger')
-                    item.onClick(() => {
-                        plugin.app.fileManager.promptForDeletion(child)
-                    });
-                });
-
-                fileMenu.addSeparator();
-
-                plugin.app.workspace.trigger('file-menu', fileMenu, child, "folder-overview-file-context-menu", null);
-                fileMenu.showAtPosition({ x: e.pageX, y: e.pageY });
+                folderOverview.fileMenu(child, e);
             }
 
             fileTitle.createDiv({
@@ -229,32 +199,7 @@ function createFolderEL(plugin: FolderNotesPlugin, child: TFolder, folderOvervie
         })
 
         folderTitle.oncontextmenu = (e) => {
-            const fileMenu = new Menu();
-            fileMenu.addSeparator();
-
-            fileMenu.addItem((item) => {
-                item.setTitle('Rename');
-                item.setIcon('pencil');
-                item.onClick(async () => {
-                    console.log('child', child)
-                    new NewFolderNameModal(plugin.app, plugin, child).open();
-                });
-            });
-
-            fileMenu.addItem((item) => {
-                item.setTitle('Delete');
-                item.setIcon('trash');
-                item.dom.addClass('is-warning');
-                item.dom.setAttribute('data-section', 'danger')
-                item.onClick(() => {
-                    plugin.app.fileManager.promptForFolderDeletion(child)
-                });
-            });
-
-            fileMenu.addSeparator();
-
-            plugin.app.workspace.trigger('file-menu', fileMenu, child, "folder-overview-file-context-menu", null);
-            fileMenu.showAtPosition({ x: e.pageX, y: e.pageY });
+            folderOverview.folderMenu(child, e);
         }
     }
 

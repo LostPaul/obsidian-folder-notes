@@ -21,7 +21,7 @@ export function renderListOverview(plugin: FolderNotesPlugin, ctx: MarkdownPostP
     files = folderOverview.sortFiles(files.filter(f => f instanceof TFile));
     folders.forEach((file) => {
         if (file instanceof TFolder) {
-            const folderItem = addFolderList(plugin, ul, folderOverview.pathBlacklist, file);
+            const folderItem = addFolderList(plugin, ul, folderOverview.pathBlacklist, file, folderOverview);
             if (!folderItem) { return; }
             goThroughFolders(plugin, folderItem, file, folderOverview.yaml.depth, sourceFolderPath, ctx, folderOverview.yaml, folderOverview.pathBlacklist, folderOverview.yaml.includeTypes, folderOverview.yaml.disableFileTag, folderOverview);
         }
@@ -33,7 +33,7 @@ export function renderListOverview(plugin: FolderNotesPlugin, ctx: MarkdownPostP
     });
 }
 
-export function addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], folder: TFolder) {
+export function addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], folder: TFolder, folderOverview: FolderOverview) {
     const folderItem = list.createEl('li', { cls: 'folder-overview-list folder-list' });
     const folderNote = getFolderNote(plugin, folder.path);
     if (folderNote instanceof TFile) {
@@ -43,6 +43,9 @@ export function addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement 
     } else {
         const folderName = folderItem.createEl('span', { cls: 'folder-overview-list-item folder-name-item' });
         folderName.innerText = folder.name;
+        folderName.oncontextmenu = (e) => {
+            folderOverview.folderMenu(folder, e);
+        }
     }
     return folderItem;
 }
@@ -62,7 +65,7 @@ function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLU
     const ul = list.createEl('ul', { cls: 'folder-overview-list' });
     folders.forEach((file) => {
         if (file instanceof TFolder) {
-            const folderItem = addFolderList(plugin, ul, pathBlacklist, file);
+            const folderItem = addFolderList(plugin, ul, pathBlacklist, file, folderOverview);
             if (!folderItem) return;
             goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist, includeTypes, disableFileTag, folderOverview);
         }
@@ -92,6 +95,10 @@ function addFileList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIE
         if (pathBlacklist.includes(file.path)) return;
     }
     const listItem = list.createEl('li', { cls: 'folder-overview-list file-link' });
+    listItem.oncontextmenu = (e) => {
+        e.stopImmediatePropagation();
+        folderOverview.fileMenu(file, e);
+    }
     const nameItem = listItem.createEl('div', { cls: 'folder-overview-list-item' });
     const link = nameItem.createEl('a', { cls: 'internal-link', href: file.path });
     link.innerText = file.basename;
