@@ -13,7 +13,7 @@ export async function renderFileExplorer(plugin: FolderNotesPlugin, ctx: Markdow
     const folder = getEl(yaml.folderPath)
     let folderElement = folder?.parentElement;
     const source = ctx.sourcePath;
-    const overviewList = root.querySelector('ul.folder-overview-list') as HTMLElement;
+    const overviewList = folderOverview.listEl;
     overviewList?.empty();
     if (!overviewList) return;
 
@@ -30,10 +30,10 @@ export async function renderFileExplorer(plugin: FolderNotesPlugin, ctx: Markdow
 
     if (!folderElement && !tFolder) return;
 
-    folderElement = document.querySelector('div.nav-files-container') as HTMLElement;
+    folderElement = document.querySelectorAll('.nav-files-container')[0] as HTMLElement;
     if (!folderElement) return;
     const newFolderElement = folderElement.cloneNode(true) as HTMLElement;
-    newFolderElement.querySelectorAll('div.nav-folder-title ').forEach((el) => {
+    newFolderElement.querySelectorAll('div.nav-folder-title').forEach((el) => {
         const folder = plugin.app.vault.getAbstractFileByPath(el.getAttribute('data-path') || '');
         if (!(folder instanceof TFolder)) return;
         if (yaml.storeFolderCondition) {
@@ -59,20 +59,8 @@ export async function renderFileExplorer(plugin: FolderNotesPlugin, ctx: Markdow
         renderFileExplorer(plugin, ctx, root, yaml, pathBlacklist, folderOverview);
     });
 
-    if (tFolder instanceof TFolder && !yaml.folderPath.trim().includes('/')) {
+    if (tFolder instanceof TFolder) {
         addFiles(tFolder.children, overviewList, folderOverview);
-    } else if (yaml.folderPath.trim() === '/') {
-        const rootFiles: TAbstractFile[] = [];
-        if (yaml.includeTypes.includes('folder')) {
-            plugin.app.vault.getAllLoadedFiles().filter(f => f instanceof TFolder).forEach((file) => {
-                if (!file.path.includes('/')) {
-                    rootFiles.push(file);
-                }
-            });
-        } else {
-            rootFiles.push(...plugin.app.vault.getAllLoadedFiles());
-        }
-        addFiles(rootFiles, overviewList, folderOverview);
     }
 
     newFolderElement.querySelectorAll('div.tree-item-icon').forEach((el) => {
@@ -157,7 +145,9 @@ async function addFiles(files: TAbstractFile[], childrenElement: HTMLElement, fo
 
 
 function handleCollapseClick(el: HTMLElement, plugin: FolderNotesPlugin, yaml: yamlSettings, pathBlacklist: string[], sourcePath: string, folderOverview: FolderOverview, folder?: TFolder | undefined | null | TAbstractFile) {
+    console.log('el', el);
     el.classList.toggle('is-collapsed');
+    console.log('el', el);
     if (el.classList.contains('is-collapsed')) {
         if (!(folder instanceof TFolder)) return;
         folder.collapsed = true;
@@ -229,12 +219,22 @@ function createFolderEL(plugin: FolderNotesPlugin, child: TFolder, folderOvervie
     if (collapseIcon) {
         collapseIcon.innerHTML = svg;
         collapseIcon.onclick = () => {
+            console.log('collapseIcon', collapseIcon);
             handleCollapseClick(collapseIcon, plugin, yaml, pathBlacklist, source, folderOverview, child);
         }
     }
 
-    folderTitle?.createDiv({
+    const folderTitleText = folderTitle?.createDiv({
         cls: 'tree-item-inner nav-folder-title-content',
         text: child.name,
     });
+
+    if (folderTitleText) {
+        folderTitleText.onclick = () => {
+            const collapseIcon = folderTitle?.querySelectorAll('.tree-item-icon')[0] as HTMLElement;
+            if (collapseIcon) {
+                handleCollapseClick(collapseIcon, plugin, yaml, pathBlacklist, source, folderOverview, child);
+            }
+        }
+    }
 }

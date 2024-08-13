@@ -56,9 +56,7 @@ export class FolderOverview {
         this.ctx = ctx;
         this.source = source;
         this.el = el;
-        this.sourceFilePath = this.ctx.sourcePath
-        console.log(this.sourceFilePath)
-        console.log(plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath)))
+        this.sourceFilePath = this.ctx.sourcePath;
         this.sourceFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath)) as TFolder;
         this.yaml = {
             id: yaml?.id || crypto.randomUUID(),
@@ -432,6 +430,7 @@ export async function updateYaml(plugin: FolderNotesPlugin, ctx: MarkdownPostPro
         return `\`\`\`folder-overview\n${stringYaml}\`\`\``;
     });
 }
+
 export function getCodeBlockEndLine(text: string, startLine: number, count = 1) {
     let line = startLine + 1;
     const lines = text.split('\n');

@@ -22,7 +22,12 @@ export function getExtensionFromPathString(path: string): string {
 
 export function getFolderPathFromString(path: string): string {
     const subString = path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/') : 0;
-    return path.substring(0, subString);
+    const folderPath = path.substring(0, subString);
+    if (folderPath === '') {
+        return '/';
+    } else {
+        return folderPath;
+    }
 }
 
 export function getParentFolderPath(path: string): string {

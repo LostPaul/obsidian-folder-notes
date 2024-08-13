@@ -1,13 +1,7 @@
-import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile, stringifyYaml, Notice, Menu } from 'obsidian';
+import { MarkdownPostProcessorContext, TFolder, TFile } from 'obsidian';
 import { getFolderNote } from '../functions/folderNoteFunctions';
 import FolderNotesPlugin from '../main';
-import { FolderOverviewSettings } from './ModalSettings';
-import { getExcludedFolder } from '../ExcludeFolders/functions/folderFunctions';
-import { getFolderPathFromString } from '../functions/utils';
-import { getEl } from 'src/functions/styleFunctions';
 import { FolderOverview, yamlSettings } from './FolderOverview';
-import FolderNameModal from 'src/modals/FolderName';
-import NewFolderNameModal from 'src/modals/NewFolderName';
 
 export function renderListOverview(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: yamlSettings, pathBlacklist: string[], folderOverview: FolderOverview) {
     if (!folderOverview.sourceFolder) { return; }
@@ -40,6 +34,10 @@ export function addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement 
         const folderNoteLink = folderItem.createEl('a', { cls: 'folder-overview-list-item folder-name-item internal-link', href: folderNote.path });
         folderNoteLink.innerText = folder.name;
         pathBlacklist.push(folderNote.path);
+        folderNoteLink.oncontextmenu = (e) => {
+            e.stopImmediatePropagation();
+            folderOverview.fileMenu(folderNote, e);
+        }
     } else {
         const folderName = folderItem.createEl('span', { cls: 'folder-overview-list-item folder-name-item' });
         folderName.innerText = folder.name;
