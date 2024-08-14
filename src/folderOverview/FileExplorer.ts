@@ -219,7 +219,6 @@ function createFolderEL(plugin: FolderNotesPlugin, child: TFolder, folderOvervie
     if (collapseIcon) {
         collapseIcon.innerHTML = svg;
         collapseIcon.onclick = () => {
-            console.log('collapseIcon', collapseIcon);
             handleCollapseClick(collapseIcon, plugin, yaml, pathBlacklist, source, folderOverview, child);
         }
     }
@@ -229,7 +228,7 @@ function createFolderEL(plugin: FolderNotesPlugin, child: TFolder, folderOvervie
         text: child.name,
     });
 
-    if (folderTitleText) {
+    if (folderTitleText && !folderNote) {
         folderTitleText.onclick = () => {
             const collapseIcon = folderTitle?.querySelectorAll('.tree-item-icon')[0] as HTMLElement;
             if (collapseIcon) {
