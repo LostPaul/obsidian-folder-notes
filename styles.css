@@ -1,13 +1,25 @@
 .fn-whitespace-stop-collapsing .nav-folder-title-content {
     flex-grow: 1 !important;
+    display: flex;
     padding-bottom: 4px !important;
     padding-top: 4px !important;
+}
+
+.mod-rtl .fn-whitespace-stop-collapsing .nav-folder-title-content {
+    padding-left: 8px !important;
 }
 
 .fn-whitespace-stop-collapsing .nav-folder-title {
     padding-bottom: 0 !important;
     padding-top: 0 !important;
+}
+
+body:not(.mod-rtl).fn-whitespace-stop-collapsing .nav-folder-title {
     padding-right: 0 !important;
+}
+
+.mod-rtl.fn-whitespace-stop-collapsing .nav-folder-title {
+    padding-left: 0 !important;
 }
 
 .fn-whitespace-stop-collapsing .nav-folder-collapse-indicator {
