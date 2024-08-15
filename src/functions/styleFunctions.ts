@@ -7,16 +7,17 @@ import { getFileExplorer } from './utils';
 export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) {
     if (plugin.activeFileExplorer === getFileExplorer() && !forceReload) { return; }
     plugin.activeFileExplorer = getFileExplorer();
-    plugin.app.vault.getAllLoadedFiles().forEach((file) => {
+    plugin.app.vault.getAllLoadedFiles().forEach(async (file) => {
         if (!(file instanceof TFolder)) { return; }
         const folderNote = getFolderNote(plugin, file.path);
         if (!folderNote) {
             removeCSSClassFromEL(file?.path, 'has-folder-note');
             removeCSSClassFromEL(file?.path, 'only-has-folder-note');
+            plugin.isEmptyFolderNoteFolder(file)
             return;
         }
 
-        const excludedFolder = getExcludedFolder(plugin, file.path, true);
+        const excludedFolder = await getExcludedFolder(plugin, file.path, true);
         // cleanup after ourselves
         // Incase settings have changed
         if (excludedFolder?.disableFolderNote) {
@@ -24,10 +25,13 @@ export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) 
             removeCSSClassFromEL(file.path, 'has-folder-note');
             removeCSSClassFromEL(file?.path, 'only-has-folder-note');
         } else {
-            addCSSClassToTitleEL(folderNote.path, 'is-folder-note');
-            addCSSClassToTitleEL(file.path, 'has-folder-note');
+            console.log('excludedFolder?.hideNote', excludedFolder?.hideNote)
+            if (!excludedFolder?.hideNote) {
+                addCSSClassToTitleEL(plugin, folderNote.path, 'is-folder-note');
+            }
+            addCSSClassToTitleEL(plugin, file.path, 'has-folder-note');
             if (plugin.isEmptyFolderNoteFolder(file)) {
-                addCSSClassToTitleEL(file.path, 'only-has-folder-note');
+                addCSSClassToTitleEL(plugin, file.path, 'only-has-folder-note');
             } else {
                 removeCSSClassFromEL(file.path, 'only-has-folder-note');
             }
@@ -35,27 +39,64 @@ export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) 
     });
 }
 
+// load classes of specific folder
+export async function loadFolderClasses(forceReload = false, folder: TFolder, plugin: FolderNotesPlugin) {
+    if (plugin.activeFileExplorer === getFileExplorer() && !forceReload) { return; }
+    plugin.activeFileExplorer = getFileExplorer();
+
+    const folderNote = getFolderNote(plugin, folder.path);
+    if (!folderNote) {
+        removeCSSClassFromEL(folder?.path, 'has-folder-note');
+        removeCSSClassFromEL(folder?.path, 'only-has-folder-note');
+        plugin.isEmptyFolderNoteFolder(folder)
+        return;
+    }
+
+    const excludedFolder = await getExcludedFolder(plugin, folder.path, true);
+    // cleanup after ourselves
+    // Incase settings have changed
+    if (excludedFolder?.disableFolderNote) {
+        removeCSSClassFromEL(folderNote.path, 'is-folder-note');
+        removeCSSClassFromEL(folder.path, 'has-folder-note');
+        removeCSSClassFromEL(folder?.path, 'only-has-folder-note');
+    } else {
+        console.log('excludedFolder', excludedFolder)
+        console.log('excludedFolder?.hideNote', excludedFolder?.hideNote)
+        if (!excludedFolder?.hideNote) {
+            console.log('what')
+            addCSSClassToTitleEL(plugin, folderNote.path, 'is-folder-note');
+        }
+        addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
+        if (plugin.isEmptyFolderNoteFolder(folder)) {
+            addCSSClassToTitleEL(plugin, folder.path, 'only-has-folder-note');
+        } else {
+            removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+        }
+    }
+
+}
+
 export function addCSSClassesToBothFolderAndNote(file: TFile, folder: TFolder) {
-    this.addCSSClassToFolderNote(file);
-    this.addCSSClassesToFolder(folder);
+    addCSSClassToFolderNote(file);
+    addCSSClassesToFolder(folder);
 }
 
 export function removeCSSClassesFromBothFolderAndNote(folder: TFolder, file: TFile) {
-    this.removeCSSClassFromFolderNote(file);
-    this.removeCSSClassesFromFolder(folder);
+    removeCSSClassFromFolderNote(file);
+    removeCSSClassesFromFolder(folder);
 }
 
 export function addCSSClassesToFolder(folder: TFolder) {
-    this.addCSSClassToTitleEL(folder.path, 'has-folder-note');
+    addCSSClassToTitleEL(undefined, folder.path, 'has-folder-note');
     if (this.isEmptyFolderNoteFolder(folder)) {
-        this.addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
+        addCSSClassToTitleEL(undefined, folder.path, 'only-has-folder-note');
     } else {
-        this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+        removeCSSClassFromEL(folder.path, 'only-has-folder-note');
     }
 }
 
 export function addCSSClassToFolderNote(file: TFile) {
-    this.addCSSClassToTitleEL(file.path, 'is-folder-note');
+    addCSSClassToTitleEL(undefined, file.path, 'is-folder-note');
 }
 
 export function removeCSSClassFromFolderNote(file: TFile) {
@@ -67,8 +108,8 @@ export function removeCSSClassesFromFolder(folder: TFolder) {
     this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
 }
 
-export async function addCSSClassToTitleEL(path: string, cssClass: string, waitForCreate = false, count = 0) {
-    const fileExplorerItem = getEl(path);
+export async function addCSSClassToTitleEL(plugin: FolderNotesPlugin | undefined, path: string, cssClass: string, waitForCreate = false, count = 0) {
+    const fileExplorerItem = getEl(path)
     if (!fileExplorerItem) {
         if (waitForCreate && count < 5) {
             // sleep for a second for the file-explorer event to catch up
@@ -76,12 +117,26 @@ export async function addCSSClassToTitleEL(path: string, cssClass: string, waitF
             // If we could guarrantee load order it wouldn't be an issue but we can't
             // realise this is racey and needs to be fixed.
             await new Promise((r) => setTimeout(r, 500));
-            this.addCSSClassToTitleEL(path, cssClass, waitForCreate, count + 1);
+            addCSSClassToTitleEL(plugin, path, cssClass, waitForCreate, count + 1);
             return;
         }
         return;
     }
+    
+    const dragManager = plugin?.app.dragManager;
     fileExplorerItem.addClass(cssClass);
+    if (cssClass === 'has-folder-note') {
+        fileExplorerItem.addEventListener('dragstart', (e) => {
+            if (!plugin) return;
+            const folderNote = getFolderNote(plugin, path);
+            if (folderNote) {
+                const dragData = dragManager?.dragFile(e, folderNote);
+                // @ts-ignore
+                dragManager?.onDragStart(e, dragData);
+            }
+        });
+    }
+
     const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);
     viewHeaderItems.forEach((item) => {
         item.addClass(cssClass);
