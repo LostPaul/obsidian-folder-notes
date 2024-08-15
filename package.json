@@ -19,6 +19,7 @@
 		"esbuild": "0.14.47",
 		"front-matter-plugin-api-provider": "^0.1.4-alpha",
 		"obsidian": "latest",
+		"obsidian-typings": "^2.2.0",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
 	},
