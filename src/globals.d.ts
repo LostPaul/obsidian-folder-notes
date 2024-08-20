@@ -12,9 +12,6 @@ declare module 'obsidian' {
 			disablePlugin: (id: string) => Promise<void>;
 		};
 	}
-	interface Vault {
-		getConfig: (config: string) => unknown;
-	}
 	interface Setting {
 		createList: (list: ListComponent | ((list: ListComponent) => void)) => ListComponent;
 	}
@@ -26,8 +23,6 @@ declare module 'obsidian' {
 		dom: HTMLElement;
 	}
 	interface FileManager {
-		promptForFileRename: (file: TAbstractFile) => void;
-		promptForDeletion: (file: TAbstractFile) => void;
 		promptForFolderDeletion: (folder: TFolder) => void;
 	}
 
@@ -52,4 +47,12 @@ interface FileExplorerViewFileItem extends TAbstractFile {
 
 interface FileExplorerView extends View {
 	fileItems: { [path: string]: FileExplorerViewFileItem };
+}
+
+declare global {
+	interface Window {
+		i18next: {
+			t: (key: string, options?: { [key: string]: string }) => string;
+		};
+	}
 }
