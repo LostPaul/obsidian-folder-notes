@@ -134,6 +134,24 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
                 })
         );
 
+    new Setting(containerEl)
+        .setName('Hide collapse icon for every empty folder')
+        .setDesc('Hide the collapse icon in the file explorer next to the name of a folder when a folder is empty')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.hideCollapsingIconForEmptyFolders)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.hideCollapsingIconForEmptyFolders = value;
+                    await settingsTab.plugin.saveSettings();
+                    if (value) {
+                        document.body.classList.add('fn-hide-empty-collapse-icon');
+                    } else {
+                        document.body.classList.remove('fn-hide-empty-collapse-icon');
+                    }
+                    settingsTab.display();
+                }
+        ));
+
     if (settingsTab.plugin.settings.hideCollapsingIcon) {
         new Setting(containerEl)
             .setName('Hide collapse icon also when the attachment folder is in the same folder')

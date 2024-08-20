@@ -249,6 +249,10 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     display: none;
 }
 
+.fn-hide-empty-collapse-icon .fn-empty-folder .tree-item-icon {
+    display: none;
+}
+
 
 .fn-suggestion-container {
     position: absolute;
