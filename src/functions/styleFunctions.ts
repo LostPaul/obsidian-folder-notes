@@ -25,7 +25,6 @@ export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) 
             removeCSSClassFromEL(file.path, 'has-folder-note');
             removeCSSClassFromEL(file?.path, 'only-has-folder-note');
         } else {
-            console.log('excludedFolder?.hideNote', excludedFolder?.hideNote)
             if (!excludedFolder?.hideNote) {
                 addCSSClassToTitleEL(plugin, folderNote.path, 'is-folder-note');
             }
@@ -60,10 +59,7 @@ export async function loadFolderClasses(forceReload = false, folder: TFolder, pl
         removeCSSClassFromEL(folder.path, 'has-folder-note');
         removeCSSClassFromEL(folder?.path, 'only-has-folder-note');
     } else {
-        console.log('excludedFolder', excludedFolder)
-        console.log('excludedFolder?.hideNote', excludedFolder?.hideNote)
         if (!excludedFolder?.hideNote) {
-            console.log('what')
             addCSSClassToTitleEL(plugin, folderNote.path, 'is-folder-note');
         }
         addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
@@ -122,20 +118,8 @@ export async function addCSSClassToTitleEL(plugin: FolderNotesPlugin | undefined
         }
         return;
     }
-    
-    const dragManager = plugin?.app.dragManager;
+
     fileExplorerItem.addClass(cssClass);
-    if (cssClass === 'has-folder-note') {
-        fileExplorerItem.addEventListener('dragstart', (e) => {
-            if (!plugin) return;
-            const folderNote = getFolderNote(plugin, path);
-            if (folderNote) {
-                const dragData = dragManager?.dragFile(e, folderNote);
-                // @ts-ignore
-                dragManager?.onDragStart(e, dragData);
-            }
-        });
-    }
 
     const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);
     viewHeaderItems.forEach((item) => {
@@ -162,3 +146,4 @@ export function getEl(path: string): HTMLElement | null {
     if (fileExplorerItem.selfEl) return fileExplorerItem.selfEl;
     return fileExplorerItem.titleEl;
 }
+
