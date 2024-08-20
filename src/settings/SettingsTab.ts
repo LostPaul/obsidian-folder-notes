@@ -59,6 +59,7 @@ export interface FolderNotesSettings {
 	excludeFolderDefaultSettings: ExcludedFolder;
 	excludePatternDefaultSettings: ExcludePattern;
 	hideCollapsingIcon: boolean;
+	hideCollapsingIconForEmptyFolders: boolean;
 	ignoreAttachmentFolder: boolean;
 	tabManagerEnabled: boolean;
 	deleteFilesAction: 'delete' | 'trash' | 'obsidianTrash';
@@ -142,6 +143,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		string: '',
 		hideInSettings: false,
 		detached: false,
+		hideNote: false,
 	},
 	excludePatternDefaultSettings: {
 		type: 'pattern',
@@ -157,8 +159,10 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		string: '',
 		hideInSettings: false,
 		detached: false,
+		hideNote: false,
 	},
 	hideCollapsingIcon: false,
+	hideCollapsingIconForEmptyFolders: false,
 	tabManagerEnabled: true,
 	ignoreAttachmentFolder: true,
 	deleteFilesAction: 'trash',
