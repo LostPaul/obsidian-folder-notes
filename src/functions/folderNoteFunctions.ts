@@ -62,12 +62,9 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		const folderNote = getFolderNote(plugin, folderPath)
 		removeCSSClassFromEL(folderNote?.path, 'is-folder-note');
 		const folder = plugin.app.vault.getAbstractFileByPath(folderPath) as TFolder;
-		console.log('folderNote', folderNote);
-		console.log('fileName', fileName)
 		if (!folderNote || folderNote.basename !== fileName) return;
 		let count = 1;
 		let newName = removeExtension(folderNote.path) + ` (${count}).${folderNote.path.split('.').pop()}`;
-		console.log(newName)
 		while (count < 100 && plugin.app.vault.getAbstractFileByPath(newName)) {
 			count++;
 			newName = removeExtension(folderNote.path) + ` (${count}).${folderNote.path.split('.').pop()}`;
@@ -90,7 +87,6 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	if (!existingNote) {
 		let content = '';
 		if (extension !== '.md') {
-			console.log('create 1')
 			if (plugin.settings.templatePath && folderNoteType.split('.').pop() == plugin.settings.templatePath.split('.').pop()) {
 				const templateFile = plugin.app.vault.getAbstractFileByPath(plugin.settings.templatePath);
 				if (templateFile instanceof TFile) {
@@ -114,8 +110,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 				content = '{}'
 			}
 		}
-		console.log('create 2')
-		console.log('path', path)
+
 		file = await plugin.app.vault.create(path, content);
 	} else {
 		file = existingNote;
@@ -150,8 +145,8 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 
 	const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
 	if (!(folder instanceof TFolder)) return;
-	addCSSClassToTitleEL(path, 'is-folder-note', true);
-	addCSSClassToTitleEL(folder.path, 'has-folder-note');
+	addCSSClassToTitleEL(plugin, path, 'is-folder-note', true);
+	addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
 }
 
 export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile, skipConfirmation?: boolean) {
@@ -196,8 +191,8 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 	}
 
 	await plugin.app.fileManager.renameFile(file, path);
-	addCSSClassToTitleEL(path, 'is-folder-note', true);
-	addCSSClassToTitleEL(folder.path, 'has-folder-note');
+	addCSSClassToTitleEL(plugin, path, 'is-folder-note', true);
+	addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
 
 	if (plugin.activeFolderDom) {
 		plugin.activeFolderDom.removeClass('fn-is-active');
@@ -209,7 +204,7 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 }
 
 export async function tempDisableSync(plugin: FolderNotesPlugin, folder: TFolder): Promise<[excludedFolder: ExcludedFolder | undefined,excludedFolderExisted: boolean, disabledSync: boolean]> {
-	let excludedFolder = getExcludedFolder(plugin, folder.path, false);
+	let excludedFolder = await getExcludedFolder(plugin, folder.path, false);
 	let excludedFolderExisted = true;
 	let disabledSync = false;
 
@@ -331,7 +326,6 @@ export function detachFolderNote(plugin: FolderNotesPlugin, file: TFile) {
 	excludedFolder.excludeFromFolderOverview = false;
 	excludedFolder.detached = true;
 	excludedFolder.detachedFilePath = file.path;
-	console.log('excludedFolder', excludedFolder);
 	addExcludedFolder(plugin, excludedFolder);
 }
 

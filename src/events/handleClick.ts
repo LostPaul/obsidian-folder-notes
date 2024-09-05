@@ -13,7 +13,7 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 
 	const folderPath = event.target.getAttribute('data-path');
 	if (!folderPath) { return; }
-	const excludedFolder = getExcludedFolder(plugin, folderPath, true);
+	const excludedFolder = await getExcludedFolder(plugin, folderPath, true);
 	if (excludedFolder?.disableFolderNote) {
 		event.target.onclick = null;
 		event.target.click();
@@ -38,7 +38,7 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 			await createFolderNote(plugin, folderPath, true, undefined, true);
-			addCSSClassToTitleEL(folderPath, 'has-folder-note');
+			addCSSClassToTitleEL(plugin, folderPath, 'has-folder-note');
 			removeCSSClassFromEL(folderPath, 'has-not-folder-note');
 			return;
 		}
@@ -59,7 +59,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 	const folderPath = event.target.parentElement?.getAttribute('data-path');
 	if (!folderPath) { return; }
 
-	const excludedFolder = getExcludedFolder(plugin, folderPath, true);
+	const excludedFolder = await getExcludedFolder(plugin, folderPath, true);
 	if (excludedFolder?.disableFolderNote) {
 		event.target.onclick = null;
 		event.target.click();
@@ -70,7 +70,6 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 	}
 
 	const folderNote = getFolderNote(plugin, folderPath);
-	console.log('folderNote', folderNote);
 
 	if (folderNote) {
 		if (plugin.settings.openByClick) {
@@ -87,7 +86,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 			await createFolderNote(plugin, folderPath, true, undefined, true);
-			addCSSClassToTitleEL(folderPath, 'has-folder-note');
+			addCSSClassToTitleEL(plugin, folderPath, 'has-folder-note');
 			removeCSSClassFromEL(folderPath, 'has-not-folder-note');
 			return;
 		}

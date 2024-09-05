@@ -53,7 +53,7 @@ export async function addObserver(plugin: FolderNotesPlugin) {
                         const breadcrumbs = element.parentElement?.querySelectorAll('span.view-header-breadcrumb');
                         if (!breadcrumbs) return;
                         let path = '';
-                        breadcrumbs.forEach((breadcrumb: HTMLElement) => {
+                        breadcrumbs.forEach(async (breadcrumb: HTMLElement) => {
                             if (breadcrumb.hasAttribute('old-name')) {
                                 path += breadcrumb.getAttribute('old-name') + '/';
                             } else {
@@ -66,7 +66,7 @@ export async function addObserver(plugin: FolderNotesPlugin) {
                                 breadcrumb.setAttribute('old-name', folder.name || '');
                                 breadcrumb.innerText = folder.newName || '';
                             }
-                            const excludedFolder = getExcludedFolder(plugin, folderPath, true)
+                            const excludedFolder = await getExcludedFolder(plugin, folderPath, true)
                             if (excludedFolder?.disableFolderNote) return;
                             const folderNote = getFolderNote(plugin, folderPath);
                             if (folderNote) {

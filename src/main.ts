@@ -15,7 +15,7 @@ import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
 import { addCSSClassToTitleEL, getEl, loadFileClasses, removeCSSClassFromEL } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import { ClipBoardManager } from 'obsidian-typings'
+import { ClipBoardManager, FileExplorerView, InternalPlugin, InternalPluginName, InternalPlugins } from 'obsidian-typings'
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -28,6 +28,10 @@ export default class FolderNotesPlugin extends Plugin {
 	hoverLinkTriggered = false;
 	tabManager: TabManager;
 	settingsOpened = false;
+
+	private fileExplorerPlugin!: InternalPlugin;
+	private fileExplorerView!: FileExplorerView;
+
 	async onload() {
 		console.log('loading folder notes plugin');
 		await this.loadSettings();
@@ -51,43 +55,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 		new Commands(this.app, this).registerCommands();
 
-		this.app.workspace.onLayoutReady(() => {
-			if (this.settings.frontMatterTitle.enabled) {
-				this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
-			}
-			this.tabManager = new TabManager(this);
-			this.tabManager.updateTabs();
-
-			const view = this.app.workspace.getLeavesOfType('markdown')[0]?.view;
-			if (!view) { return; }
-			const plugin = this;
-			// @ts-ignore
-			const originalHandleDragOver = view.editMode.clipboardManager.constructor.prototype.handleDragOver;
-			// @ts-ignore
-			view.editMode.clipboardManager.constructor.prototype.handleDragOver = function (evt, ...args) {
-				const { draggable } = plugin.app.dragManager;
-				if (draggable && draggable.file instanceof TFolder && getFolderNote(plugin, draggable.file.path)) {
-					plugin.app.dragManager.setAction(window.i18next.t("interface.drag-and-drop.insert-link-here"));
-				} else {
-					originalHandleDragOver.call(this, evt, ...args);
-				}
-			};
-
-			// @ts-ignore
-			const originalHandleDrop = view.editMode.clipboardManager.constructor.prototype.handleDrop;
-			// @ts-ignore
-			view.editMode.clipboardManager.constructor.prototype.handleDrop = function (evt, ...args) {
-				const { draggable } = plugin.app.dragManager;
-				if (draggable && draggable.file instanceof TFolder && getFolderNote(plugin, draggable.file.path)) {
-					const folderNote = getFolderNote(plugin, draggable.file.path);
-					if (draggable?.type === "folder" && draggable.file instanceof TFolder && folderNote) {
-						draggable.file = folderNote;
-						draggable.type = "file";
-					}
-				}
-				return originalHandleDrop.call(this, evt, ...args);
-			}
-		});
+		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
 
 		await addObserver(this);
 
@@ -166,6 +134,48 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 	}
 
+	onLayoutReady() {
+		if (this.settings.frontMatterTitle.enabled) {
+			this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
+		}
+		this.tabManager = new TabManager(this);
+		this.tabManager.updateTabs();
+
+		const view = this.app.workspace.getLeavesOfType('markdown')[0]?.view;
+		if (!view) { return; }
+		const plugin = this;
+		// @ts-ignore
+		const originalHandleDragOver = view.editMode.clipboardManager.constructor.prototype.handleDragOver;
+		// @ts-ignore
+		view.editMode.clipboardManager.constructor.prototype.handleDragOver = function (evt, ...args) {
+			const { draggable } = plugin.app.dragManager;
+			if (draggable && draggable.file instanceof TFolder && getFolderNote(plugin, draggable.file.path)) {
+				plugin.app.dragManager.setAction(window.i18next.t("interface.drag-and-drop.insert-link-here"));
+			} else {
+				originalHandleDragOver.call(this, evt, ...args);
+			}
+		};
+
+		// @ts-ignore
+		const originalHandleDrop = view.editMode.clipboardManager.constructor.prototype.handleDrop;
+		// @ts-ignore
+		view.editMode.clipboardManager.constructor.prototype.handleDrop = function (evt, ...args) {
+			const { draggable } = plugin.app.dragManager;
+			if (draggable && draggable.file instanceof TFolder && getFolderNote(plugin, draggable.file.path)) {
+				const folderNote = getFolderNote(plugin, draggable.file.path);
+				if (draggable?.type === "folder" && draggable.file instanceof TFolder && folderNote) {
+					draggable.file = folderNote;
+					draggable.type = "file";
+				}
+			}
+			return originalHandleDrop.call(this, evt, ...args);
+		}
+
+		const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
+
+		
+	}
+
 
 	handleOverviewBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 		const observer = new MutationObserver(() => {
@@ -184,8 +194,16 @@ export default class FolderNotesPlugin extends Plugin {
 			subtree: true,
 		});
 		try {
-			const folderOverview = new FolderOverview(this, ctx, source, el);
-			folderOverview.create(this, parseYaml(source), el, ctx);
+			if (this.app.workspace.layoutReady) {
+				const folderOverview = new FolderOverview(this, ctx, source, el);
+				folderOverview.create(this, parseYaml(source), el, ctx);
+			} else {
+				this.app.workspace.onLayoutReady(() => {
+					console.log('layout ready');
+					const folderOverview = new FolderOverview(this, ctx, source, el);
+					folderOverview.create(this, parseYaml(source), el, ctx);
+				});
+			}
 		} catch (e) {
 			new Notice('Error creating folder overview (folder notes plugin) - check console for more details');
 			console.error(e);

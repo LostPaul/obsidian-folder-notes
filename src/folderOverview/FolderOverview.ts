@@ -5,7 +5,7 @@ import { FolderOverviewSettings } from './ModalSettings';
 import { getExcludedFolder } from '../ExcludeFolders/functions/folderFunctions';
 import { getFolderPathFromString } from '../functions/utils';
 import { getEl } from 'src/functions/styleFunctions';
-import { renderFileExplorer } from './FileExplorer';
+import { FileExplorerOverview } from './FileExplorer';
 import { renderListOverview } from './ListStyle';
 import NewFolderNameModal from 'src/modals/NewFolderName';
 import { CustomEventEmitter } from 'src/events/EventEmitter';
@@ -46,7 +46,7 @@ export class FolderOverview {
     root: HTMLElement;
     listEl: HTMLUListElement;
 
-    private eventListeners: (() => void)[] = [];
+    eventListeners: (() => void)[] = [];
     constructor(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, source: string, el: HTMLElement) {
         this.emitter = new CustomEventEmitter();
         let yaml: yamlSettings = parseYaml(source);
@@ -216,11 +216,12 @@ export class FolderOverview {
         } else if (this.yaml.style === 'list') {
             renderListOverview(plugin, ctx, root, this.yaml, this.pathBlacklist, this);
         } else if (this.yaml.style === 'explorer') {
+            const fileExplorerOverview = new FileExplorerOverview(plugin, ctx, root, this.yaml, this.pathBlacklist, this);
             if (this.plugin.app.workspace.layoutReady) {
-                renderFileExplorer(plugin, ctx, root, this.yaml, this.pathBlacklist, this);
+                fileExplorerOverview.renderFileExplorer();
             } else {
                 this.plugin.app.workspace.onLayoutReady(() => {
-                    renderFileExplorer(plugin, ctx, root, this.yaml, this.pathBlacklist, this);
+                    fileExplorerOverview.renderFileExplorer();
                 });
             }
         }
@@ -256,12 +257,12 @@ export class FolderOverview {
     }
 
     filterFiles(files: TAbstractFile[], plugin: FolderNotesPlugin, sourceFolderPath: string, depth: number, pathBlacklist: string[]) {
-        return files.filter((file) => {
+        return files.filter(async (file) => {
             if (pathBlacklist.includes(file.path) && !this.yaml.showFolderNotes) { return false; }
             const folderPath = getFolderPathFromString(file.path);
             if (!folderPath.startsWith(sourceFolderPath) && sourceFolderPath !== '/') { return false; }
             if (file.path === this.sourceFilePath) { return false; }
-            const excludedFolder = getExcludedFolder(plugin, file.path, true);
+            const excludedFolder = await getExcludedFolder(plugin, file.path, true);
             if (excludedFolder?.excludeFromFolderOverview) { return false; }
             if ((file.path.split('/').length - sourceFolderPath.split('/').length) - 1 < depth) {
                 return true;
@@ -355,7 +356,7 @@ export class FolderOverview {
         fileMenu.addSeparator();
 
         fileMenu.addItem((item) => {
-            item.setTitle('Rename');
+            item.setTitle(window.i18next.t("plugins.file-explorer.menu-opt-rename"));
             item.setIcon('pencil');
             item.onClick(async () => {
                 plugin.app.fileManager.promptForFileRename(file)
@@ -363,7 +364,7 @@ export class FolderOverview {
         });
 
         fileMenu.addItem((item) => {
-            item.setTitle('Delete');
+            item.setTitle(window.i18next.t("plugins.file-explorer.menu-opt-delete"));
             item.setIcon('trash');
             item.dom.addClass('is-warning');
             item.dom.setAttribute('data-section', 'danger')
@@ -406,6 +407,13 @@ export class FolderOverview {
         plugin.app.workspace.trigger('file-menu', folderMenu, folder, "folder-overview-folder-context-menu", null);
         folderMenu.showAtPosition({ x: e.pageX, y: e.pageY });
     }
+
+    getElFromOverview(path: string): HTMLElement | null {
+        const el = this.listEl.querySelector(`[data-path="${path}"]`) as HTMLElement | null;
+        return el;
+    }
+
+
 }
 
 export async function updateYaml(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, el: HTMLElement, yaml: yamlSettings) {

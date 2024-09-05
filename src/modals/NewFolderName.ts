@@ -22,7 +22,6 @@ export default class NewFolderNameModal extends Modal {
 
         this.modalEl.classList.add('mod-file-rename')
         const modalTitle = this.modalEl.querySelector('div.modal-title')
-        console.log(modalTitle)
         if (modalTitle) {
             modalTitle.textContent = 'Folder title'
         }

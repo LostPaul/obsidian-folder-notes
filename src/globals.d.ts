@@ -1,17 +1,6 @@
 import { Plugin, TAbstractFile, View, WorkspaceLeaf } from 'obsidian';
 
 declare module 'obsidian' {
-	interface App {
-		internalPlugins: {
-			plugins: {
-				[pluginId: string]: Plugin & {
-					[pluginImplementations: string]: unknown;
-				};
-			};
-			enablePlugin: (id: string) => Promise<void>;
-			disablePlugin: (id: string) => Promise<void>;
-		};
-	}
 	interface Setting {
 		createList: (list: ListComponent | ((list: ListComponent) => void)) => ListComponent;
 	}

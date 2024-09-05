@@ -4,10 +4,11 @@ import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, 
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString } from './functions/utils';
 import { getExcludedFolderByPattern } from './ExcludeFolders/functions/patternFunctions';
-import { getDetachedFolder, getExcludedFolder, getExcludedFoldersByPath } from './ExcludeFolders/functions/folderFunctions';
+import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder, getExcludedFoldersByPath, updateExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSettings'
 import { ExcludePattern } from './ExcludeFolders/ExcludePattern';
 import PatternSettings from './ExcludeFolders/modals/PatternSettings';
+import { loadFolderClasses } from './functions/styleFunctions';
 
 export class Commands {
 	plugin: FolderNotesPlugin;
@@ -34,6 +35,7 @@ export class Commands {
 				turnIntoFolderNote(this.plugin, file, folder, folderNote);
 			}
 		});
+
 		this.plugin.addCommand({
 			id: 'create-folder-note',
 			name: 'Create folder note with a new folder for the active note in the current folder',
@@ -58,6 +60,7 @@ export class Commands {
 				this.plugin.saveSettings();
 			}
 		})
+
 		this.plugin.addCommand({
 			id: 'create-folder-note-for-current-folder',
 			name: 'Create markdown folder note for current folder of active note',
@@ -199,7 +202,7 @@ export class Commands {
 	}
 
 	fileCommands() {
-		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
+		this.plugin.registerEvent(this.app.workspace.on('file-menu', async (menu: Menu, file: TAbstractFile) => {
 			let folder: TAbstractFile | TFolder | null = file.parent;
 			if (file instanceof TFile) {
 				if (this.plugin.settings.storageLocation === 'insideFolder') {
@@ -217,14 +220,14 @@ export class Commands {
 
 				if (folder instanceof TFolder) {
 					const folderNote = getFolderNote(this.plugin, folder.path);
-					const excludedFolder = getExcludedFolder(this.plugin, folder.path, true)
+					const excludedFolder = await getExcludedFolder(this.plugin, folder.path, true)
 					if (folderNote?.path === file.path && !excludedFolder?.detached) { return; }
 				} else if (file.parent instanceof TFolder) {
 					folder = file.parent;
 				}
 			}
 
-			menu.addItem((item) => {
+			menu.addItem(async (item) => {
 				if (Platform.isDesktop && !Platform.isTablet && this.plugin.settings.useSubmenus) {
 					item
 						.setTitle('Folder Note Commands')
@@ -276,10 +279,10 @@ export class Commands {
 					});
 				}
 				if (!(file instanceof TFolder)) return;
-				const excludedFolder = getExcludedFolder(this.plugin, file.path, false)
+				const excludedFolder = await getExcludedFolder(this.plugin, file.path, false)
 				const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path)
-				
-				if (excludedFolder) {
+
+				if (excludedFolder && !excludedFolder.hideNote) {
 					// I'm not sure if I'm ever going to add this because of the possibility that a folder got more than one excluded
 					// subMenu.addItem((item) => {
 					// 	item.setTitle('Manage excluded folder')
@@ -339,7 +342,6 @@ export class Commands {
 						item.setTitle('Detach folder note')
 							.setIcon('unlink')
 							.onClick(() => {
-								console.log('folderNote', folderNote)
 								detachFolderNote(this.plugin, folderNote);
 							});
 					});
@@ -352,6 +354,39 @@ export class Commands {
 								this.app.copyObsidianUrl(folderNote);
 							});
 					});
+
+					if (this.plugin.settings.hideFolderNote) {
+						if (excludedFolder?.hideNote) {
+							subMenu.addItem((item) => {
+								item.setTitle('Hide folder note in explorer')
+									.setIcon('eye-off')
+									.onClick(() => {
+										this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter(
+											(folder) => (folder.path !== file.path) && folder.hideNote);
+										this.plugin.saveSettings(false);
+										loadFolderClasses(true, file, this.plugin);
+									});
+							});
+						} else {
+							subMenu.addItem((item) => {
+								item.setTitle('Show folder note in explorer')
+									.setIcon('eye')
+									.onClick(() => {
+										const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length, undefined, this.plugin);
+										excludedFolder.hideNote = true;
+										excludedFolder.subFolders = false;
+										excludedFolder.disableSync = false;
+										excludedFolder.disableAutoCreate = false;
+										excludedFolder.disableFolderNote = false;
+										excludedFolder.enableCollapsing = false;
+										excludedFolder.excludeFromFolderOverview = false;
+										excludedFolder.hideInSettings = true;
+										addExcludedFolder(this.plugin, excludedFolder, false);
+										loadFolderClasses(true, file, this.plugin);
+									});
+							});
+						}
+					}
 
 				} else {
 					subMenu.addItem((item) => {

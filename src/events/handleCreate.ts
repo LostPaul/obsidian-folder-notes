@@ -4,13 +4,13 @@ import { createFolderNote, getFolder, getFolderNote } from 'src/functions/folder
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { removeCSSClassFromEL, addCSSClassToTitleEL } from 'src/functions/styleFunctions';
 
-export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
+export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (!plugin.app.workspace.layoutReady) return;
 
     const folder = file.parent;
     if (folder instanceof TFolder) {
         if (plugin.isEmptyFolderNoteFolder(folder)) {
-            addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
+            addCSSClassToTitleEL(plugin, folder.path, 'only-has-folder-note');
         } else {
             removeCSSClassFromEL(folder.path, 'only-has-folder-note');
         }
@@ -22,8 +22,8 @@ export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
         const folderNote = getFolderNote(plugin, folder.path);
 
         if (folderNote && folderNote.path === file.path) {
-            addCSSClassToTitleEL(folder.path, 'has-folder-note');
-            addCSSClassToTitleEL(file.path, 'is-folder-note');
+            addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
+            addCSSClassToTitleEL(plugin, file.path, 'is-folder-note');
             return;
         }
 
@@ -45,12 +45,12 @@ export function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
         openFile = false;
     }
 
-    const excludedFolder = getExcludedFolder(plugin, file.path, true);
+    const excludedFolder = await getExcludedFolder(plugin, file.path, true);
     if (excludedFolder?.disableAutoCreate) return;
 
     const folderNote = getFolderNote(plugin, file.path);
     if (folderNote) return;
 
     createFolderNote(plugin, file.path, openFile, undefined, true);
-    addCSSClassToTitleEL(file.path, 'has-folder-note');
+    addCSSClassToTitleEL(plugin, file.path, 'has-folder-note');
 }
