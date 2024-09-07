@@ -11,7 +11,7 @@ export enum FileSuggestMode {
 export class FolderSuggest extends TextInputSuggest<TFolder> {
 	constructor(
         public inputEl: HTMLInputElement,
-        private plugin: FolderNotesPlugin,
+        plugin: FolderNotesPlugin,
 		public folder?: TFolder,
 	) {
 		super(inputEl);

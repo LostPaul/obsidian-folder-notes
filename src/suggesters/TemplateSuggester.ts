@@ -12,7 +12,7 @@ export enum FileSuggestMode {
 export class TemplateSuggest extends TextInputSuggest<TFile> {
 	constructor(
         public inputEl: HTMLInputElement,
-        private plugin: FolderNotesPlugin
+        plugin: FolderNotesPlugin
 	) {
 		super(inputEl);
 	}
