@@ -15,7 +15,7 @@ import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
 import { addCSSClassToTitleEL, getEl, loadFileClasses, removeCSSClassFromEL } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import { ClipBoardManager, FileExplorerView, InternalPlugin, InternalPluginName, InternalPlugins } from 'obsidian-typings'
+import { ClipBoardManager, FileExplorerView, InternalPlugin, InternalPlugins } from 'obsidian-typings'
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -171,7 +171,7 @@ export default class FolderNotesPlugin extends Plugin {
 			return originalHandleDrop.call(this, evt, ...args);
 		}
 
-		const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
+		// const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
 
 		
 	}
