@@ -85,11 +85,6 @@ export default class FolderNotesPlugin extends Plugin {
 			this.hoverLinkTriggered = true;
 		});
 
-		this.registerEvent(this.app.workspace.on('layout-change', () => {
-			loadFileClasses(undefined, this);
-			this.tabManager?.updateTabs();
-		}));
-
 		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
 			handleCreate(file, this);
 		}));
@@ -125,8 +120,18 @@ export default class FolderNotesPlugin extends Plugin {
 
 		if (this.app.workspace.layoutReady) {
 			loadFileClasses(undefined, this);
+			this.registerEvent(this.app.workspace.on('layout-change', () => {
+				loadFileClasses(undefined, this);
+				this.tabManager?.updateTabs();
+			}));
 		} else {
-			this.app.workspace.onLayoutReady(async () => loadFileClasses(undefined, this));
+			this.app.workspace.onLayoutReady(async () => {
+				loadFileClasses(undefined, this)
+				this.registerEvent(this.app.workspace.on('layout-change', () => {
+					loadFileClasses(undefined, this);
+					this.tabManager?.updateTabs();
+				}));
+			});
 		}
 	}
 
@@ -260,7 +265,7 @@ export default class FolderNotesPlugin extends Plugin {
 				delete data.allowWhitespaceCollapsing;
 			}
 		}
-		
+
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 		if (!data) { return; }
 		const overview = (data as any).defaultOverview;

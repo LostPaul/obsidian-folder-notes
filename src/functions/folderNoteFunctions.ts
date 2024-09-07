@@ -191,7 +191,6 @@ export async function deleteFolderNote(plugin: FolderNotesPlugin, file: TFile, d
 			await plugin.app.vault.trash(file, true);
 			break;
 		case 'obsidianTrash':
-			console.log('obsidianTrash');
 			await plugin.app.vault.trash(file, false);
 			break;
 		case 'delete':
