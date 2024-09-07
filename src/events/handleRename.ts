@@ -45,19 +45,57 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 
 
 export function handleFolderMove(file: TFolder, oldPath: string, plugin: FolderNotesPlugin) {
-
+	// Soon
+	// Will be useful to move folder notes along with the folder
+	// When the folder note is in the parent folder
 }
 
-export function handleFileMove(file: TFile, oldPath: string, plugin: FolderNotesPlugin) {
+export async function handleFileMove(file: TFile, oldPath: string, plugin: FolderNotesPlugin) {
+	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename) || file.basename;
+	const oldFileName = removeExtension(getFileNameFromPathString(oldPath));
+	const newFolder = getFolderNoteFolder(plugin, file, file.basename);
+	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
+	let excludedFolder = await getExcludedFolder(plugin, newFolder?.path || '', true);
+	const oldFolder = getFolderNoteFolder(plugin, oldPath, oldFileName);
 
+	// file has been moved into position where it can be a folder note!
+	if (folderName === newFolder?.name && folderNote) {
+		let excludedFolderExisted = true;
+		let disabledSync = false;
+
+		if (!excludedFolder) {
+			excludedFolderExisted = false;
+			excludedFolder = new ExcludedFolder(oldFolder?.path || '', plugin.settings.excludeFolders.length, undefined, plugin);
+			addExcludedFolder(plugin, excludedFolder);
+		} else if (!excludedFolder.disableSync) {
+			disabledSync = false;
+			excludedFolder.disableSync = true;
+			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
+		}
+		return plugin.app.fileManager.renameFile(file, oldPath).then(() => {
+			if (!excludedFolder) { return; }
+			if (!excludedFolderExisted) {
+				deleteExcludedFolder(plugin, excludedFolder);
+			} else if (!disabledSync) {
+				excludedFolder.disableSync = false;
+				updateExcludedFolder(plugin, excludedFolder, excludedFolder);
+			}
+		});
+	} else if (oldFolder && oldFolder.name === oldFileName && newFolder?.path !== oldFolder.path) {
+		// the note has been moved somewhere and is no longer a folder note
+		// cleanup css on the folder and note
+		removeCSSClassFromEL(oldFolder.path, 'has-folder-note');
+		removeCSSClassFromEL(file.path, 'is-folder-note');
+		removeCSSClassFromEL(oldPath, 'is-folder-note');
+	}
 }
 
 export async function handleFolderRename(file: TFolder, oldPath: string, plugin: FolderNotesPlugin) {
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', file.name);
 	const oldFileName = plugin.settings.folderNoteName.replace('{{folder_name}}', getFileNameFromPathString(oldPath));
-	// console.log(fileName)
-	// console.log(oldFileName)
-	// if (fileName === oldFileName) { return; }
+
+	if (fileName === oldFileName) { return; }
+
 
 	const folderNote = getFolderNote(plugin, oldPath);
 	if (!(folderNote instanceof TFile)) return;
@@ -104,8 +142,6 @@ export async function handleFileRename(file: TFile, oldPath: string, plugin: Fol
 	const detachedExcludedFolder = getDetachedFolder(plugin, newFolder?.path || '')
 	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
 
-
-
 	if (!excludedFolder?.disableFolderNote && folderName === newFolder?.name && !detachedExcludedFolder) {
 		addCSSClassToTitleEL(plugin, file.path, 'is-folder-note');
 		addCSSClassToTitleEL(plugin, newFolder.path, 'has-folder-note');
@@ -117,31 +153,7 @@ export async function handleFileRename(file: TFile, oldPath: string, plugin: Fol
 
 	if (excludedFolder?.disableSync || !plugin.settings.syncFolderName) { return; }
 
-	// file has been moved into position where it can be a folder note!
-	if (folderName === newFolder?.name && folderNote) {
-		new Notice('Folder with same name already exists!');
-		let excludedFolderExisted = true;
-		let disabledSync = false;
 
-		if (!excludedFolder) {
-			excludedFolderExisted = false;
-			excludedFolder = new ExcludedFolder(oldFolder?.path || '', plugin.settings.excludeFolders.length, undefined, plugin);
-			addExcludedFolder(plugin, excludedFolder);
-		} else if (!excludedFolder.disableSync) {
-			disabledSync = false;
-			excludedFolder.disableSync = true;
-			updateExcludedFolder(plugin, excludedFolder, excludedFolder);
-		}
-		return plugin.app.fileManager.renameFile(file, oldPath).then(() => {
-			if (!excludedFolder) { return; }
-			if (!excludedFolderExisted) {
-				deleteExcludedFolder(plugin, excludedFolder);
-			} else if (!disabledSync) {
-				excludedFolder.disableSync = false;
-				updateExcludedFolder(plugin, excludedFolder, excludedFolder);
-			}
-		});
-	}
 	if (folderName === newFolder?.name) {
 		addCSSClassToTitleEL(plugin, file.path, 'is-folder-note');
 		removeCSSClassFromEL(oldFolder?.path, 'has-folder-note');
@@ -157,14 +169,6 @@ export async function handleFileRename(file: TFile, oldPath: string, plugin: Fol
 		return renameFolderOnFileRename(file, oldPath, oldFolder, plugin);
 	} else if (folderNote && oldFolderName === oldFolder.name) {
 		return renameFolderOnFileRename(file, oldPath, oldFolder, plugin);
-	}
-
-	// the note has been moved somewhere and is no longer a folder note
-	// cleanup css on the folder and note
-	if (oldFolder.name === oldFileName && newFolder?.path !== oldFolder.path) {
-		removeCSSClassFromEL(oldFolder.path, 'has-folder-note');
-		removeCSSClassFromEL(file.path, 'is-folder-note');
-		removeCSSClassFromEL(oldPath, 'is-folder-note');
 	}
 }
 

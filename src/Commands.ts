@@ -281,7 +281,6 @@ export class Commands {
 				if (!(file instanceof TFolder)) return;
 				const excludedFolder = await getExcludedFolder(this.plugin, file.path, false)
 				const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path)
-
 				if (excludedFolder && !excludedFolder.hideNote) {
 					// I'm not sure if I'm ever going to add this because of the possibility that a folder got more than one excluded
 					// subMenu.addItem((item) => {
@@ -308,6 +307,16 @@ export class Commands {
 							});
 					});
 					return;
+				}
+				if (detachedExcludedFolder) {
+					subMenu.addItem((item) => {
+						item.setTitle('Remove folder from detached folders')
+							.setIcon('trash')
+							.onClick(() => {
+								deleteExcludedFolder(this.plugin, detachedExcludedFolder);
+							});
+					});
+					// return;
 				}
 				subMenu.addItem((item) => {
 					item.setTitle('Exclude folder from folder notes')

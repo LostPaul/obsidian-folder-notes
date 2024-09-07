@@ -127,7 +127,7 @@ export async function addCSSClassToTitleEL(plugin: FolderNotesPlugin | undefined
     });
 }
 
-export function removeCSSClassFromEL(path: string | undefined, cssClass: string) {
+export async function removeCSSClassFromEL(path: string | undefined, cssClass: string) {
     if (!path) return;
     const fileExplorerItem = getEl(path);
     const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);

@@ -17,22 +17,27 @@ export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugi
     }
 
     if (file instanceof TFile) {
-        const folder = getFolder(plugin, file);
-        if (!(folder instanceof TFolder)) { return; }
-        const folderNote = getFolderNote(plugin, folder.path);
-
-        if (folderNote && folderNote.path === file.path) {
-            addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
-            addCSSClassToTitleEL(plugin, file.path, 'is-folder-note');
-            return;
-        }
-
+        handleFileCreation(file, plugin);
+    } else if (file instanceof TFolder && plugin.settings.autoCreate) {
+        handleFolderCreation(file, plugin);
     }
-    if (!plugin.app.workspace.layoutReady) return;
+}
 
-    if (!(file instanceof TFolder)) return;
+async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin) {
+    const folder = getFolder(plugin, file);
+    if (!(folder instanceof TFolder)) { return; }
+    const detachedFolder = await getExcludedFolder(plugin, folder.path, true);
+    if (detachedFolder) { return; }
+    const folderNote = getFolderNote(plugin, folder.path);
 
-    if (!plugin.settings.autoCreate) return;
+    if (folderNote && folderNote.path === file.path) {
+        addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
+        addCSSClassToTitleEL(plugin, file.path, 'is-folder-note');
+        return;
+    }
+}
+
+async function handleFolderCreation(folder: TFolder, plugin: FolderNotesPlugin) {
     let openFile = plugin.settings.autoCreateFocusFiles;
 
     const attachmentFolderPath = plugin.app.vault.getConfig('attachmentFolderPath') as string;
@@ -40,17 +45,17 @@ export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugi
     const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
 
     if (!plugin.settings.autoCreateForAttachmentFolder) {
-        if (!attachmentsAreInRootFolder && cleanAttachmentFolderPath === file.name) return;
-    } else if (!attachmentsAreInRootFolder && cleanAttachmentFolderPath === file.name) {
+        if (!attachmentsAreInRootFolder && cleanAttachmentFolderPath === folder.name) return;
+    } else if (!attachmentsAreInRootFolder && cleanAttachmentFolderPath === folder.name) {
         openFile = false;
     }
 
-    const excludedFolder = await getExcludedFolder(plugin, file.path, true);
+    const excludedFolder = await getExcludedFolder(plugin, folder.path, true);
     if (excludedFolder?.disableAutoCreate) return;
 
-    const folderNote = getFolderNote(plugin, file.path);
+    const folderNote = getFolderNote(plugin, folder.path);
     if (folderNote) return;
 
-    createFolderNote(plugin, file.path, openFile, undefined, true);
-    addCSSClassToTitleEL(plugin, file.path, 'has-folder-note');
+    createFolderNote(plugin, folder.path, openFile, undefined, true);
+    addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
 }

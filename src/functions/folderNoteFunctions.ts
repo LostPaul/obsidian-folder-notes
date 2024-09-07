@@ -26,21 +26,24 @@ tags: [excalidraw]
 \`\`\`
 %%`;
 
-export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, extension?: string, useModal?: boolean, existingNote?: TFile) {
+export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, extension?: string, displayModal?: boolean, preexistingNote?: TFile) {
 	const leaf = plugin.app.workspace.getLeaf(false);
 	const folderName = getFolderNameFromPathString(folderPath);
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
+	let folderNote = getFolderNote(plugin, folderPath)
+	if (preexistingNote) {
+		folderNote = preexistingNote;
+	}
 	let folderNoteType = extension ?? plugin.settings.folderNoteType;
 	const detachedFolder = getDetachedFolder(plugin, folderPath)
+	let path = '';
 
 	if (folderNoteType === '.excalidraw') {
 		folderNoteType = '.md';
 		extension = '.excalidraw';
 	} else if (folderNoteType === '.ask') {
-		return new AskForExtensionModal(plugin, folderPath, openFile, folderNoteType, useModal, existingNote).open();
+		return new AskForExtensionModal(plugin, folderPath, openFile, folderNoteType, displayModal, preexistingNote).open();
 	}
-
-	let path = '';
 
 	if (plugin.settings.storageLocation === 'parentFolder') {
 		const parentFolderPath = getFolderPathFromString(folderPath);
@@ -55,12 +58,9 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		path = `${folderPath}/${fileName}${folderNoteType}`;
 	}
 
-	let file: TFile;
-
-	if (detachedFolder) {
+	if (detachedFolder && folderNote?.extension !== extension && folderNote) {
 		deleteExcludedFolder(plugin, detachedFolder);
-		const folderNote = getFolderNote(plugin, folderPath)
-		removeCSSClassFromEL(folderNote?.path, 'is-folder-note');
+		await removeCSSClassFromEL(folderNote?.path, 'is-folder-note');
 		const folder = plugin.app.vault.getAbstractFileByPath(folderPath) as TFolder;
 		if (!folderNote || folderNote.basename !== fileName) return;
 		let count = 1;
@@ -80,11 +80,9 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 				updateExcludedFolder(plugin, excludedFolder, excludedFolder);
 			}
 		});
-
-
 	}
 
-	if (!existingNote) {
+	if (!folderNote) {
 		let content = '';
 		if (extension !== '.md') {
 			if (plugin.settings.templatePath && folderNoteType.split('.').pop() == plugin.settings.templatePath.split('.').pop()) {
@@ -97,9 +95,9 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 						}
 					} else {
 						return plugin.app.vault.readBinary(templateFile).then(async (data) => {
-							file = await plugin.app.vault.createBinary(path, data);
+							folderNote = await plugin.app.vault.createBinary(path, data);
 							if (openFile) {
-								await leaf.openFile(file);
+								await leaf.openFile(folderNote);
 							}
 						});
 					}
@@ -111,12 +109,9 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 			}
 		}
 
-		file = await plugin.app.vault.create(path, content);
+		folderNote = await plugin.app.vault.create(path, content);
 	} else {
-		file = existingNote;
-		await plugin.app.fileManager.renameFile(existingNote, path).then(() => {
-			file = existingNote;
-		});
+		await plugin.app.fileManager.renameFile(folderNote, path)
 	}
 
 	if (openFile) {
@@ -126,21 +121,21 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 				plugin.activeFolderDom = null;
 			}
 
-			const folder = getFolder(plugin, file);
+			const folder = getFolder(plugin, folderNote);
 			if (!folder) { return; }
 
 			plugin.activeFolderDom = getEl(folder.path);
 			if (plugin.activeFolderDom) plugin.activeFolderDom.addClass('fn-is-active');
 		}
-		await leaf.openFile(file);
+		await leaf.openFile(folderNote);
 		if (plugin.settings.folderNoteType === '.excalidraw' || extension === '.excalidraw') {
 			openExcalidrawView(leaf);
 		}
 	}
 
 	const matchingExtension = extension?.split('.').pop() == plugin.settings.templatePath.split('.').pop();
-	if (file && !existingNote && matchingExtension && plugin.settings.folderNoteType !== '.excalidraw') {
-		applyTemplate(plugin, file, leaf, plugin.settings.templatePath);
+	if (folderNote && matchingExtension && plugin.settings.folderNoteType !== '.excalidraw') {
+		applyTemplate(plugin, folderNote, leaf, plugin.settings.templatePath);
 	}
 
 	const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
