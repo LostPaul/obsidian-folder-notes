@@ -14,13 +14,11 @@ jobs:
       - name: Checkout current branch
         uses: actions/checkout@v3
         with:
+          # This checks out the branch that triggered the workflow
           ref: ${{ github.ref }}
 
-      - name: Fetch main branch
-        run: git fetch origin main
-
-      - name: Checkout main branch
-        run: git checkout main
+      - name: Fetch all branches
+        run: git fetch --all
 
       - name: Extract version from tag
         id: extract_version
@@ -44,7 +42,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add manifest-beta.json
           git commit -m "Update manifest-beta.json to version $VERSION"
-          git push origin main
+          git push origin ${{ github.ref_name }}
 
       - name: npm build
         run: |
