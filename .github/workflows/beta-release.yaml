@@ -11,10 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout beta branch
+      - name: Checkout current branch
         uses: actions/checkout@v3
         with:
-          ref: beta
+          ref: ${{ github.ref }}
 
       - name: Fetch main branch
         run: git fetch origin main

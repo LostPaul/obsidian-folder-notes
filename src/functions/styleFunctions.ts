@@ -3,6 +3,7 @@ import FolderNotesPlugin from 'src/main';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getFileExplorer } from './utils';
+import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 
 export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) {
     if (plugin.activeFileExplorer === getFileExplorer() && !forceReload) { return; }
@@ -35,36 +36,48 @@ export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) 
     });
 }
 
-export function addCSSClassesToBothFolderAndNote(file: TFile, folder: TFolder) {
-    this.addCSSClassToFolderNote(file);
-    this.addCSSClassesToFolder(folder);
+export function applyCSSClassesToFolder(folderPath: string, plugin: FolderNotesPlugin) {
+    const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
+    if (!folder || !(folder instanceof TFolder)) { return; }
+    const excludedFolder = getExcludedFolder(plugin, folder.path);
+    if (excludedFolder?.disableFolderNote) {
+        return;
+    }
+    const folderNote = getFolderNote(plugin, folder.path);
+    if (!folderNote) { return; }
+    addCSSClassesToBothFolderAndNote(folderNote, folder, plugin);
+}
+
+export function addCSSClassesToBothFolderAndNote(file: TFile, folder: TFolder, plugin: FolderNotesPlugin) {
+    addCSSClassToFolderNote(file);
+    addCSSClassesToFolder(folder, plugin);
 }
 
 export function removeCSSClassesFromBothFolderAndNote(folder: TFolder, file: TFile) {
-    this.removeCSSClassFromFolderNote(file);
-    this.removeCSSClassesFromFolder(folder);
+    removeCSSClassFromFolderNote(file);
+    removeCSSClassesFromFolder(folder);
 }
 
-export function addCSSClassesToFolder(folder: TFolder) {
-    this.addCSSClassToTitleEL(folder.path, 'has-folder-note');
-    if (this.isEmptyFolderNoteFolder(folder)) {
-        this.addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
+export function addCSSClassesToFolder(folder: TFolder, plugin: FolderNotesPlugin) {
+    addCSSClassToTitleEL(folder.path, 'has-folder-note');
+    if (plugin.isEmptyFolderNoteFolder(folder)) {
+        addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
     } else {
-        this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+        removeCSSClassFromEL(folder.path, 'only-has-folder-note');
     }
 }
 
 export function addCSSClassToFolderNote(file: TFile) {
-    this.addCSSClassToTitleEL(file.path, 'is-folder-note');
+    addCSSClassToTitleEL(file.path, 'is-folder-note');
 }
 
 export function removeCSSClassFromFolderNote(file: TFile) {
-    this.removeCSSClassFromEL(file.path, 'is-folder-note');
+    removeCSSClassFromEL(file.path, 'is-folder-note');
 }
 
 export function removeCSSClassesFromFolder(folder: TFolder) {
-    this.removeCSSClassFromEL(folder.path, 'has-folder-note');
-    this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+    removeCSSClassFromEL(folder.path, 'has-folder-note');
+    removeCSSClassFromEL(folder.path, 'only-has-folder-note');
 }
 
 export async function addCSSClassToTitleEL(path: string, cssClass: string, waitForCreate = false, count = 0) {
@@ -76,7 +89,7 @@ export async function addCSSClassToTitleEL(path: string, cssClass: string, waitF
             // If we could guarrantee load order it wouldn't be an issue but we can't
             // realise this is racey and needs to be fixed.
             await new Promise((r) => setTimeout(r, 500));
-            this.addCSSClassToTitleEL(path, cssClass, waitForCreate, count + 1);
+            addCSSClassToTitleEL(path, cssClass, waitForCreate, count + 1);
             return;
         }
         return;
