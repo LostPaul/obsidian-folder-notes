@@ -13,7 +13,7 @@ export class FileSuggest extends TextInputSuggest<TFile> {
         public inputEl: HTMLInputElement,
         plugin: FolderNotesPlugin
 	) {
-		super(inputEl);
+		super(inputEl, plugin);
 	}
 
 

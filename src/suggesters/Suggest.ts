@@ -121,8 +121,9 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 	private suggest: Suggest<T>;
 	plugin: FolderNotesPlugin;
 
-	constructor(inputEl: HTMLInputElement | HTMLTextAreaElement) {
+	constructor(inputEl: HTMLInputElement | HTMLTextAreaElement, plugin: FolderNotesPlugin) {
 		this.inputEl = inputEl;
+		this.plugin = plugin;
 		this.scope = new Scope();
 
 		this.suggestEl = createDiv('suggestion-container');

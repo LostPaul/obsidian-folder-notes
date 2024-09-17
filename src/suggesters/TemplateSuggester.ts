@@ -14,7 +14,7 @@ export class TemplateSuggest extends TextInputSuggest<TFile> {
         public inputEl: HTMLInputElement,
         plugin: FolderNotesPlugin
 	) {
-		super(inputEl);
+		super(inputEl, plugin);
 	}
 
 
@@ -28,6 +28,7 @@ export class TemplateSuggest extends TextInputSuggest<TFile> {
 	}
 
 	getSuggestions(input_str: string): TFile[] {
+		console.log('this.plugin', this.plugin)
 		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.plugin.app);
 		if ((!templateFolder || templateFolder?.trim() === '') && !templaterPlugin) {
 			this.plugin.settings.templatePath = '';
@@ -39,6 +40,7 @@ export class TemplateSuggest extends TextInputSuggest<TFile> {
 			folder = this.plugin.app.vault.getAbstractFileByPath(templaterPlugin.plugin?.settings?.templates_folder as string) as TFolder;
 
 		} else {
+			console.log('templateFolder', templateFolder);
 			folder = this.plugin.app.vault.getAbstractFileByPath(templateFolder) as TFolder;
 		}
 

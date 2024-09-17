@@ -14,7 +14,7 @@ export class FolderSuggest extends TextInputSuggest<TFolder> {
         plugin: FolderNotesPlugin,
 		public folder?: TFolder,
 	) {
-		super(inputEl);
+		super(inputEl, plugin);
 	}
 
 
