@@ -30,21 +30,8 @@ jobs:
           RELEASE_VERSION=${VERSION%-beta}
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
 
-      - name: Update manifest-beta.json in current branch
-        run: |
-          VERSION=${{ env.VERSION }}
-          jq --arg version "$VERSION" '.version = $version' manifest-beta.json > manifest-beta-temp.json
-          mv manifest-beta-temp.json manifest-beta.json
-
-      - name: Commit and push changes in current branch
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add manifest-beta.json
-          git commit -m "Update manifest-beta.json to version $VERSION"
-          git push origin ${{ github.ref_name }}
-
-      - name: Switch to main branch
+      # Update manifest-beta.json in main branch
+      - name: Checkout main branch to update manifest-beta.json
         run: |
           git checkout main
           git pull origin main
@@ -55,13 +42,19 @@ jobs:
           jq --arg version "$VERSION" '.version = $version' manifest-beta.json > manifest-beta-temp.json
           mv manifest-beta-temp.json manifest-beta.json
 
-      - name: Commit and push changes in main branch
+      - name: Commit and push manifest-beta.json changes in main
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add manifest-beta.json
           git commit -m "Update manifest-beta.json to version $VERSION in main branch"
           git push origin main
+
+      # Switch back to the original branch that triggered the workflow
+      - name: Switch back to branch that triggered the workflow
+        run: |
+          git checkout ${{ github.ref_name }}
+          git pull origin ${{ github.ref_name }}
 
       - name: npm build
         run: |
