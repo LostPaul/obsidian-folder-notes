@@ -18,19 +18,31 @@ jobs:
         id: extract_branch
         run: echo "BRANCH_NAME=$(git branch -r --contains ${GITHUB_SHA} | grep -v 'detached' | sed 's|origin/||' | xargs)" >> $GITHUB_ENV
 
-      - name: Update manifest.json
+      # Checkout the main branch to update manifest.json
+      - name: Checkout main branch to update manifest
+        run: |
+          git checkout main
+          git pull origin main
+
+      - name: Update manifest.json in main branch
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           jq --arg version "$VERSION" '.version = $version' manifest.json > manifest-temp.json
           mv manifest-temp.json manifest.json
 
-      - name: Commit and push changes
+      - name: Commit and push manifest.json changes in main
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add manifest.json
           git commit -m "Update manifest.json to version $VERSION"
-          git push origin HEAD:${{ env.BRANCH_NAME }}
+          git push origin main
+
+      # Switch back to the branch that triggered the workflow
+      - name: Checkout original branch
+        run: |
+          git checkout ${{ env.BRANCH_NAME }}
+          git pull origin ${{ env.BRANCH_NAME }}
 
       - name: npm build
         run: |
