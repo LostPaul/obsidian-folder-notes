@@ -1,13 +1,29 @@
 .fn-whitespace-stop-collapsing .nav-folder-title-content {
     flex-grow: 1 !important;
+    display: flex;
     padding-bottom: 4px !important;
     padding-top: 4px !important;
+}
+
+.fn-whitespace-stop-collapsing .collapse-icon {
+    padding-top: 4px !important;
+}
+
+.mod-rtl .fn-whitespace-stop-collapsing .nav-folder-title-content {
+    padding-left: 8px !important;
 }
 
 .fn-whitespace-stop-collapsing .nav-folder-title {
     padding-bottom: 0 !important;
     padding-top: 0 !important;
+}
+
+body:not(.mod-rtl).fn-whitespace-stop-collapsing .nav-folder-title {
     padding-right: 0 !important;
+}
+
+.mod-rtl.fn-whitespace-stop-collapsing .nav-folder-title {
+    padding-left: 0 !important;
 }
 
 .fn-whitespace-stop-collapsing .nav-folder-collapse-indicator {
@@ -15,7 +31,7 @@
 }
 
 body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
-.tree-item-self.fn-is-active {
+body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     color: var(--nav-item-color-active);
     background-color: var(--nav-item-background-active);
     font-weight: var(--nav-item-weight-active);
@@ -237,4 +253,21 @@ body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
     display: none;
 }
 
+.fn-hide-empty-collapse-icon .fn-empty-folder .tree-item-icon {
+    display: none;
+}
 
+
+/* .fn-suggestion-container {
+    position: absolute;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-primary);
+    max-width: 500px;
+    max-height: 300px;
+    border-radius: var(--radius-m);
+    border: 1px solid var(--background-modifier-border);
+    box-shadow: var(--shadow-s);
+    z-index: var(--layer-notice);
+} */
