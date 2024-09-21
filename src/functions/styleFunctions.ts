@@ -26,55 +26,49 @@ export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) 
             removeCSSClassFromEL(file?.path, 'only-has-folder-note');
         } else {
             if (!excludedFolder?.hideNote) {
-                addCSSClassToTitleEL(plugin, folderNote.path, 'is-folder-note');
+                addCSSClassToTitleEL(folderNote.path, 'is-folder-note');
             }
-            addCSSClassToTitleEL(plugin, file.path, 'has-folder-note');
-            if (plugin.isEmptyFolderNoteFolder(file)) {
-                addCSSClassToTitleEL(plugin, file.path, 'only-has-folder-note');
-            } else {
-                removeCSSClassFromEL(file.path, 'only-has-folder-note');
-            }
+            addCSSClassesToFolder(file, plugin);
         }
     });
 }
 
-// load classes of specific folder
-export async function loadFolderClasses(forceReload = false, folder: TFolder, plugin: FolderNotesPlugin) {
-    if (plugin.activeFileExplorer === getFileExplorer() && !forceReload) { return; }
-    plugin.activeFileExplorer = getFileExplorer();
+
+export async function applyCSSClassesToFolder(folderPath: string, plugin: FolderNotesPlugin) {
+    const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
+    if (!folder || !(folder instanceof TFolder)) { return; }
 
     const folderNote = getFolderNote(plugin, folder.path);
     if (!folderNote) {
         removeCSSClassFromEL(folder?.path, 'has-folder-note');
         removeCSSClassFromEL(folder?.path, 'only-has-folder-note');
-        plugin.isEmptyFolderNoteFolder(folder)
         return;
     }
 
     const excludedFolder = await getExcludedFolder(plugin, folder.path, true);
-    // cleanup after ourselves
-    // Incase settings have changed
+
     if (excludedFolder?.disableFolderNote) {
         removeCSSClassFromEL(folderNote.path, 'is-folder-note');
         removeCSSClassFromEL(folder.path, 'has-folder-note');
         removeCSSClassFromEL(folder?.path, 'only-has-folder-note');
     } else {
         if (!excludedFolder?.hideNote) {
-            addCSSClassToTitleEL(plugin, folderNote.path, 'is-folder-note');
+            addCSSClassToFolderNote(folderNote);
         }
-        addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
+        addCSSClassesToFolder(folder, plugin);
         if (plugin.isEmptyFolderNoteFolder(folder)) {
-            addCSSClassToTitleEL(plugin, folder.path, 'only-has-folder-note');
+            addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
         } else {
             removeCSSClassFromEL(folder.path, 'only-has-folder-note');
         }
     }
 
+    addCSSClassesToBothFolderAndNote(folderNote, folder, plugin);
 }
 
-export function addCSSClassesToBothFolderAndNote(file: TFile, folder: TFolder) {
+export function addCSSClassesToBothFolderAndNote(file: TFile, folder: TFolder, plugin: FolderNotesPlugin) {
     addCSSClassToFolderNote(file);
-    addCSSClassesToFolder(folder);
+    addCSSClassesToFolder(folder, plugin);
 }
 
 export function removeCSSClassesFromBothFolderAndNote(folder: TFolder, file: TFile) {
@@ -82,30 +76,30 @@ export function removeCSSClassesFromBothFolderAndNote(folder: TFolder, file: TFi
     removeCSSClassesFromFolder(folder);
 }
 
-export function addCSSClassesToFolder(folder: TFolder) {
-    addCSSClassToTitleEL(undefined, folder.path, 'has-folder-note');
-    if (this.isEmptyFolderNoteFolder(folder)) {
-        addCSSClassToTitleEL(undefined, folder.path, 'only-has-folder-note');
+export function addCSSClassesToFolder(folder: TFolder, plugin: FolderNotesPlugin) {
+    addCSSClassToTitleEL(folder.path, 'has-folder-note');
+    if (plugin.isEmptyFolderNoteFolder(folder)) {
+        addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
     } else {
         removeCSSClassFromEL(folder.path, 'only-has-folder-note');
     }
 }
 
 export function addCSSClassToFolderNote(file: TFile) {
-    addCSSClassToTitleEL(undefined, file.path, 'is-folder-note');
+    addCSSClassToTitleEL(file.path, 'is-folder-note');
 }
 
 export function removeCSSClassFromFolderNote(file: TFile) {
-    this.removeCSSClassFromEL(file.path, 'is-folder-note');
+    removeCSSClassFromEL(file.path, 'is-folder-note');
 }
 
 export function removeCSSClassesFromFolder(folder: TFolder) {
-    this.removeCSSClassFromEL(folder.path, 'has-folder-note');
-    this.removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+    removeCSSClassFromEL(folder.path, 'has-folder-note');
+    removeCSSClassFromEL(folder.path, 'only-has-folder-note');
 }
 
-export async function addCSSClassToTitleEL(plugin: FolderNotesPlugin | undefined, path: string, cssClass: string, waitForCreate = false, count = 0) {
-    const fileExplorerItem = getEl(path)
+export async function addCSSClassToTitleEL(path: string, cssClass: string, waitForCreate = false, count = 0) {
+    const fileExplorerItem = getEl(path);
     if (!fileExplorerItem) {
         if (waitForCreate && count < 5) {
             // sleep for a second for the file-explorer event to catch up
@@ -113,21 +107,19 @@ export async function addCSSClassToTitleEL(plugin: FolderNotesPlugin | undefined
             // If we could guarrantee load order it wouldn't be an issue but we can't
             // realise this is racey and needs to be fixed.
             await new Promise((r) => setTimeout(r, 500));
-            addCSSClassToTitleEL(plugin, path, cssClass, waitForCreate, count + 1);
+            addCSSClassToTitleEL(path, cssClass, waitForCreate, count + 1);
             return;
         }
         return;
     }
-
     fileExplorerItem.addClass(cssClass);
-
     const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);
     viewHeaderItems.forEach((item) => {
         item.addClass(cssClass);
     });
 }
 
-export async function removeCSSClassFromEL(path: string | undefined, cssClass: string) {
+export function removeCSSClassFromEL(path: string | undefined, cssClass: string) {
     if (!path) return;
     const fileExplorerItem = getEl(path);
     const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);
@@ -146,4 +138,3 @@ export function getEl(path: string): HTMLElement | null {
     if (fileExplorerItem.selfEl) return fileExplorerItem.selfEl;
     return fileExplorerItem.titleEl;
 }
-

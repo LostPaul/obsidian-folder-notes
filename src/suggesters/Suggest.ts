@@ -3,6 +3,7 @@
 
 import { ISuggestOwner, Scope } from 'obsidian';
 import { createPopper, Instance as PopperInstance } from '@popperjs/core';
+import FolderNotesPlugin from 'src/main';
 
 const wrapAround = (value: number, size: number): number => {
 	return ((value % size) + size) % size;
@@ -14,6 +15,7 @@ class Suggest<T> {
 	private suggestions: HTMLDivElement[];
 	private selectedItem: number;
 	private containerEl: HTMLElement;
+	plugin: FolderNotesPlugin;
 
 	constructor(
 		owner: ISuggestOwner<T>,
@@ -117,12 +119,14 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 	private scope: Scope;
 	private suggestEl: HTMLElement;
 	private suggest: Suggest<T>;
+	plugin: FolderNotesPlugin;
 
-	constructor(inputEl: HTMLInputElement | HTMLTextAreaElement) {
+	constructor(inputEl: HTMLInputElement | HTMLTextAreaElement, plugin: FolderNotesPlugin) {
 		this.inputEl = inputEl;
+		this.plugin = plugin;
 		this.scope = new Scope();
 
-		this.suggestEl = createDiv('fn-suggestion-container');
+		this.suggestEl = createDiv('suggestion-container');
 		const suggestion = this.suggestEl.createDiv('suggestion');
 		this.suggest = new Suggest(this, suggestion, this.scope);
 
@@ -133,7 +137,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 		this.inputEl.addEventListener('blur', this.close.bind(this));
 		this.suggestEl.on(
 			'mousedown',
-			'.fn-suggestion-container',
+			'.suggestion-container',
 			(event: MouseEvent) => {
 				event.preventDefault();
 			}
@@ -160,7 +164,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 
 	open(container: HTMLElement, inputEl: HTMLElement): void {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		app.keymap.pushScope(this.scope);
+		this.plugin.app.keymap.pushScope(this.scope);
 
 		container.appendChild(this.suggestEl);
 		this.popper = createPopper(inputEl, this.suggestEl, {
@@ -189,7 +193,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 	}
 
 	close(): void {
-		app.keymap.popScope(this.scope);
+		this.plugin.app.keymap.popScope(this.scope);
 
 		this.suggest.setSuggestions([]);
 		if (this.popper) this.popper.destroy();

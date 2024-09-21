@@ -63,10 +63,9 @@ export class FileExplorerOverview {
 
 
         folderElement = document.querySelectorAll('.nav-files-container')[0] as HTMLElement;
-        console.log('folderElement', folderElement);
         if (!folderElement) return;
+        
         const newFolderElement = folderElement.cloneNode(true) as HTMLElement;
-        console.log('newFolderElement', newFolderElement);
 
         newFolderElement.querySelectorAll('div.nav-folder-title').forEach((el) => {
             const folder = plugin.app.vault.getAbstractFileByPath(el.getAttribute('data-path') || '');

@@ -13,7 +13,7 @@ import { FolderOverview } from './folderOverview/FolderOverview';
 import { TabManager } from './events/TabManager';
 import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
-import { addCSSClassToTitleEL, getEl, loadFileClasses, removeCSSClassFromEL } from './functions/styleFunctions';
+import { addCSSClassToTitleEL, getEl, loadFileClasses } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { ClipBoardManager, FileExplorerView, InternalPlugin, InternalPlugins } from 'obsidian-typings'
 export default class FolderNotesPlugin extends Plugin {
@@ -87,11 +87,6 @@ export default class FolderNotesPlugin extends Plugin {
 			this.hoverLinkTriggered = true;
 		});
 
-		this.registerEvent(this.app.workspace.on('layout-change', () => {
-			loadFileClasses(undefined, this);
-			this.tabManager?.updateTabs();
-		}));
-
 		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
 			handleCreate(file, this);
 		}));
@@ -129,8 +124,18 @@ export default class FolderNotesPlugin extends Plugin {
 
 		if (this.app.workspace.layoutReady) {
 			loadFileClasses(undefined, this);
+			this.registerEvent(this.app.workspace.on('layout-change', () => {
+				loadFileClasses(undefined, this);
+				this.tabManager?.updateTabs();
+			}));
 		} else {
-			this.app.workspace.onLayoutReady(async () => loadFileClasses(undefined, this));
+			this.app.workspace.onLayoutReady(async () => {
+				loadFileClasses(undefined, this)
+				this.registerEvent(this.app.workspace.on('layout-change', () => {
+					loadFileClasses(undefined, this);
+					this.tabManager?.updateTabs();
+				}));
+			});
 		}
 	}
 
@@ -141,13 +146,20 @@ export default class FolderNotesPlugin extends Plugin {
 		this.tabManager = new TabManager(this);
 		this.tabManager.updateTabs();
 
-		const view = this.app.workspace.getLeavesOfType('markdown')[0]?.view;
+		const leaf = this.app.workspace.getLeavesOfType('markdown').first();
+		const view = leaf?.view;
+
 		if (!view) { return; }
+
+		// @ts-ignore
+		const editMode = view.editMode ?? view.sourceMode ?? this.app.workspace.activeEditor?.editMode;
 		const plugin = this;
+
 		// @ts-ignore
-		const originalHandleDragOver = view.editMode.clipboardManager.constructor.prototype.handleDragOver;
+		const originalHandleDragOver = editMode.clipboardManager.constructor.prototype.handleDragOver;
+
 		// @ts-ignore
-		view.editMode.clipboardManager.constructor.prototype.handleDragOver = function (evt, ...args) {
+		editMode.clipboardManager.constructor.prototype.handleDragOver = function (evt, ...args) {
 			const { draggable } = plugin.app.dragManager;
 			if (draggable && draggable.file instanceof TFolder && getFolderNote(plugin, draggable.file.path)) {
 				plugin.app.dragManager.setAction(window.i18next.t("interface.drag-and-drop.insert-link-here"));
@@ -157,9 +169,9 @@ export default class FolderNotesPlugin extends Plugin {
 		};
 
 		// @ts-ignore
-		const originalHandleDrop = view.editMode.clipboardManager.constructor.prototype.handleDrop;
+		const originalHandleDrop = editMode.clipboardManager.constructor.prototype.handleDrop;
 		// @ts-ignore
-		view.editMode.clipboardManager.constructor.prototype.handleDrop = function (evt, ...args) {
+		editMode.clipboardManager.constructor.prototype.handleDrop = function (evt, ...args) {
 			const { draggable } = plugin.app.dragManager;
 			if (draggable && draggable.file instanceof TFolder && getFolderNote(plugin, draggable.file.path)) {
 				const folderNote = getFolderNote(plugin, draggable.file.path);
@@ -171,9 +183,7 @@ export default class FolderNotesPlugin extends Plugin {
 			return originalHandleDrop.call(this, evt, ...args);
 		}
 
-		// const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);
-
-		
+		// const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);		
 	}
 
 
@@ -189,17 +199,18 @@ export default class FolderNotesPlugin extends Plugin {
 				}, { capture: true });
 			}
 		});
+
 		observer.observe(el, {
 			childList: true,
 			subtree: true,
 		});
+
 		try {
 			if (this.app.workspace.layoutReady) {
 				const folderOverview = new FolderOverview(this, ctx, source, el);
 				folderOverview.create(this, parseYaml(source), el, ctx);
 			} else {
 				this.app.workspace.onLayoutReady(() => {
-					console.log('layout ready');
 					const folderOverview = new FolderOverview(this, ctx, source, el);
 					folderOverview.create(this, parseYaml(source), el, ctx);
 				});
@@ -216,7 +227,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
 		const threshold = this.settings.storageLocation === 'insideFolder' ? 1 : 0;
 		if (folder.children.length == 0) {
-			addCSSClassToTitleEL(this, folder.path, 'fn-empty-folder');
+			addCSSClassToTitleEL(folder.path, 'fn-empty-folder');
 		}
 
 		if (folder.children.length == threshold) {

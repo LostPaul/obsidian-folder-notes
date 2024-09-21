@@ -8,7 +8,7 @@ import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcluded
 import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSettings'
 import { ExcludePattern } from './ExcludeFolders/ExcludePattern';
 import PatternSettings from './ExcludeFolders/modals/PatternSettings';
-import { loadFolderClasses } from './functions/styleFunctions';
+import { applyCSSClassesToFolder } from './functions/styleFunctions';
 
 export class Commands {
 	plugin: FolderNotesPlugin;
@@ -373,7 +373,7 @@ export class Commands {
 										this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter(
 											(folder) => (folder.path !== file.path) && folder.hideNote);
 										this.plugin.saveSettings(false);
-										loadFolderClasses(true, file, this.plugin);
+										applyCSSClassesToFolder(file.path, this.plugin);
 									});
 							});
 						} else {
@@ -391,7 +391,7 @@ export class Commands {
 										excludedFolder.excludeFromFolderOverview = false;
 										excludedFolder.hideInSettings = true;
 										addExcludedFolder(this.plugin, excludedFolder, false);
-										loadFolderClasses(true, file, this.plugin);
+										applyCSSClassesToFolder(file.path, this.plugin);
 									});
 							});
 						}

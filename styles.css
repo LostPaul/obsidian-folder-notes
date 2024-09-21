@@ -5,6 +5,10 @@
     padding-top: 4px !important;
 }
 
+.fn-whitespace-stop-collapsing .collapse-icon {
+    padding-top: 4px !important;
+}
+
 .mod-rtl .fn-whitespace-stop-collapsing .nav-folder-title-content {
     padding-left: 8px !important;
 }

@@ -11,11 +11,11 @@ export enum FileSuggestMode {
 export class FolderSuggest extends TextInputSuggest<TFolder> {
 	constructor(
         public inputEl: HTMLInputElement,
-        private plugin: FolderNotesPlugin,
+        plugin: FolderNotesPlugin,
 		private whitelistSuggester: boolean,
 		public folder?: TFolder,
 	) {
-		super(inputEl);
+		super(inputEl, plugin);
 	}
 
 
