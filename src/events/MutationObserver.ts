@@ -3,18 +3,19 @@ import { Platform, Keymap } from 'obsidian';
 import { getFolderNote } from 'src/functions/folderNoteFunctions';
 import { handleFolderClick, handleViewHeaderClick } from './handleClick';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
-import { applyCSSClassesToFolder } from 'src/functions/styleFunctions';
+import { applyCSSClassesToFolder, applyCSSClassesToFolderNote } from 'src/functions/styleFunctions';
 
 export async function addObserver(plugin: FolderNotesPlugin) {
     plugin.observer = new MutationObserver((mutations: MutationRecord[]) => {
         mutations.forEach((rec) => {
             if (rec.type === 'childList') {
                 (<Element>rec.target).querySelectorAll('div.nav-folder-title-content')
-                    .forEach((element: HTMLElement) => {
+                    .forEach(async (element: HTMLElement) => {
                         if (element.onclick) return;
                         if (Platform.isMobile && plugin.settings.disableOpenFolderNoteOnClick) return;
                         const folderPath = element.parentElement?.getAttribute('data-path') || '';
-                        const apply = applyCSSClassesToFolder(folderPath, plugin);
+                        // console.log('folderPath', folderPath);
+                        const apply =  await applyCSSClassesToFolder(folderPath, plugin);
                         // handle middle click
                         element.addEventListener('auxclick', (event: MouseEvent) => {
                             if (event.button == 1) {
@@ -51,6 +52,11 @@ export async function addObserver(plugin: FolderNotesPlugin) {
                         });
                     });
                 if (!plugin.settings.openFolderNoteOnClickInPath) { return; }
+                (<Element>rec.target).querySelectorAll('div.nav-file-title-content')
+                    .forEach(async (element: HTMLElement) => {
+                        const filePath = element.parentElement?.getAttribute('data-path') || '';
+                        applyCSSClassesToFolderNote(filePath, plugin);
+                    });
                 (<Element>rec.target).querySelectorAll('span.view-header-breadcrumb')
                     .forEach((element: HTMLElement) => {
                         const breadcrumbs = element.parentElement?.querySelectorAll('span.view-header-breadcrumb');

@@ -1,11 +1,12 @@
 import { TFile, TFolder } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
-import { getFolderNote } from 'src/functions/folderNoteFunctions';
+import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getFileExplorer } from './utils';
 
 export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) {
     if (plugin.activeFileExplorer === getFileExplorer() && !forceReload) { return; }
+    return;
     plugin.activeFileExplorer = getFileExplorer();
     plugin.app.vault.getAllLoadedFiles().forEach(async (file) => {
         if (!(file instanceof TFolder)) { return; }
@@ -36,9 +37,17 @@ export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) 
 
 export async function applyCSSClassesToFolder(folderPath: string, plugin: FolderNotesPlugin) {
     const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
+    // console.log('folder', folder);
+    // console.log('folderPath folder instanceof TFolder', folder instanceof TFolder);
     if (!folder || !(folder instanceof TFolder)) { return; }
+    if ((folder.name === 'Untitled 2' && folder.parent?.name === 'Untitled 1')) {
+        console.log('folder', folder);
+    }
 
     const folderNote = getFolderNote(plugin, folder.path);
+    if ((folder.name === 'Untitled 2')) {
+        console.log('folderNote', folderNote);
+    }
     if (!folderNote) {
         removeCSSClassFromEL(folder?.path, 'has-folder-note');
         removeCSSClassFromEL(folder?.path, 'only-has-folder-note');
@@ -64,6 +73,17 @@ export async function applyCSSClassesToFolder(folderPath: string, plugin: Folder
     }
 
     addCSSClassesToBothFolderAndNote(folderNote, folder, plugin);
+}
+
+export async function applyCSSClassesToFolderNote(filePath: string, plugin: FolderNotesPlugin) {
+    const file = plugin.app.vault.getAbstractFileByPath(filePath);
+    if (!file || !(file instanceof TFile)) { return; }
+
+    const folder = getFolder(plugin, file);
+    if (!folder || !(folder instanceof TFolder)) { return; }
+
+    applyCSSClassesToFolder(folder.path, plugin);
+
 }
 
 export function addCSSClassesToBothFolderAndNote(file: TFile, folder: TFolder, plugin: FolderNotesPlugin) {

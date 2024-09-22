@@ -123,23 +123,24 @@ export default class FolderNotesPlugin extends Plugin {
 		});
 
 		if (this.app.workspace.layoutReady) {
-			loadFileClasses(undefined, this);
-			this.registerEvent(this.app.workspace.on('layout-change', () => {
-				loadFileClasses(undefined, this);
-				this.tabManager?.updateTabs();
-			}));
+			// loadFileClasses(undefined, this);
+			// // this.registerEvent(this.app.workspace.on('layout-change', () => {
+			// // 	loadFileClasses(undefined, this);
+			// // 	this.tabManager?.updateTabs();
+			// // }));
 		} else {
 			this.app.workspace.onLayoutReady(async () => {
-				loadFileClasses(undefined, this)
-				this.registerEvent(this.app.workspace.on('layout-change', () => {
-					loadFileClasses(undefined, this);
-					this.tabManager?.updateTabs();
-				}));
+				// loadFileClasses(undefined, this)
+				// // this.registerEvent(this.app.workspace.on('layout-change', () => {
+				// // 	loadFileClasses(undefined, this);
+				// // 	this.tabManager?.updateTabs();
+				// // }));
 			});
 		}
 	}
 
 	onLayoutReady() {
+		// console.log('layout ready');
 		if (this.settings.frontMatterTitle.enabled) {
 			this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
 		}
@@ -153,6 +154,9 @@ export default class FolderNotesPlugin extends Plugin {
 
 		// @ts-ignore
 		const editMode = view.editMode ?? view.sourceMode ?? this.app.workspace.activeEditor?.editMode;
+		if (!editMode) { return; }
+		
+		// console.log('editMode', editMode);
 		const plugin = this;
 
 		// @ts-ignore
@@ -263,8 +267,6 @@ export default class FolderNotesPlugin extends Plugin {
 			return;
 		}
 
-		// @ts-ignore
-		// For some reason it gives an error even though it works
 		fileExplorerItem = fileExplorerItem?.querySelector('div.nav-folder-title-content')
 		if (!fileExplorerItem) { return; }
 		if (this.settings.frontMatterTitle.explorer && this.settings.frontMatterTitle.enabled) {
