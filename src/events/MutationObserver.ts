@@ -1,55 +1,35 @@
 import FolderNotesPlugin from 'src/main';
 import { Platform, Keymap } from 'obsidian';
-import { getFolderNote } from 'src/functions/folderNoteFunctions';
+import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { handleFolderClick, handleViewHeaderClick } from './handleClick';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { applyCSSClassesToFolder, applyCSSClassesToFolderNote } from 'src/functions/styleFunctions';
+import { getFolderNameFromPathString } from 'src/functions/utils';
 
 export async function addObserver(plugin: FolderNotesPlugin) {
     plugin.observer = new MutationObserver((mutations: MutationRecord[]) => {
         mutations.forEach((rec) => {
             if (rec.type === 'childList') {
-                (<Element>rec.target).querySelectorAll('div.nav-folder-title-content')
+                (<Element>rec.target).querySelectorAll('div.nav-folder')
                     .forEach(async (element: HTMLElement) => {
-                        if (element.onclick) return;
-                        if (Platform.isMobile && plugin.settings.disableOpenFolderNoteOnClick) return;
-                        const folderPath = element.parentElement?.getAttribute('data-path') || '';
-                        // console.log('folderPath', folderPath);
-                        const apply =  await applyCSSClassesToFolder(folderPath, plugin);
-                        // handle middle click
-                        element.addEventListener('auxclick', (event: MouseEvent) => {
-                            if (event.button == 1) {
-                                handleFolderClick(event, plugin)
-                            }
-                        }, { capture: true });
-                        element.onclick = (event: MouseEvent) => handleFolderClick(event, plugin);
-                        plugin.registerDomEvent(element, 'pointerover', (event: MouseEvent) => {
-                            plugin.hoveredElement = element;
-                            plugin.mouseEvent = event;
-                            if (!Keymap.isModEvent(event)) return;
-                            if (!(event.target instanceof HTMLElement)) return;
+                        console.log('element', element);
 
-                            const folderPath = event?.target?.parentElement?.getAttribute('data-path') || '';
-                            const folderNote = getFolderNote(plugin, folderPath);
-                            if (!folderNote) return;
+                        let folderTitle = element.querySelector('div.nav-folder-title') as HTMLElement;
+                        if (folderTitle) {
+                            await initializeFolderTitle(folderTitle, plugin);
+                        } else {
 
-                            plugin.app.workspace.trigger('hover-link', {
-                                event: event,
-                                source: 'preview',
-                                hoverParent: {
-                                    file: folderNote,
-                                },
-                                targetEl: event.target,
-                                linktext: folderNote?.basename,
-                                sourcePath: folderNote?.path,
+                            const observer = new MutationObserver(async (mutations, obs) => {
+                                folderTitle = element.querySelector('div.nav-folder-title') as HTMLElement;
+                                if (folderTitle) {
+                                    await initializeFolderTitle(folderTitle, plugin);
+                                    console.log('folder path (after observer)', folderTitle.getAttribute('data-path'));
+                                    obs.disconnect();
+                                }
                             });
-                            plugin.hoverLinkTriggered = true;
-                        });
-                        plugin.registerDomEvent(element, 'pointerout', () => {
-                            plugin.hoveredElement = null;
-                            plugin.mouseEvent = null;
-                            plugin.hoverLinkTriggered = false;
-                        });
+
+                            observer.observe(element, { childList: true, subtree: true });
+                        }
                     });
                 if (!plugin.settings.openFolderNoteOnClickInPath) { return; }
                 (<Element>rec.target).querySelectorAll('div.nav-file-title-content')
@@ -94,5 +74,48 @@ export async function addObserver(plugin: FolderNotesPlugin) {
                     });
             }
         });
+    });
+}
+
+async function initializeFolderTitle(folderTitle: HTMLElement, plugin: any) {
+    let folderPath = folderTitle.getAttribute('data-path') || '';
+
+    await applyCSSClassesToFolder(folderPath, plugin);
+
+    // Handle middle click (auxclick)
+    folderTitle.addEventListener('auxclick', (event: MouseEvent) => {
+        if (event.button == 1) {
+            handleFolderClick(event, plugin);
+        }
+    }, { capture: true });
+
+    folderTitle.onclick = (event: MouseEvent) => handleFolderClick(event, plugin);
+
+    plugin.registerDomEvent(folderTitle, 'pointerover', (event: MouseEvent) => {
+        plugin.hoveredElement = folderTitle;
+        plugin.mouseEvent = event;
+
+        if (!Keymap.isModEvent(event)) return;
+        if (!(event.target instanceof HTMLElement)) return;
+
+        const folderPath = event?.target?.getAttribute('data-path') || '';
+        const folderNote = getFolderNote(plugin, folderPath);
+        if (!folderNote) return;
+
+        plugin.app.workspace.trigger('hover-link', {
+            event: event,
+            source: 'preview',
+            hoverParent: { file: folderNote },
+            targetEl: event.target,
+            linktext: folderNote?.basename,
+            sourcePath: folderNote?.path,
+        });
+        plugin.hoverLinkTriggered = true;
+    });
+
+    plugin.registerDomEvent(folderTitle, 'pointerout', () => {
+        plugin.hoveredElement = null;
+        plugin.mouseEvent = null;
+        plugin.hoverLinkTriggered = false;
     });
 }
