@@ -1,4 +1,4 @@
-import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, MenuItem } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, MenuItem, requireApiVersion } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/SettingsTab';
 import { Commands } from './Commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
@@ -52,6 +52,9 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.settings.stopWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
 		if (this.settings.hideCollapsingIcon) { document.body.classList.add('fn-hide-collapse-icon'); }
 		if (!this.settings.highlightFolder) { document.body.classList.add('disable-folder-highlight'); }
+		if (requireApiVersion('1.7.2')) {
+			document.body.classList.add('version-1-7-2');
+		}
 
 		new Commands(this.app, this).registerCommands();
 
