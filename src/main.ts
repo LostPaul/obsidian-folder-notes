@@ -1,4 +1,4 @@
-import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, requireApiVersion } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/SettingsTab';
 import { Commands } from './Commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
@@ -44,6 +44,9 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.settings.underlineFolderInPath) { document.body.classList.add('folder-note-underline-path'); }
 		if (this.settings.stopWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
 		if (this.settings.hideCollapsingIcon) { document.body.classList.add('fn-hide-collapse-icon'); }
+		if (requireApiVersion('1.7.2')) {
+			document.body.classList.add('version-1-7-2');
+		}
 
 		new Commands(this.app, this).registerCommands();
 
