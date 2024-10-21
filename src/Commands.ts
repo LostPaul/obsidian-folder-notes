@@ -1,4 +1,4 @@
-import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform, stringifyYaml } from 'obsidian';
+import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform, stringifyYaml, View } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName, detachFolderNote } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
@@ -9,6 +9,8 @@ import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSetting
 import { ExcludePattern } from './ExcludeFolders/ExcludePattern';
 import PatternSettings from './ExcludeFolders/modals/PatternSettings';
 import { applyCSSClassesToFolder } from './functions/styleFunctions';
+import { FileExplorerView } from './globals';
+
 
 export class Commands {
 	plugin: FolderNotesPlugin;
@@ -113,6 +115,30 @@ export class Commands {
 				if (!(folderNote instanceof TFile)) return;
 				openFolderNote(this.plugin, folderNote);
 			}
+		});
+		this.plugin.addCommand({
+			id: 'open-folder-note-for-active-file-explorer-folder',
+			name: 'Open folder note of current active folder in file explorer',
+			checkCallback: (checking: boolean) => {
+				// Check if the active view is a file explorer.
+				const view = this.app.workspace.getActiveViewOfType(View);
+				if (view?.getViewType() !== 'file-explorer') return false;
+				// Check if there is a focused or active item in the file explorer.
+				const fe = view as FileExplorerView;
+				const activeFileOrFolder =
+					fe.tree.focusedItem?.file ?? fe.activeDom?.file;
+				if (!activeFileOrFolder) return false;
+				// Only interested in focused or active folder.
+				if (activeFileOrFolder instanceof TFile) return false;
+				if (checking) return true;
+
+				// Everything is fine and now not checking, let's do action:
+				// if folder has a folder note, open it.
+				const folder = activeFileOrFolder as TFolder;
+				const folderNote = getFolderNote(this.plugin, folder.path);
+				if (!(folderNote instanceof TFile)) return;
+				openFolderNote(this.plugin, folderNote);
+			},
 		});
 		this.plugin.addCommand({
 			id: 'insert-folder-overview-fn',
