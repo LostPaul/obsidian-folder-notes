@@ -2,7 +2,7 @@ import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView,
 import FolderNotesPlugin from './main';
 import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName, detachFolderNote } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
-import { getFolderPathFromString } from './functions/utils';
+import { getFolderPathFromString, getFileExplorerActiveFolder } from './functions/utils';
 import { getExcludedFolderByPattern } from './ExcludeFolders/functions/patternFunctions';
 import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder, getExcludedFoldersByPath, updateExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSettings'
@@ -89,6 +89,26 @@ export class Commands {
 				}
 			});
 		});
+		this.plugin.settings.supportedFileTypes.forEach((fileType) => {
+            const type = fileType === 'md' ? 'markdown' : fileType;
+			this.plugin.addCommand({
+				id: `create-${type}-folder-note-for-active-file-explorer-folder`,
+				name: `Create ${type} folder note for current active folder in file explorer`,
+				checkCallback: (checking: boolean) => {
+                    const folder = getFileExplorerActiveFolder();
+                    if (!folder) return false;
+                    // Is there already a folder note for the active folder?
+                    const folderNote = getFolderNote(this.plugin, folder.path);
+                    if (folderNote instanceof TFile) return false;
+                    if (checking) return true;
+
+                    // Everything is fine and not checking, let's create the folder note.
+                    const ext = '.' + fileType;
+                    const path = folder.path;
+                    createFolderNote(this.plugin, path, true, ext, false);
+				}
+			});
+		});
 
 		this.plugin.addCommand({
 			id: 'delete-folder-note-for-current-folder',
@@ -100,6 +120,21 @@ export class Commands {
 				if (!(folder instanceof TFolder)) return;
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				if (!(folderNote instanceof TFile)) return;
+				deleteFolderNote(this.plugin, folderNote, true);
+			}
+		});
+		this.plugin.addCommand({
+			id: 'delete-folder-note-of-active-file-explorer-folder',
+			name: 'Delete folder note of current active folder in file explorer',
+			checkCallback: (checking: boolean) => {
+                const folder = getFileExplorerActiveFolder();
+                if (!folder) return false;
+                // Is there any folder note for the active folder?
+				const folderNote = getFolderNote(this.plugin, folder.path);
+				if (!(folderNote instanceof TFile)) return false;
+                if (checking) return true;
+
+                // Everything is fine and not checking, let's delete the folder note.
 				deleteFolderNote(this.plugin, folderNote, true);
 			}
 		});
@@ -117,28 +152,19 @@ export class Commands {
 			}
 		});
 		this.plugin.addCommand({
-			id: 'open-folder-note-for-active-file-explorer-folder',
+			id: 'open-folder-note-of-active-file-explorer-folder',
 			name: 'Open folder note of current active folder in file explorer',
 			checkCallback: (checking: boolean) => {
-				// Check if the active view is a file explorer.
-				const view = this.app.workspace.getActiveViewOfType(View);
-				if (view?.getViewType() !== 'file-explorer') return false;
-				// Check if there is a focused or active item in the file explorer.
-				const fe = view as FileExplorerView;
-				const activeFileOrFolder =
-					fe.tree.focusedItem?.file ?? fe.activeDom?.file;
-				if (!activeFileOrFolder) return false;
-				// Only interested in focused or active folder.
-				if (activeFileOrFolder instanceof TFile) return false;
-				if (checking) return true;
-
-				// Everything is fine and now not checking, let's do action:
-				// if folder has a folder note, open it.
-				const folder = activeFileOrFolder as TFolder;
+                const folder = getFileExplorerActiveFolder();
+                if (!folder) return false;
+                // Is there any folder note for the active folder?
 				const folderNote = getFolderNote(this.plugin, folder.path);
-				if (!(folderNote instanceof TFile)) return;
+				if (!(folderNote instanceof TFile)) return false;
+                if (checking) return true;
+
+                // Everything is fine and not checking, let's open the folder note.
 				openFolderNote(this.plugin, folderNote);
-			},
+			}
 		});
 		this.plugin.addCommand({
 			id: 'insert-folder-overview-fn',
