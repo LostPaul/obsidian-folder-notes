@@ -8,9 +8,9 @@ export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
     const folder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(file.path));
     if (folder instanceof TFolder) {
         if (plugin.isEmptyFolderNoteFolder(folder)) {
-            addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
+            addCSSClassToTitleEL(folder.path, 'only-has-folder-note', plugin);
         } else {
-            removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+            removeCSSClassFromEL(folder.path, 'only-has-folder-note', plugin);
         }
     }
 
@@ -19,14 +19,14 @@ export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
         if (!folder) { return; }
         const folderNote = getFolderNote(plugin, folder.path);
         if (folderNote) { return; }
-        removeCSSClassFromEL(folder.path, 'has-folder-note');
-        removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+        removeCSSClassFromEL(folder.path, 'has-folder-note', plugin);
+        removeCSSClassFromEL(folder.path, 'only-has-folder-note', plugin);
     }
 
     if (!(file instanceof TFolder)) { return; }
     const folderNote = getFolderNote(plugin, file.path);
     if (!folderNote) { return; }
-    removeCSSClassFromEL(folderNote.path, 'is-folder-note');
+    removeCSSClassFromEL(folderNote.path, 'is-folder-note', plugin);
     if (!plugin.settings.syncDelete) { return; }
     deleteFolderNote(plugin, folderNote, false);
 }

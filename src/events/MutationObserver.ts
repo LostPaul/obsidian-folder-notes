@@ -12,18 +12,19 @@ export async function addObserver(plugin: FolderNotesPlugin) {
             if (rec.type === 'childList') {
                 (<Element>rec.target).querySelectorAll('div.nav-folder')
                     .forEach(async (element: HTMLElement) => {
-                        console.log('element', element);
+                        let folderTitle = element.querySelector('div.nav-folder-title-content') as HTMLElement;
+                        const filePath = folderTitle.parentElement?.getAttribute('data-path') || '';
+            
+                        applyCSSClassesToFolder(filePath, plugin);
 
-                        let folderTitle = element.querySelector('div.nav-folder-title') as HTMLElement;
                         if (folderTitle) {
                             await initializeFolderTitle(folderTitle, plugin);
                         } else {
 
                             const observer = new MutationObserver(async (mutations, obs) => {
-                                folderTitle = element.querySelector('div.nav-folder-title') as HTMLElement;
+                                folderTitle = element.querySelector('div.nav-folder-title-content') as HTMLElement;
                                 if (folderTitle) {
                                     await initializeFolderTitle(folderTitle, plugin);
-                                    console.log('folder path (after observer)', folderTitle.getAttribute('data-path'));
                                     obs.disconnect();
                                 }
                             });
@@ -32,11 +33,11 @@ export async function addObserver(plugin: FolderNotesPlugin) {
                         }
                     });
                 if (!plugin.settings.openFolderNoteOnClickInPath) { return; }
-                (<Element>rec.target).querySelectorAll('div.nav-file-title-content')
-                    .forEach(async (element: HTMLElement) => {
-                        const filePath = element.parentElement?.getAttribute('data-path') || '';
-                        applyCSSClassesToFolderNote(filePath, plugin);
-                    });
+                // (<Element>rec.target).querySelectorAll('div.nav-file-title-content')
+                //     .forEach(async (element: HTMLElement) => {
+                //         const filePath = element.parentElement?.getAttribute('data-path') || '';
+                //         applyCSSClassesToFolderNote(filePath, plugin);
+                //     });
                 (<Element>rec.target).querySelectorAll('span.view-header-breadcrumb')
                     .forEach((element: HTMLElement) => {
                         const breadcrumbs = element.parentElement?.querySelectorAll('span.view-header-breadcrumb');
@@ -78,7 +79,10 @@ export async function addObserver(plugin: FolderNotesPlugin) {
 }
 
 async function initializeFolderTitle(folderTitle: HTMLElement, plugin: any) {
-    let folderPath = folderTitle.getAttribute('data-path') || '';
+    if (folderTitle.onclick) return;
+    if (Platform.isMobile && plugin.settings.disableOpenFolderNoteOnClick) return;
+
+    let folderPath = folderTitle.parentElement?.getAttribute('data-path') || '';
 
     await applyCSSClassesToFolder(folderPath, plugin);
 
@@ -98,7 +102,7 @@ async function initializeFolderTitle(folderTitle: HTMLElement, plugin: any) {
         if (!Keymap.isModEvent(event)) return;
         if (!(event.target instanceof HTMLElement)) return;
 
-        const folderPath = event?.target?.getAttribute('data-path') || '';
+        const folderPath = event?.target.parentElement?.getAttribute('data-path') || '';
         const folderNote = getFolderNote(plugin, folderPath);
         if (!folderNote) return;
 

@@ -1,7 +1,8 @@
 import { FileExplorerWorkspaceLeaf } from "src/globals";
+import FolderNotesPlugin from "src/main";
 
 export function getFileNameFromPathString(path: string): string {
-    return path.substring(path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/' || '\\') + 1 : 0);
+    return path.substring(path.lastIndexOf('/') >= 0 ? path.lastIndexOf('/') + 1 : 0);
 }
 
 export function getFolderNameFromPathString(path: string): string {
@@ -21,7 +22,7 @@ export function getExtensionFromPathString(path: string): string {
 }
 
 export function getFolderPathFromString(path: string): string {
-    const subString = path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/') : 0;
+    const subString = path.lastIndexOf('/') >= 0 ? path.lastIndexOf('/') : 0;
     const folderPath = path.substring(0, subString);
     if (folderPath === '') {
         return '/';
@@ -34,8 +35,8 @@ export function getParentFolderPath(path: string): string {
     return this.getFolderPathFromString(this.getFolderPathFromString(path));
 }
 
-export function getFileExplorer() {
-    return this.app.workspace.getLeavesOfType('file-explorer')[0] as FileExplorerWorkspaceLeaf;
+export function getFileExplorer(plugin: FolderNotesPlugin) {
+    return plugin.app.workspace.getLeavesOfType('file-explorer')[0] as any as FileExplorerWorkspaceLeaf;
 }
 
 export function getFileExplorerView() {

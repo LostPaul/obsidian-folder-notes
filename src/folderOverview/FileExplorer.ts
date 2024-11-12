@@ -41,7 +41,7 @@ export class FileExplorerOverview {
         const root = this.folderOverview.root;
         const yaml = this.folderOverview.yaml;
         const folderOverview = this.folderOverview;
-        const folder = getEl(yaml.folderPath)
+        const folder = getEl(yaml.folderPath, plugin);
         let folderElement = folder?.parentElement;
         const source = ctx.sourcePath;
         const overviewList = folderOverview.listEl;

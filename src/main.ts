@@ -109,7 +109,7 @@ export default class FolderNotesPlugin extends Plugin {
 			const folderNote = getFolderNote(this, folder.path);
 			if (!folderNote) { return; }
 			if (folderNote.path !== openFile.path) { return; }
-			this.activeFolderDom = getEl(folder.path);
+			this.activeFolderDom = getEl(folder.path, this);
 			if (this.activeFolderDom) this.activeFolderDom.addClass('fn-is-active');
 		}));
 
@@ -143,7 +143,6 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	onLayoutReady() {
-		// console.log('layout ready');
 		if (this.settings.frontMatterTitle.enabled) {
 			this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
 		}
@@ -159,7 +158,6 @@ export default class FolderNotesPlugin extends Plugin {
 		const editMode = view.editMode ?? view.sourceMode ?? this.app.workspace.activeEditor?.editMode;
 		if (!editMode) { return; }
 		
-		// console.log('editMode', editMode);
 		const plugin = this;
 
 		// @ts-ignore
@@ -234,7 +232,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
 		const threshold = this.settings.storageLocation === 'insideFolder' ? 1 : 0;
 		if (folder.children.length == 0) {
-			addCSSClassToTitleEL(folder.path, 'fn-empty-folder');
+			addCSSClassToTitleEL(folder.path, 'fn-empty-folder', this);
 		}
 
 		if (folder.children.length == threshold) {
@@ -247,7 +245,7 @@ export default class FolderNotesPlugin extends Plugin {
 				const attachmentFolder = this.app.vault.getAbstractFileByPath(folderPath);
 				if (attachmentFolder instanceof TFolder && folder.children.length <= threshold + 1) {
 					if (!folder.collapsed) {
-						getEl(folder.path)?.click();
+						getEl(folder.path, this)?.click();
 					}
 				}
 				return folder.children.length <= threshold + 1;
@@ -260,7 +258,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 	async changeName(folder: TFolder, name: string | null | undefined, replacePath: boolean, waitForCreate = false, count = 0) {
 		if (!name) name = folder.name;
-		let fileExplorerItem = getEl(folder.path);
+		let fileExplorerItem = getEl(folder.path, this);
 		if (!fileExplorerItem) {
 			if (waitForCreate && count < 5) {
 				await new Promise((r) => setTimeout(r, 500));

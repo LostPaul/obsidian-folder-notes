@@ -10,9 +10,9 @@ export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugi
     const folder = file.parent;
     if (folder instanceof TFolder) {
         if (plugin.isEmptyFolderNoteFolder(folder)) {
-            addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
+            addCSSClassToTitleEL(folder.path, 'only-has-folder-note', plugin);
         } else {
-            removeCSSClassFromEL(folder.path, 'only-has-folder-note');
+            removeCSSClassFromEL(folder.path, 'only-has-folder-note', plugin);
         }
     }
 
@@ -31,8 +31,8 @@ async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin) {
     const folderNote = getFolderNote(plugin, folder.path);
 
     if (folderNote && folderNote.path === file.path) {
-        addCSSClassToTitleEL(folder.path, 'has-folder-note');
-        addCSSClassToTitleEL(file.path, 'is-folder-note');
+        addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
+        addCSSClassToTitleEL(file.path, 'is-folder-note', plugin);
         return;
     }
 }
@@ -57,5 +57,5 @@ async function handleFolderCreation(folder: TFolder, plugin: FolderNotesPlugin) 
     if (folderNote) return;
 
     createFolderNote(plugin, folder.path, openFile, undefined, true);
-    addCSSClassToTitleEL(folder.path, 'has-folder-note');
+    addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
 }

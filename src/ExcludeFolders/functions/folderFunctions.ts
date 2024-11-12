@@ -15,8 +15,8 @@ export async function getExcludedFolder(plugin: FolderNotesPlugin, path: string,
 	let excludedFolder = {} as ExcludedFolder | ExcludePattern | undefined;
 	const whitelistedFolder = getWhitelistedFolder(plugin, path) as WhitelistedFolder | WhitelistedPattern | undefined;
 	const folderName = getFolderNameFromPathString(path);
-	let matchedPatterns = await getExcludedFoldersByPattern(plugin, folderName);
-	const excludedFolders = await getExcludedFoldersByPath(plugin, path);
+	let matchedPatterns = getExcludedFoldersByPattern(plugin, folderName);
+	const excludedFolders = getExcludedFoldersByPath(plugin, path);
 	if (pathOnly) { matchedPatterns = []; }
 	let combinedExcludedFolders = [...matchedPatterns, ...excludedFolders];
 
