@@ -409,7 +409,7 @@ export class FolderOverview {
     }
 
     getElFromOverview(path: string): HTMLElement | null {
-        const el = this.listEl.querySelector(`[data-path="${path}"]`) as HTMLElement | null;
+        const el = this.listEl.querySelector(`[data-path="${CSS.escape(path)}"]`) as HTMLElement | null;
         return el;
     }
 
