@@ -244,6 +244,17 @@ export async function renderFolderOverview(settingsTab: SettingsTab) {
                         plugin.saveSettings();
                     });
             });
-    }
 
+        new Setting(containerEl)
+            .setName('Collapse all in the tree by default')
+            .setDesc('Collapse every folder in the file explorer in the overview by default')
+            .addToggle((toggle) => {
+                toggle
+                    .setValue(overviewSettings.alwaysCollapse)
+                    .onChange(async (value) => {
+                        overviewSettings.alwaysCollapse = value;
+                        plugin.saveSettings();
+                    });
+            });
+    }
 }

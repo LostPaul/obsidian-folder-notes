@@ -29,6 +29,7 @@ export type yamlSettings = {
     storeFolderCondition: boolean;
     showFolderNotes: boolean;
     disableCollapseIcon: boolean;
+    alwaysCollapse: boolean;
 };
 
 export class FolderOverview {
@@ -74,6 +75,7 @@ export class FolderOverview {
             storeFolderCondition: yaml?.storeFolderCondition === undefined || yaml?.storeFolderCondition === null ? plugin.settings.defaultOverview.storeFolderCondition : yaml?.storeFolderCondition,
             showFolderNotes: yaml?.showFolderNotes === undefined || yaml?.showFolderNotes === null ? plugin.settings.defaultOverview.showFolderNotes : yaml?.showFolderNotes,
             disableCollapseIcon: yaml?.disableCollapseIcon === undefined || yaml?.disableCollapseIcon === null ? plugin.settings.defaultOverview.disableCollapseIcon : yaml?.disableCollapseIcon,
+            alwaysCollapse: yaml?.alwaysCollapse || plugin.settings.defaultOverview.alwaysCollapse,
         }
 
         const customChild = new CustomMarkdownRenderChild(el, this);

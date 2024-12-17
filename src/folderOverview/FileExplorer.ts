@@ -70,7 +70,9 @@ export class FileExplorerOverview {
         newFolderElement.querySelectorAll('div.nav-folder-title').forEach((el) => {
             const folder = plugin.app.vault.getAbstractFileByPath(el.getAttribute('data-path') || '');
             if (!(folder instanceof TFolder)) return;
-            if (yaml.storeFolderCondition) {
+            if (yaml.alwaysCollapse) {
+                folder.collapsed = true;
+            } else if (yaml.storeFolderCondition) {
                 if (folder.collapsed) {
                     el.classList.add('is-collapsed');
                 } else {
