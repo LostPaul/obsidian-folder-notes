@@ -125,7 +125,7 @@ export async function addCSSClassToTitleEL(path: string, cssClass: string, plugi
         return;
     }
     fileExplorerItem.addClass(cssClass);
-    const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);
+    const viewHeaderItems = document.querySelectorAll(`[data-path="${CSS.escape(path)}"]`);
     viewHeaderItems.forEach((item) => {
         item.addClass(cssClass);
     });
@@ -134,7 +134,7 @@ export async function addCSSClassToTitleEL(path: string, cssClass: string, plugi
 export function removeCSSClassFromEL(path: string | undefined, cssClass: string, plugin: FolderNotesPlugin) {
     if (!path) return;
     const fileExplorerItem = getEl(path, plugin);
-    const viewHeaderItems = document.querySelectorAll(`[data-path="${path}"]`);
+    const viewHeaderItems = document.querySelectorAll(`[data-path="${CSS.escape(path)}"]`);
     viewHeaderItems.forEach((item) => {
         item.removeClass(cssClass);
     });
