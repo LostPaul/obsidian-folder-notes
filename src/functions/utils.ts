@@ -1,5 +1,7 @@
+import { TFile, TFolder } from "obsidian";
 import { FileExplorerWorkspaceLeaf } from "src/globals";
 import FolderNotesPlugin from "src/main";
+import { FileExplorerLeaf } from "obsidian-typings";
 
 export function getFileNameFromPathString(path: string): string {
     return path.substring(path.lastIndexOf('/') >= 0 ? path.lastIndexOf('/') + 1 : 0);
@@ -39,6 +41,12 @@ export function getFileExplorer(plugin: FolderNotesPlugin) {
     return plugin.app.workspace.getLeavesOfType('file-explorer')[0] as any as FileExplorerWorkspaceLeaf;
 }
 
-export function getFileExplorerView() {
-    return this.getFileExplorer().view;
+export function getFileExplorerView(plugin: FolderNotesPlugin) {
+    return getFileExplorer(plugin).view;
+}
+
+export function getFocusedItem(plugin: FolderNotesPlugin) {
+    const fileExplorer = getFileExplorer(plugin) as any as FileExplorerLeaf;
+    const focusedItem = fileExplorer.view.tree.focusedItem
+    return focusedItem;
 }

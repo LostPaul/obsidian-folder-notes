@@ -5,7 +5,7 @@ import { FileExplorerWorkspaceLeaf } from './globals';
 import { handleFolderClick } from './events/handleClick';
 import { addObserver } from './events/MutationObserver';
 import { handleRename } from './events/handleRename';
-import { getFolderNote, getFolder } from './functions/folderNoteFunctions';
+import { getFolderNote, getFolder, openFolderNote } from './functions/folderNoteFunctions';
 import { handleCreate } from './events/handleCreate';
 import { FrontMatterTitlePluginHandler } from './events/FrontMatterTitle';
 import { FolderOverviewSettings } from './folderOverview/ModalSettings';
@@ -15,7 +15,8 @@ import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
 import { addCSSClassToTitleEL, getEl, loadFileClasses } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import { ClipBoardManager, FileExplorerView, InternalPlugin, InternalPlugins } from 'obsidian-typings'
+import { ClipBoardManager, FileExplorerView, InternalPlugin } from 'obsidian-typings'
+import { getFocusedItem } from './functions/utils';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -68,6 +69,12 @@ export default class FolderNotesPlugin extends Plugin {
 		});
 
 		this.registerDomEvent(window, 'keydown', (event: KeyboardEvent) => {
+			if (event.key == 'Enter') {
+				const folderNote = getFolderNote(this, getFocusedItem(this)?.file?.path || '');
+				if (!folderNote) return;
+				openFolderNote(this, folderNote);
+			}
+			
 			const hoveredElement = this.hoveredElement;
 			if (this.hoverLinkTriggered) return;
 			if (!hoveredElement) return;
