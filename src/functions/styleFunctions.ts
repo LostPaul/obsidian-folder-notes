@@ -146,7 +146,6 @@ export function getEl(path: string, plugin: FolderNotesPlugin): HTMLElement | nu
     const fileExplorer = getFileExplorer(plugin);
     if (!fileExplorer) { return null; }
     if (!fileExplorer.view) { return null; }
-    console.log(fileExplorer.view);
     if (!fileExplorer.view.fileItems) { return null; }
     const fileExplorerItem = fileExplorer.view.fileItems[path];
     if (!fileExplorerItem) { return null; }
