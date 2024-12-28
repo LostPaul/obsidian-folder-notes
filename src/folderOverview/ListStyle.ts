@@ -2,13 +2,24 @@ import { MarkdownPostProcessorContext, TFolder, TFile } from 'obsidian';
 import { getFolderNote } from '../functions/folderNoteFunctions';
 import FolderNotesPlugin from '../main';
 import { FolderOverview, yamlSettings } from './FolderOverview';
+import { getFolderPathFromString } from '../functions/utils';
 
 export function renderListOverview(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: yamlSettings, pathBlacklist: string[], folderOverview: FolderOverview) {
-    if (!folderOverview.sourceFolder) { return; }
-    let files = folderOverview.sourceFolder.children;
+    let tFolder = plugin.app.vault.getAbstractFileByPath(yaml.folderPath);
+            if (!tFolder && yaml.folderPath.trim() == '') {
+                if (ctx.sourcePath.includes('/')) {
+                    tFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath));
+                } else {
+                    yaml.folderPath = '/';
+                    tFolder = plugin.app.vault.getAbstractFileByPath('/');
+                }
+            }
+    if (!(tFolder instanceof TFolder)) { return; }
+    
+    let files = tFolder.children;
     if (!files) { return; }
     const ul = folderOverview.listEl;
-    const sourceFolderPath = folderOverview.sourceFolder.path;
+    const sourceFolderPath = tFolder.path;
 
 
     const folders = folderOverview.sortFiles(files.filter(f => f instanceof TFolder));
