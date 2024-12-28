@@ -272,12 +272,13 @@ export class FolderOverview {
         });
     }
 
-    sortFiles(files: TAbstractFile[]) {
+    sortFiles(files: TAbstractFile[]): TAbstractFile[] {
         const yaml = this.yaml;
         if (!yaml?.sortBy) {
             yaml.sortBy = this.plugin.settings.defaultOverview.sortBy || 'name';
             yaml.sortByAsc = this.plugin.settings.defaultOverview.sortByAsc || false;
         }
+    
         files.sort((a, b) => {
             if (a instanceof TFolder && !(b instanceof TFolder)) {
                 return -1;
@@ -285,38 +286,25 @@ export class FolderOverview {
             if (!(a instanceof TFolder) && b instanceof TFolder) {
                 return 1;
             }
-            if ((a instanceof TFolder) && (b instanceof TFolder)) {
-                if (a.name.localeCompare(b.name) < 0) {
-                    return -1;
-                } else if (a.name.localeCompare(b.name) > 0) {
-                    return 1;
-                }
+            if (a instanceof TFolder && b instanceof TFolder) {
+                return a.name.localeCompare(b.name);
             }
-            if (!(a instanceof TFile) || !(b instanceof TFile)) { return -1; }
-            if (yaml.sortBy === 'created') {
-                if (a.stat.ctime > b.stat.ctime) {
-                    return -1;
-                } else if (a.stat.ctime < b.stat.ctime) {
-                    return 1;
-                }
-            } else if (yaml.sortBy === 'modified') {
-                if (a.stat.mtime > b.stat.mtime) {
-                    return -1;
-                } else if (a.stat.mtime < b.stat.mtime) {
-                    return 1;
-                }
-            } else if (yaml.sortBy === 'name') {
-                if (a.basename.localeCompare(b.basename) < 0) {
-                    return -1;
-                } else if (a.basename.localeCompare(b.basename) > 0) {
-                    return 1;
+            if (a instanceof TFile && b instanceof TFile) {
+                if (yaml.sortBy === 'created') {
+                    return b.stat.ctime - a.stat.ctime;
+                } else if (yaml.sortBy === 'modified') {
+                    return b.stat.mtime - a.stat.mtime;
+                } else if (yaml.sortBy === 'name') {
+                    return a.basename.localeCompare(b.basename);
                 }
             }
             return 0;
         });
+    
         if (!yaml?.sortByAsc) {
-            files = files.reverse();
+            files.reverse();
         }
+
         return files;
     }
 
