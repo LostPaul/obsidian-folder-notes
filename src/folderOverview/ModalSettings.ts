@@ -37,6 +37,7 @@ export class FolderOverviewSettings extends Modal {
 				storeFolderCondition: yaml?.storeFolderCondition === undefined || yaml?.storeFolderCondition === null ? plugin.settings.defaultOverview.storeFolderCondition : yaml?.storeFolderCondition,
 				showFolderNotes: yaml?.showFolderNotes === undefined || yaml?.showFolderNotes === null ? plugin.settings.defaultOverview.showFolderNotes : yaml?.showFolderNotes,
 				disableCollapseIcon: yaml?.disableCollapseIcon === undefined || yaml?.disableCollapseIcon === null ? plugin.settings.defaultOverview.disableCollapseIcon : yaml?.disableCollapseIcon,
+				alwaysCollapse: yaml?.alwaysCollapse === undefined || yaml?.alwaysCollapse === null ? plugin.settings.defaultOverview.alwaysCollapse : yaml?.alwaysCollapse,
 			}
 		}
 		if (ctx) {
@@ -336,6 +337,21 @@ export class FolderOverviewSettings extends Modal {
 						.setValue(this.yaml.disableCollapseIcon)
 						.onChange(async (value) => {
 							this.yaml.disableCollapseIcon = value;
+							if (this.defaultSettings) {
+								return this.plugin.saveSettings();
+							}
+							await updateYaml(this.plugin, this.ctx, this.el, this.yaml);
+						});
+				});
+
+				new Setting(contentEl)
+				.setName('Collapse all in the tree by default')
+				.setDesc('Collapse every folder in the file explorer in the overview by default')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.yaml.alwaysCollapse)
+						.onChange(async (value) => {
+							this.yaml.alwaysCollapse = value;
 							if (this.defaultSettings) {
 								return this.plugin.saveSettings();
 							}
