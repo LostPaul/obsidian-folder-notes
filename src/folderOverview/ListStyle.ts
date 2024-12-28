@@ -54,12 +54,11 @@ function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLU
     if (sourceFolderPath === '') {
         depth--;
     }
-    let files = folderOverview.filterFiles(folder.children, plugin, sourceFolderPath, depth, pathBlacklist);
-    files = folderOverview.sortFiles(files.filter((file) => !(file instanceof TFolder)));
-    if (folderOverview.yaml.sortByAsc) {
-        files = files.reverse();
-    }
-    const folders = folderOverview.sortFiles(files.filter((file) => file instanceof TFolder));
+
+    let allFiles = folderOverview.filterFiles(folder.children, plugin, sourceFolderPath, depth, pathBlacklist);
+    const files = folderOverview.sortFiles(allFiles.filter((file) => !(file instanceof TFolder)));
+
+    const folders = folderOverview.sortFiles(allFiles.filter((file) => file instanceof TFolder));
     const ul = list.createEl('ul', { cls: 'folder-overview-list' });
     folders.forEach((file) => {
         if (file instanceof TFolder) {
