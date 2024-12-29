@@ -118,7 +118,7 @@ export class FolderOverview {
         this.eventListeners.push(() => plugin.app.vault.off('delete', handleDelete));
     }
 
-    create(plugin: FolderNotesPlugin, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+    async create(plugin: FolderNotesPlugin, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
         el.empty();
         el.parentElement?.classList.add('folder-overview-container');
 
@@ -186,6 +186,8 @@ export class FolderOverview {
             files = this.getAllFiles(files, sourceFolderPath, this.yaml.depth);
         }
 
+        console.log('files 2', files);
+
         if (files.length === 0) {
             return this.addEditButton(root)
         }
@@ -220,15 +222,17 @@ export class FolderOverview {
         } else if (this.yaml.style === 'explorer') {
             const fileExplorerOverview = new FileExplorerOverview(plugin, ctx, root, this.yaml, this.pathBlacklist, this);
             if (this.plugin.app.workspace.layoutReady) {
-                fileExplorerOverview.renderFileExplorer();
+                await fileExplorerOverview.renderFileExplorer();
             } else {
                 this.plugin.app.workspace.onLayoutReady(() => {
                     fileExplorerOverview.renderFileExplorer();
                 });
             }
         }
+
         const overviewListEl = el.childNodes[0].childNodes[1];
         if (overviewListEl && overviewListEl.childNodes.length === 0) {
+            console.log('overviewListEl childNodes', overviewListEl.childNodes);
             if (this.yaml.style === 'explorer') {
                 const overview = el.childNodes[0];
                 if (!overview.childNodes[2]) {
@@ -274,9 +278,10 @@ export class FolderOverview {
 
     sortFiles(files: TAbstractFile[]): TAbstractFile[] {
         const yaml = this.yaml;
+    
         if (!yaml?.sortBy) {
-            yaml.sortBy = this.plugin.settings.defaultOverview.sortBy || 'name';
-            yaml.sortByAsc = this.plugin.settings.defaultOverview.sortByAsc || false;
+            yaml.sortBy = this.plugin.settings.defaultOverview.sortBy ?? 'name';
+            yaml.sortByAsc = this.plugin.settings.defaultOverview.sortByAsc ?? false;
         }
     
         files.sort((a, b) => {
@@ -286,27 +291,30 @@ export class FolderOverview {
             if (!(a instanceof TFolder) && b instanceof TFolder) {
                 return 1;
             }
+    
             if (a instanceof TFolder && b instanceof TFolder) {
-                return a.name.localeCompare(b.name);
+                return yaml.sortByAsc
+                    ? a.name.localeCompare(b.name)
+                    : b.name.localeCompare(a.name);
             }
+    
             if (a instanceof TFile && b instanceof TFile) {
                 if (yaml.sortBy === 'created') {
-                    return b.stat.ctime - a.stat.ctime;
+                    return yaml.sortByAsc ? a.stat.ctime - b.stat.ctime : b.stat.ctime - a.stat.ctime;
                 } else if (yaml.sortBy === 'modified') {
-                    return b.stat.mtime - a.stat.mtime;
+                    return yaml.sortByAsc ? a.stat.mtime - b.stat.mtime : b.stat.mtime - a.stat.mtime;
                 } else if (yaml.sortBy === 'name') {
-                    return a.basename.localeCompare(b.basename);
+                    return yaml.sortByAsc
+                        ? a.basename.localeCompare(b.basename)
+                        : b.basename.localeCompare(a.basename);
                 }
             }
+
             return 0;
         });
     
-        if (!yaml?.sortByAsc) {
-            files.reverse();
-        }
-
         return files;
-    }
+    }    
 
     removeEmptyFolders(ul: HTMLUListElement | HTMLLIElement, depth: number, yaml: yamlSettings) {
         const childrensToRemove: ChildNode[] = [];

@@ -64,7 +64,7 @@ export class FileExplorerOverview {
 
         folderElement = document.querySelectorAll('.nav-files-container')[0] as HTMLElement;
         if (!folderElement) return;
-        
+
         const newFolderElement = folderElement.cloneNode(true) as HTMLElement;
 
         newFolderElement.querySelectorAll('div.nav-folder-title').forEach((el) => {
@@ -72,19 +72,23 @@ export class FileExplorerOverview {
             if (!(folder instanceof TFolder)) return;
             if (yaml.alwaysCollapse) {
                 folder.collapsed = true;
-            } else if (yaml.storeFolderCondition) {
-                if (folder.collapsed) {
-                    el.classList.add('is-collapsed');
-                } else {
-                    el.classList.remove('is-collapsed');
-                }
+                el.classList.add('is-collapsed');
             } else {
-                if (el.parentElement?.classList.contains('is-collapsed')) {
-                    folder.collapsed = true;
+                if (yaml.storeFolderCondition) {
+                    if (folder.collapsed) {
+                        el.classList.add('is-collapsed');
+                    } else {
+                        el.classList.remove('is-collapsed');
+                    }
                 } else {
-                    folder.collapsed = false;
+                    if (el.parentElement?.classList.contains('is-collapsed')) {
+                        folder.collapsed = true;
+                    } else {
+                        folder.collapsed = false;
+                    }
                 }
             }
+
             if (el.classList.contains('has-folder-note')) {
                 const folderNote = getFolderNote(plugin, folder.path);
                 if (folderNote) { folderOverview.pathBlacklist.push(folderNote.path); }
@@ -104,7 +108,7 @@ export class FileExplorerOverview {
         folderOverview.on('vault-change', handleVaultChange);
 
         if (tFolder instanceof TFolder) {
-            this.addFiles(tFolder.children, overviewList, folderOverview);
+            await this.addFiles(tFolder.children, overviewList, folderOverview);
         }
 
         newFolderElement.querySelectorAll('div.tree-item-icon').forEach((el) => {
@@ -127,101 +131,24 @@ export class FileExplorerOverview {
         };
     }
 
-    addFiles(files: TAbstractFile[], childrenElement: HTMLElement, folderOverview: FolderOverview) {
+    async addFiles(files: TAbstractFile[], childrenElement: HTMLElement, folderOverview: FolderOverview) {
         const plugin = folderOverview.plugin;
-        const pathBlacklist = folderOverview.pathBlacklist;
-        const yaml = folderOverview.yaml;
-        const folders = folderOverview.sortFiles(files.filter((file) => file instanceof TFolder));
-        const filesWithoutFolders = folderOverview.sortFiles(files.filter((file) => !(file instanceof TFolder)));
+        const sortedFiles = folderOverview.sortFiles(files);
+
+        const folders = sortedFiles.filter(child => child instanceof TFolder);
+        const otherFiles = sortedFiles.filter(child => child instanceof TFile);
 
         for (const child of folders) {
-            if (child instanceof TFolder) {
-                this.createFolderEL(plugin, child, folderOverview, childrenElement);
-            }
+            await this.createFolderEL(plugin, child, folderOverview, childrenElement);
         }
 
-        for (const child of filesWithoutFolders) {
-            if (child instanceof TFile) {
-                if (pathBlacklist.includes(child.path) && !yaml.showFolderNotes) { continue; }
-                const extension = child.extension.toLowerCase() == 'md' ? 'markdown' : child.extension.toLowerCase();
-                const includeTypes = yaml.includeTypes;
-
-                if (includeTypes.length > 0 && !includeTypes.includes('all')) {
-                    if ((extension === 'md' || extension === 'markdown') && !includeTypes.includes('markdown')) continue;
-                    if (extension === 'canvas' && !includeTypes.includes('canvas')) continue;
-                    if (extension === 'pdf' && !includeTypes.includes('pdf')) continue;
-                    const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
-                    if (imageTypes.includes(extension) && !includeTypes.includes('image')) continue;
-                    const videoTypes = ['mp4', 'webm', 'ogv', 'mov', 'mkv'];
-                    if (videoTypes.includes(extension) && !includeTypes.includes('video')) continue;
-                    const audioTypes = ['mp3', 'wav', 'm4a', '3gp', 'flac', 'ogg', 'oga', 'opus'];
-                    if (audioTypes.includes(extension) && includeTypes.includes('audio')) continue;
-                    const allTypes = ['markdown', 'md', 'canvas', 'pdf', ...imageTypes, ...videoTypes, ...audioTypes];
-                    if (!allTypes.includes(extension) && !includeTypes.includes('other')) continue;
-                }
-
-                const fileElement = childrenElement.createDiv({
-                    cls: 'tree-item nav-file',
-                });
-
-                const fileTitle = fileElement.createDiv({
-                    cls: 'tree-item-self is-clickable nav-file-title pointer-cursor',
-                    attr: {
-                        'data-path': child.path,
-                        'draggable': 'true'
-                    },
-                })
-
-                fileTitle.addEventListener('dragover', e => {
-                    e.preventDefault();
-                    const { draggable } = plugin.app.dragManager;
-                    if (draggable && draggable.file instanceof TFolder) {
-                        plugin.app.dragManager.setAction(window.i18next.t("interface.drag-and-drop.move-into-folder", { folder: child.parent?.name || '' }));
-                        const folderEL = folderOverview.getElFromOverview(child.parent?.path || '')
-                        if (folderEL) {
-                            folderEL.parentElement?.classList.add('is-being-dragged-over');
-                        }
-                    }
-                });
-
-                fileTitle.addEventListener('dragleave', e => {
-                    const folderEL = folderOverview.getElFromOverview(child.parent?.path || '')
-                    if (folderEL) {
-                        folderEL.parentElement?.classList.remove('is-being-dragged-over');
-                    }
-                });
-
-                fileTitle.addEventListener('drop', e => {
-                    const { draggable } = plugin.app.dragManager;
-                    if (draggable && draggable.file instanceof TFolder) {
-                        plugin.app.fileManager.renameFile(draggable.file, child.parent?.path + '/' + draggable.file.name);
-                    }
-                });
-
-                fileTitle.onclick = () => {
-                    plugin.app.workspace.openLinkText(child.path, child.path, true);
-                }
-
-                fileTitle.oncontextmenu = (e) => {
-                    folderOverview.fileMenu(child, e);
-                }
-
-                fileTitle.createDiv({
-                    cls: 'tree-item-inner nav-file-title-content',
-                    text: child.basename,
-                });
-
-                if (child.extension !== 'md' && !yaml.disableFileTag) {
-                    fileTitle.createDiv({
-                        cls: 'nav-file-tag',
-                        text: child.extension
-                    });
-                }
-            }
+        for (const child of otherFiles) {
+            await this.createFileEL(plugin, child, folderOverview, childrenElement);
         }
+
     }
 
-    handleCollapseClick(el: HTMLElement, plugin: FolderNotesPlugin, yaml: yamlSettings, pathBlacklist: string[], sourcePath: string, folderOverview: FolderOverview, folder?: TFolder | undefined | null | TAbstractFile) {
+    async handleCollapseClick(el: HTMLElement, plugin: FolderNotesPlugin, yaml: yamlSettings, pathBlacklist: string[], sourcePath: string, folderOverview: FolderOverview, folder?: TFolder | undefined | null | TAbstractFile) {
         el.classList.toggle('is-collapsed');
         if (el.classList.contains('is-collapsed')) {
             if (!(folder instanceof TFolder)) return;
@@ -235,11 +162,12 @@ export class FileExplorerOverview {
             const childrenElement = folderElement.createDiv({ cls: 'tree-item-children nav-folder-children' });
             let files = folderOverview.sortFiles(folder.children);
             files = folderOverview.filterFiles(files, plugin, folder.path, yaml.depth || 1, pathBlacklist);
-            this.addFiles(files, childrenElement, folderOverview);
+            await this.addFiles(files, childrenElement, folderOverview);
         }
     }
 
     async createFolderEL(plugin: FolderNotesPlugin, child: TFolder, folderOverview: FolderOverview, childrenElement: HTMLElement) {
+        console.log('createFolderEL');
         const pathBlacklist = folderOverview.pathBlacklist;
         const source = folderOverview.source;
         const folderNote = getFolderNote(plugin, child.path);
@@ -250,8 +178,10 @@ export class FileExplorerOverview {
         if (folderNote) { pathBlacklist.push(folderNote.path); }
         const excludedFolder = await getExcludedFolder(plugin, child.path, true);
         if (excludedFolder?.excludeFromFolderOverview) { return; }
+
         const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon right-triangle"><path d="M3 8L12 17L21 8"></path></svg>';
         if (yaml.includeTypes.includes('folder')) {
+            console.log('folder');
             folderElement = childrenElement.createDiv({
                 cls: 'tree-item nav-folder',
             });
@@ -262,6 +192,20 @@ export class FileExplorerOverview {
                     'draggable': 'true'
                 },
             })
+
+            const folderTitleText = folderTitle?.createDiv({
+                cls: 'tree-item-inner nav-folder-title-content',
+                text: child.name,
+            });
+            
+            if (folderTitleText && !folderNote) {
+                folderTitleText.onclick = () => {
+                    const collapseIcon = folderTitle?.querySelectorAll('.tree-item-icon')[0] as HTMLElement;
+                    if (collapseIcon) {
+                        this.handleCollapseClick(collapseIcon, plugin, yaml, pathBlacklist, source, folderOverview, child);
+                    }
+                }
+            }
 
             folderTitle.draggable = true;
             folderTitle.addEventListener('dragstart', e => {
@@ -306,10 +250,10 @@ export class FileExplorerOverview {
                 folderTitle?.classList.remove('is-collapsed');
                 const childrenElement = folderElement?.createDiv({ cls: 'tree-item-children nav-folder-children' });
                 if (childrenElement) {
-                    this.addFiles(child.children, childrenElement, folderOverview);
+                    await this.addFiles(child.children, childrenElement, folderOverview);
                 }
             } else {
-                this.addFiles(child.children, childrenElement, folderOverview);
+                await this.addFiles(child.children, childrenElement, folderOverview);
             }
         } else {
             folderTitle?.classList.add('is-collapsed');
@@ -324,25 +268,95 @@ export class FileExplorerOverview {
         if (child.collapsed) {
             collapseIcon?.classList.add('is-collapsed');
         }
+
         if (collapseIcon) {
             collapseIcon.innerHTML = svg;
             collapseIcon.onclick = () => {
                 this.handleCollapseClick(collapseIcon, plugin, yaml, pathBlacklist, source, folderOverview, child);
             }
         }
+    }
 
-        const folderTitleText = folderTitle?.createDiv({
-            cls: 'tree-item-inner nav-folder-title-content',
-            text: child.name,
+    async createFileEL(plugin: FolderNotesPlugin, child: TFile, folderOverview: FolderOverview, childrenElement: HTMLElement) {
+        console.log('createFileEL');
+        const yaml = folderOverview.yaml;
+        const pathBlacklist = folderOverview.pathBlacklist;
+
+        if (pathBlacklist.includes(child.path) && !yaml.showFolderNotes) { return; }
+        const extension = child.extension.toLowerCase() == 'md' ? 'markdown' : child.extension.toLowerCase();
+        const includeTypes = yaml.includeTypes;
+
+        if (includeTypes.length > 0 && !includeTypes.includes('all')) {
+            if ((extension === 'md' || extension === 'markdown') && !includeTypes.includes('markdown')) return;
+            if (extension === 'canvas' && !includeTypes.includes('canvas')) return;
+            if (extension === 'pdf' && !includeTypes.includes('pdf')) return;
+            const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+            if (imageTypes.includes(extension) && !includeTypes.includes('image')) return;
+            const videoTypes = ['mp4', 'webm', 'ogv', 'mov', 'mkv'];
+            if (videoTypes.includes(extension) && !includeTypes.includes('video')) return;
+            const audioTypes = ['mp3', 'wav', 'm4a', '3gp', 'flac', 'ogg', 'oga', 'opus'];
+            if (audioTypes.includes(extension) && includeTypes.includes('audio')) return;
+            const allTypes = ['markdown', 'md', 'canvas', 'pdf', ...imageTypes, ...videoTypes, ...audioTypes];
+            if (!allTypes.includes(extension) && !includeTypes.includes('other')) return;
+        }
+
+        console.log('file');
+        const fileElement = childrenElement.createDiv({
+            cls: 'tree-item nav-file',
         });
 
-        if (folderTitleText && !folderNote) {
-            folderTitleText.onclick = () => {
-                const collapseIcon = folderTitle?.querySelectorAll('.tree-item-icon')[0] as HTMLElement;
-                if (collapseIcon) {
-                    this.handleCollapseClick(collapseIcon, plugin, yaml, pathBlacklist, source, folderOverview, child);
+        const fileTitle = fileElement.createDiv({
+            cls: 'tree-item-self is-clickable nav-file-title pointer-cursor',
+            attr: {
+                'data-path': child.path,
+                'draggable': 'true'
+            },
+        })
+
+        fileTitle.addEventListener('dragover', e => {
+            e.preventDefault();
+            const { draggable } = plugin.app.dragManager;
+            if (draggable && draggable.file instanceof TFolder) {
+                plugin.app.dragManager.setAction(window.i18next.t("interface.drag-and-drop.move-into-folder", { folder: child.parent?.name || '' }));
+                const folderEL = folderOverview.getElFromOverview(child.parent?.path || '')
+                if (folderEL) {
+                    folderEL.parentElement?.classList.add('is-being-dragged-over');
                 }
             }
+        });
+
+        fileTitle.addEventListener('dragleave', e => {
+            const folderEL = folderOverview.getElFromOverview(child.parent?.path || '')
+            if (folderEL) {
+                folderEL.parentElement?.classList.remove('is-being-dragged-over');
+            }
+        });
+
+        fileTitle.addEventListener('drop', e => {
+            const { draggable } = plugin.app.dragManager;
+            if (draggable && draggable.file instanceof TFolder) {
+                plugin.app.fileManager.renameFile(draggable.file, child.parent?.path + '/' + draggable.file.name);
+            }
+        });
+
+        fileTitle.onclick = () => {
+            plugin.app.workspace.openLinkText(child.path, child.path, true);
+        }
+
+        fileTitle.oncontextmenu = (e) => {
+            folderOverview.fileMenu(child, e);
+        }
+
+        fileTitle.createDiv({
+            cls: 'tree-item-inner nav-file-title-content',
+            text: child.basename,
+        });
+
+        if (child.extension !== 'md' && !yaml.disableFileTag) {
+            fileTitle.createDiv({
+                cls: 'nav-file-tag',
+                text: child.extension
+            });
         }
     }
 }
