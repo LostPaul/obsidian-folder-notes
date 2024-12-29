@@ -180,8 +180,11 @@ export class FolderOverview {
         } else if (sourceFolder) {
             files = sourceFolder.children;
         }
+        console.log('sourceFolderPath', sourceFolderPath);
+        files = this.getAllFiles(files, sourceFolderPath, this.yaml.depth);
+        console.log('files', files);
 
-        files = this.filterFiles(files, plugin, sourceFolderPath, this.yaml.depth, this.pathBlacklist);
+        files = await this.filterFiles(files, plugin, sourceFolderPath, this.yaml.depth, this.pathBlacklist);
 
         if (!this.yaml.includeTypes.includes('folder')) {
             files = this.getAllFiles(files, sourceFolderPath, this.yaml.depth);
@@ -261,19 +264,26 @@ export class FolderOverview {
         }, { capture: true });
     }
 
-    filterFiles(files: TAbstractFile[], plugin: FolderNotesPlugin, sourceFolderPath: string, depth: number, pathBlacklist: string[]) {
-        return files.filter(async (file) => {
-            if (pathBlacklist.includes(file.path) && !this.yaml.showFolderNotes) { return false; }
+    async filterFiles(files: TAbstractFile[], plugin: FolderNotesPlugin, sourceFolderPath: string, depth: number, pathBlacklist: string[]) {
+        const filteredFiles = await Promise.all(files.map(async (file) => {
             const folderPath = getFolderPathFromString(file.path);
-            if (!folderPath.startsWith(sourceFolderPath) && sourceFolderPath !== '/') { return false; }
-            if (file.path === this.sourceFilePath) { return false; }
-            const excludedFolder = await getExcludedFolder(plugin, file.path, true);
-            if (excludedFolder?.excludeFromFolderOverview) { return false; }
-            if ((file.path.split('/').length - sourceFolderPath.split('/').length) - 1 < depth) {
-                return true;
+    
+            if (
+                (pathBlacklist.includes(file.path) && !this.yaml.showFolderNotes) ||
+                !folderPath.startsWith(sourceFolderPath) && sourceFolderPath !== '/' ||
+                file.path === this.sourceFilePath ||
+                (await getExcludedFolder(plugin, file.path, true))?.excludeFromFolderOverview
+            ) {
+                return null;
             }
-        });
+    
+            const fileDepth = file.path.split('/').length - sourceFolderPath.split('/').length;
+            return fileDepth <= depth ? file : null;
+        }));
+    
+        return filteredFiles.filter(file => file !== null);
     }
+    
 
     sortFiles(files: TAbstractFile[]): TAbstractFile[] {
         const yaml = this.yaml;
@@ -335,17 +345,27 @@ export class FolderOverview {
 
     getAllFiles(files: TAbstractFile[], sourceFolderPath: string, depth: number) {
         const allFiles: TAbstractFile[] = [];
+
+        const getDepth = (filePath: string) => {
+            return filePath.split('/').length - sourceFolderPath.split('/').length;
+        };
+    
         files.forEach((file) => {
+            const fileDepth = getDepth(file.path);
+    
             if (file instanceof TFolder) {
-                if ((file.path.split('/').length - sourceFolderPath.split('/').length) - 1 < depth - 1) {
+                if (fileDepth < depth) {
                     allFiles.push(...this.getAllFiles(file.children, sourceFolderPath, depth));
                 }
             } else {
                 allFiles.push(file);
             }
         });
+    
         return allFiles;
     }
+    
+    
 
     fileMenu(file: TFile, e: MouseEvent) {
         const plugin = this.plugin;

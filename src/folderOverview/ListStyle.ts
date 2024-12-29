@@ -59,14 +59,14 @@ export function addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement 
     return folderItem;
 }
 
-function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLUListElement, folder: TFolder,
+async function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLUListElement, folder: TFolder,
     depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: yamlSettings,
     pathBlacklist: string[], includeTypes: string[], disableFileTag: boolean, folderOverview: FolderOverview) {
     if (sourceFolderPath === '') {
         depth--;
     }
 
-    let allFiles = folderOverview.filterFiles(folder.children, plugin, sourceFolderPath, depth, pathBlacklist);
+    let allFiles = await folderOverview.filterFiles(folder.children, plugin, sourceFolderPath, depth, pathBlacklist);
     const files = folderOverview.sortFiles(allFiles.filter((file) => !(file instanceof TFolder)));
 
     const folders = folderOverview.sortFiles(allFiles.filter((file) => file instanceof TFolder));
