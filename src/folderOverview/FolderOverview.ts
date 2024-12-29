@@ -60,23 +60,24 @@ export class FolderOverview {
         this.sourceFilePath = this.ctx.sourcePath;
         this.sourceFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath)) as TFolder;
         this.yaml = {
-            id: yaml?.id || crypto.randomUUID(),
-            folderPath: yaml?.folderPath === undefined || yaml?.folderPath === null ? getFolderPathFromString(ctx.sourcePath) : yaml?.folderPath,
-            title: yaml?.title || plugin.settings.defaultOverview.title,
-            showTitle: yaml?.showTitle === undefined || yaml?.showTitle === null ? plugin.settings.defaultOverview.showTitle : yaml?.showTitle,
-            depth: yaml?.depth || plugin.settings.defaultOverview.depth,
-            style: yaml?.style || 'list',
+            id: yaml?.id ?? crypto.randomUUID(),
+            folderPath: yaml?.folderPath ?? getFolderPathFromString(ctx.sourcePath),
+            title: yaml?.title ?? plugin.settings.defaultOverview.title,
+            showTitle: yaml?.showTitle ?? plugin.settings.defaultOverview.showTitle,
+            depth: yaml?.depth ?? plugin.settings.defaultOverview.depth,
+            style: yaml?.style ?? 'list',
             includeTypes: includeTypes.map((type) => type.toLowerCase()) as includeTypes[],
-            disableFileTag: yaml?.disableFileTag === undefined || yaml?.disableFileTag === null ? plugin.settings.defaultOverview.disableFileTag : yaml?.disableFileTag,
-            sortBy: yaml?.sortBy || plugin.settings.defaultOverview.sortBy,
-            sortByAsc: yaml?.sortByAsc === undefined || yaml?.sortByAsc === null ? plugin.settings.defaultOverview.sortByAsc : yaml?.sortByAsc,
-            showEmptyFolders: yaml?.showEmptyFolders === undefined || yaml?.showEmptyFolders === null ? plugin.settings.defaultOverview.showEmptyFolders : yaml?.showEmptyFolders,
-            onlyIncludeSubfolders: yaml?.onlyIncludeSubfolders === undefined || yaml?.onlyIncludeSubfolders === null ? plugin.settings.defaultOverview.onlyIncludeSubfolders : yaml?.onlyIncludeSubfolders,
-            storeFolderCondition: yaml?.storeFolderCondition === undefined || yaml?.storeFolderCondition === null ? plugin.settings.defaultOverview.storeFolderCondition : yaml?.storeFolderCondition,
-            showFolderNotes: yaml?.showFolderNotes === undefined || yaml?.showFolderNotes === null ? plugin.settings.defaultOverview.showFolderNotes : yaml?.showFolderNotes,
-            disableCollapseIcon: yaml?.disableCollapseIcon === undefined || yaml?.disableCollapseIcon === null ? plugin.settings.defaultOverview.disableCollapseIcon : yaml?.disableCollapseIcon,
-            alwaysCollapse: yaml?.alwaysCollapse || plugin.settings.defaultOverview.alwaysCollapse,
-        }
+            disableFileTag: yaml?.disableFileTag ?? plugin.settings.defaultOverview.disableFileTag,
+            sortBy: yaml?.sortBy ?? plugin.settings.defaultOverview.sortBy,
+            sortByAsc: yaml?.sortByAsc ?? plugin.settings.defaultOverview.sortByAsc,
+            showEmptyFolders: yaml?.showEmptyFolders ?? plugin.settings.defaultOverview.showEmptyFolders,
+            onlyIncludeSubfolders: yaml?.onlyIncludeSubfolders ?? plugin.settings.defaultOverview.onlyIncludeSubfolders,
+            storeFolderCondition: yaml?.storeFolderCondition ?? plugin.settings.defaultOverview.storeFolderCondition,
+            showFolderNotes: yaml?.showFolderNotes ?? plugin.settings.defaultOverview.showFolderNotes,
+            disableCollapseIcon: yaml?.disableCollapseIcon ?? plugin.settings.defaultOverview.disableCollapseIcon,
+            alwaysCollapse: yaml?.alwaysCollapse ?? plugin.settings.defaultOverview.alwaysCollapse,
+        };
+        
 
         const customChild = new CustomMarkdownRenderChild(el, this);
         ctx.addChild(customChild);
@@ -185,8 +186,6 @@ export class FolderOverview {
         if (!this.yaml.includeTypes.includes('folder')) {
             files = this.getAllFiles(files, sourceFolderPath, this.yaml.depth);
         }
-
-        console.log('files 2', files);
 
         if (files.length === 0) {
             return this.addEditButton(root)
