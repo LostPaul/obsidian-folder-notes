@@ -245,6 +245,7 @@ export class FolderOverviewSettings extends Modal {
 				slider
 					.setValue(this.yaml?.depth || 2)
 					.setLimits(1, 10, 1)
+					.setDynamicTooltip()
 					.onChange(async (value) => {
 						this.yaml.depth = value;
 						if (this.defaultSettings) {

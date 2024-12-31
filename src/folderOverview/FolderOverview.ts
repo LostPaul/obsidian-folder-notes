@@ -77,7 +77,7 @@ export class FolderOverview {
             disableCollapseIcon: yaml?.disableCollapseIcon ?? plugin.settings.defaultOverview.disableCollapseIcon,
             alwaysCollapse: yaml?.alwaysCollapse ?? plugin.settings.defaultOverview.alwaysCollapse,
         };
-        
+
 
         const customChild = new CustomMarkdownRenderChild(el, this);
         ctx.addChild(customChild);
@@ -180,10 +180,8 @@ export class FolderOverview {
         } else if (sourceFolder) {
             files = sourceFolder.children;
         }
-        console.log('sourceFolderPath', sourceFolderPath);
-        files = this.getAllFiles(files, sourceFolderPath, this.yaml.depth);
-        console.log('files', files);
 
+        
         files = await this.filterFiles(files, plugin, sourceFolderPath, this.yaml.depth, this.pathBlacklist);
 
         if (!this.yaml.includeTypes.includes('folder')) {
@@ -234,7 +232,6 @@ export class FolderOverview {
 
         const overviewListEl = el.childNodes[0].childNodes[1];
         if (overviewListEl && overviewListEl.childNodes.length === 0) {
-            console.log('overviewListEl childNodes', overviewListEl.childNodes);
             if (this.yaml.style === 'explorer') {
                 const overview = el.childNodes[0];
                 if (!overview.childNodes[2]) {
@@ -267,32 +264,31 @@ export class FolderOverview {
     async filterFiles(files: TAbstractFile[], plugin: FolderNotesPlugin, sourceFolderPath: string, depth: number, pathBlacklist: string[]) {
         const filteredFiles = await Promise.all(files.map(async (file) => {
             const folderPath = getFolderPathFromString(file.path);
-    
-            if (
-                (pathBlacklist.includes(file.path) && !this.yaml.showFolderNotes) ||
-                !folderPath.startsWith(sourceFolderPath) && sourceFolderPath !== '/' ||
-                file.path === this.sourceFilePath ||
-                (await getExcludedFolder(plugin, file.path, true))?.excludeFromFolderOverview
-            ) {
+            const isBlacklisted = pathBlacklist.includes(file.path);
+            const isSubfolder = folderPath.startsWith(sourceFolderPath) && sourceFolderPath !== '/';
+            const isSourceFile = file.path === this.sourceFilePath;
+            const isExcludedFromOverview = (await getExcludedFolder(plugin, file.path, true))?.excludeFromFolderOverview;
+
+            if ((isBlacklisted && !this.yaml.showFolderNotes) || !isSubfolder || isSourceFile || isExcludedFromOverview) {
                 return null;
             }
-    
+
             const fileDepth = file.path.split('/').length - sourceFolderPath.split('/').length;
             return fileDepth <= depth ? file : null;
         }));
-    
+
         return filteredFiles.filter(file => file !== null);
     }
-    
+
 
     sortFiles(files: TAbstractFile[]): TAbstractFile[] {
         const yaml = this.yaml;
-    
+
         if (!yaml?.sortBy) {
             yaml.sortBy = this.plugin.settings.defaultOverview.sortBy ?? 'name';
             yaml.sortByAsc = this.plugin.settings.defaultOverview.sortByAsc ?? false;
         }
-    
+
         files.sort((a, b) => {
             if (a instanceof TFolder && !(b instanceof TFolder)) {
                 return -1;
@@ -300,13 +296,13 @@ export class FolderOverview {
             if (!(a instanceof TFolder) && b instanceof TFolder) {
                 return 1;
             }
-    
+
             if (a instanceof TFolder && b instanceof TFolder) {
                 return yaml.sortByAsc
                     ? a.name.localeCompare(b.name)
                     : b.name.localeCompare(a.name);
             }
-    
+
             if (a instanceof TFile && b instanceof TFile) {
                 if (yaml.sortBy === 'created') {
                     return yaml.sortByAsc ? a.stat.ctime - b.stat.ctime : b.stat.ctime - a.stat.ctime;
@@ -321,9 +317,9 @@ export class FolderOverview {
 
             return 0;
         });
-    
+
         return files;
-    }    
+    }
 
     removeEmptyFolders(ul: HTMLUListElement | HTMLLIElement, depth: number, yaml: yamlSettings) {
         const childrensToRemove: ChildNode[] = [];
@@ -349,10 +345,10 @@ export class FolderOverview {
         const getDepth = (filePath: string) => {
             return filePath.split('/').length - sourceFolderPath.split('/').length;
         };
-    
+
         files.forEach((file) => {
             const fileDepth = getDepth(file.path);
-    
+
             if (file instanceof TFolder) {
                 if (fileDepth < depth) {
                     allFiles.push(...this.getAllFiles(file.children, sourceFolderPath, depth));
@@ -361,11 +357,11 @@ export class FolderOverview {
                 allFiles.push(file);
             }
         });
-    
+
         return allFiles;
     }
-    
-    
+
+
 
     fileMenu(file: TFile, e: MouseEvent) {
         const plugin = this.plugin;

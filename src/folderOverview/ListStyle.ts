@@ -31,6 +31,7 @@ export function renderListOverview(plugin: FolderNotesPlugin, ctx: MarkdownPostP
             goThroughFolders(plugin, folderItem, file, folderOverview.yaml.depth, sourceFolderPath, ctx, folderOverview.yaml, folderOverview.pathBlacklist, folderOverview.yaml.includeTypes, folderOverview.yaml.disableFileTag, folderOverview);
         }
     });
+
     files.forEach((file) => {
         if (file instanceof TFile) {
             addFileList(plugin, ul, folderOverview.pathBlacklist, file, folderOverview.yaml.includeTypes, folderOverview.yaml.disableFileTag, folderOverview);
@@ -66,11 +67,12 @@ async function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement |
         depth--;
     }
 
-    let allFiles = await folderOverview.filterFiles(folder.children, plugin, sourceFolderPath, depth, pathBlacklist);
+    const allFiles = await folderOverview.filterFiles(folder.children, plugin, sourceFolderPath, depth, pathBlacklist);
     const files = folderOverview.sortFiles(allFiles.filter((file) => !(file instanceof TFolder)));
 
     const folders = folderOverview.sortFiles(allFiles.filter((file) => file instanceof TFolder));
     const ul = list.createEl('ul', { cls: 'folder-overview-list' });
+
     folders.forEach((file) => {
         if (file instanceof TFolder) {
             const folderItem = addFolderList(plugin, ul, pathBlacklist, file, folderOverview);
@@ -78,6 +80,7 @@ async function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement |
             goThroughFolders(plugin, folderItem, file, depth, sourceFolderPath, ctx, yaml, pathBlacklist, includeTypes, disableFileTag, folderOverview);
         }
     });
+
     files.forEach((file) => {
         if (file instanceof TFile) {
             addFileList(plugin, ul, pathBlacklist, file, includeTypes, disableFileTag, folderOverview);
@@ -99,14 +102,17 @@ function addFileList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIE
         const allTypes = ['md', 'canvas', 'pdf', ...imageTypes, ...videoTypes, ...audioTypes];
         if (!allTypes.includes(file.extension) && !includeTypes.includes('other')) return;
     }
+    
     if (!folderOverview.yaml.showFolderNotes) {
         if (pathBlacklist.includes(file.path)) return;
     }
+
     const listItem = list.createEl('li', { cls: 'folder-overview-list file-link' });
     listItem.oncontextmenu = (e) => {
         e.stopImmediatePropagation();
         folderOverview.fileMenu(file, e);
     }
+
     const nameItem = listItem.createEl('div', { cls: 'folder-overview-list-item' });
     const link = nameItem.createEl('a', { cls: 'internal-link', href: file.path });
     link.innerText = file.basename;
