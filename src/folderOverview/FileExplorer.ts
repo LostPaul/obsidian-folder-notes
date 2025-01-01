@@ -64,13 +64,18 @@ export class FileExplorerOverview {
         const sourceFolderPath = tFolder?.path || '';
 
         folderElement = document.querySelectorAll('.nav-files-container')[0] as HTMLElement;
-        if (!folderElement) return;
+        if (!folderElement) {
+            folderElement = root.createDiv({
+                cls: 'nav-files-container',
+            });
+        }
 
         const newFolderElement = folderElement.cloneNode(true) as HTMLElement;
 
         newFolderElement.querySelectorAll('div.nav-folder-title').forEach((el) => {
             const folder = plugin.app.vault.getAbstractFileByPath(el.getAttribute('data-path') || '');
             if (!(folder instanceof TFolder)) return;
+
             if (yaml.alwaysCollapse) {
                 folder.collapsed = true;
                 el.classList.add('is-collapsed');
@@ -197,7 +202,7 @@ export class FileExplorerOverview {
                 cls: 'tree-item-inner nav-folder-title-content',
                 text: child.name,
             });
-            
+
             if (folderTitleText && !folderNote) {
                 folderTitleText.onclick = () => {
                     const collapseIcon = folderTitle?.querySelectorAll('.tree-item-icon')[0] as HTMLElement;
@@ -246,6 +251,9 @@ export class FileExplorerOverview {
         }
 
         if (!child.collapsed) {
+            if (yaml.alwaysCollapse) {
+                child.collapsed = true;
+            }
             if (yaml.includeTypes.includes('folder')) {
                 folderTitle?.classList.remove('is-collapsed');
                 const childrenElement = folderElement?.createDiv({ cls: 'tree-item-children nav-folder-children' });
