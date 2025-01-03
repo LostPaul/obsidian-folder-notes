@@ -37,6 +37,14 @@ export class Commands {
 		});
 
 		this.plugin.addCommand({
+			id: 'open-folder-overview-view',
+			name: 'Change folder overview settings',
+			callback: () => {
+				this.plugin.activateOverviewView();
+			}
+		});
+
+		this.plugin.addCommand({
 			id: 'create-folder-note',
 			name: 'Create folder note with a new folder for the active note in the current folder',
 			callback: async () => {

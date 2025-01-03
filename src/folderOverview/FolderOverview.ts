@@ -181,7 +181,7 @@ export class FolderOverview {
             files = sourceFolder.children;
         }
 
-        
+
         files = await this.filterFiles(files, plugin, sourceFolderPath, this.yaml.depth, this.pathBlacklist);
 
         if (!this.yaml.includeTypes.includes('folder')) {
@@ -361,8 +361,6 @@ export class FolderOverview {
         return allFiles;
     }
 
-
-
     fileMenu(file: TFile, e: MouseEvent) {
         const plugin = this.plugin;
         const fileMenu = new Menu();
@@ -464,6 +462,65 @@ export function getCodeBlockEndLine(text: string, startLine: number, count = 1) 
         count++;
     }
     return line;
+}
+
+export async function getOverviews(plugin: FolderNotesPlugin, file: TFile) {
+    // is an object with unkown keys
+    const overviews: { [key: string]: string }[] = [];
+    const content = await plugin.app.vault.read(file);
+    if (!content) return overviews;
+
+    const yamlBlocks = content.match(/```folder-overview\n([\s\S]*?)```/g);
+    if (!yamlBlocks) return overviews;
+    for (const block of yamlBlocks) {
+        const yaml = parseYaml(block.replace('```folder-overview\n', '').replace('```', ''));
+        if (!yaml) continue;
+        overviews.push(yaml);
+    }
+
+    return overviews;
+}
+
+export async function updateYamlById(plugin: FolderNotesPlugin, overviewId: string, file: TFile, newYaml: yamlSettings) {
+    plugin.app.vault.process(file, (text) => {
+        const yamlBlocks = text.match(/```folder-overview\n([\s\S]*?)```/g);
+        if (!yamlBlocks) return text;
+        for (const block of yamlBlocks) {
+            const yaml = parseYaml(block.replace('```folder-overview\n', '').replace('```', ''));
+            if (!yaml) continue;
+            if (yaml.id === overviewId) {
+                const stringYaml = stringifyYaml(newYaml);
+                const newBlock = `\`\`\`folder-overview\n${stringYaml}\`\`\``;
+                text = text.replace(block, newBlock);
+            }
+        }
+        return text;
+    });
+
+}
+
+export function parseOverviewTitle(overview: yamlSettings, plugin: FolderNotesPlugin, folder: TFolder | null) {
+    const sourceFolderPath = overview.folderPath;
+    let sourceFolder: TFolder | undefined | null;
+    let title = overview.title;
+
+    if (sourceFolderPath !== '/') {
+        if (sourceFolderPath === '') {
+            sourceFolder = folder;
+        } else {
+            sourceFolder = plugin.app.vault.getAbstractFileByPath(sourceFolderPath) as TFolder;
+        }
+    }
+
+    if (sourceFolder && sourceFolderPath !== '/') {
+        title = title.replace('{{folderName}}', sourceFolder.name);
+    } else if (sourceFolderPath == '/') {
+        title = title.replace('{{folderName}}', 'Vault');
+    } else {
+        title = title.replace('{{folderName}}', '');
+    }
+
+    return title;
 }
 
 

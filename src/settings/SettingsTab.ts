@@ -1,4 +1,4 @@
-import { App, Notice, PluginSettingTab, TFile, TFolder } from 'obsidian';
+import { App, Notice, PluginSettingTab, TFile, TFolder, MarkdownPostProcessorContext } from 'obsidian';
 import FolderNotesPlugin from '../main';
 import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
@@ -111,6 +111,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		storeFolderCondition: true,
 		showFolderNotes: false,
 		disableCollapseIcon: true,
+		alwaysCollapse: false,
 	},
 	useSubmenus: true,
 	syncMove: true,
@@ -225,32 +226,34 @@ export class SettingsTab extends PluginSettingTab {
 
 	}
 
-	display(): void {
-		this.plugin.settingsOpened = true;
-		const { containerEl } = this;
+	display(contentEl?: HTMLElement, yaml?: yamlSettings, plugin?: FolderNotesPlugin, defaultSettings?: boolean, display?: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: this) {
+		plugin = this?.plugin ?? plugin;
+		plugin.settingsOpened = true;
+		settingsTab = this ?? settingsTab;
+		const { containerEl } = settingsTab;
 
 		containerEl.empty();
 
 		const tabBar = containerEl.createEl('nav', { cls: 'fn-settings-tab-bar' });
-		for (const [tabId, tabInfo] of Object.entries(this.TABS)) {
+		for (const [tabId, tabInfo] of Object.entries(settingsTab.TABS)) {
 			const tabEl = tabBar.createEl('div', { cls: 'fn-settings-tab' });
 			const tabName = tabEl.createEl('div', { cls: 'fn-settings-tab-name', text: tabInfo.name });
-			if (this.plugin.settings.settingsTab.toLocaleLowerCase() === tabId.toLocaleLowerCase()) {
+			if (plugin.settings.settingsTab.toLocaleLowerCase() === tabId.toLocaleLowerCase()) {
 				tabEl.addClass('fn-settings-tab-active');
 			}
 			tabEl.addEventListener('click', () => {
 				// @ts-ignore
 				for (const tabEl of tabBar.children) {
 					tabEl.removeClass('fn-settings-tab-active');
-					this.plugin.settings.settingsTab = tabId.toLocaleLowerCase();
-					this.plugin.saveSettings();
+					plugin.settings.settingsTab = tabId.toLocaleLowerCase();
+					plugin.saveSettings();
 				}
 				tabEl.addClass('fn-settings-tab-active');
-				this.renderSettingsPage(tabId);
+				settingsTab.renderSettingsPage(tabId);
 			});
 		}
-		this.settingsPage = containerEl.createDiv({ cls: 'fn-settings-page' });
-		this.renderSettingsPage(this.plugin.settings.settingsTab);
+		settingsTab.settingsPage = containerEl.createDiv({ cls: 'fn-settings-page' });
+		settingsTab.renderSettingsPage(plugin.settings.settingsTab);
 	}
 
 	updateFolderNotes(newTemplate: string) {

@@ -1,4 +1,4 @@
-import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, MenuItem, requireApiVersion } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, WorkspaceLeaf, requireApiVersion } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/SettingsTab';
 import { Commands } from './Commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
@@ -17,6 +17,7 @@ import { addCSSClassToTitleEL, getEl, loadFileClasses } from './functions/styleF
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { ClipBoardManager, FileExplorerView, InternalPlugin } from 'obsidian-typings'
 import { getFocusedItem } from './functions/utils';
+import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './folderOverview/view';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -74,7 +75,7 @@ export default class FolderNotesPlugin extends Plugin {
 				if (!folderNote) return;
 				openFolderNote(this, folderNote);
 			}
-			
+
 			const hoveredElement = this.hoveredElement;
 			if (this.hoverLinkTriggered) return;
 			if (!hoveredElement) return;
@@ -133,18 +134,14 @@ export default class FolderNotesPlugin extends Plugin {
 		});
 
 		if (this.app.workspace.layoutReady) {
-			// loadFileClasses(undefined, this);
-			// // this.registerEvent(this.app.workspace.on('layout-change', () => {
-			// // 	loadFileClasses(undefined, this);
-			// // 	this.tabManager?.updateTabs();
-			// // }));
+			this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
+				return new FolderOverviewView(leaf, this);
+			});
 		} else {
 			this.app.workspace.onLayoutReady(async () => {
-				// loadFileClasses(undefined, this)
-				// // this.registerEvent(this.app.workspace.on('layout-change', () => {
-				// // 	loadFileClasses(undefined, this);
-				// // 	this.tabManager?.updateTabs();
-				// // }));
+				this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
+					return new FolderOverviewView(leaf, this);
+				});
 			});
 		}
 	}
@@ -164,7 +161,7 @@ export default class FolderNotesPlugin extends Plugin {
 		// @ts-ignore
 		const editMode = view.editMode ?? view.sourceMode ?? this.app.workspace.activeEditor?.editMode;
 		if (!editMode) { return; }
-		
+
 		const plugin = this;
 
 		// @ts-ignore
@@ -231,6 +228,31 @@ export default class FolderNotesPlugin extends Plugin {
 			new Notice('Error creating folder overview (folder notes plugin) - check console for more details');
 			console.error(e);
 		}
+	}
+
+	async activateOverviewView() {
+		const { workspace } = this.app;
+
+		let leaf: WorkspaceLeaf | null = null;
+		const leaves = workspace.getLeavesOfType(FOLDER_OVERVIEW_VIEW);
+
+		if (leaves.length > 0) {
+			leaf = leaves[0];
+		} else {
+			leaf = workspace.getRightLeaf(false);
+			await leaf?.setViewState({ type: FOLDER_OVERVIEW_VIEW, active: true });
+		}
+
+		if (!leaf) return;
+		workspace.revealLeaf(leaf);
+	}
+
+	async updateOverviewView() {
+		const { workspace } = this.app;
+		const leaf = workspace.getLeavesOfType(FOLDER_OVERVIEW_VIEW)[0];
+		if (!leaf) return;
+		const view = leaf.view as FolderOverviewView;
+		view.display(view.contentEl, view.yaml, this, view.defaultSettings, view.display, undefined, undefined, view.activeFile);
 	}
 
 	isEmptyFolderNoteFolder(folder: TFolder): boolean {
