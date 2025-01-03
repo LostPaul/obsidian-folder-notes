@@ -89,8 +89,5 @@ export class FolderOverviewView extends ItemView {
         });
 
         createOverviewSettings(contentEl, yaml, plugin, defaultSettings, display, undefined, undefined, activeFile);
-
-        // execute display function when the default settings are changed
-        
     }
 }
