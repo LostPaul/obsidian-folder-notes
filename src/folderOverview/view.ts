@@ -48,7 +48,6 @@ export class FolderOverviewView extends ItemView {
         const activeFile = plugin.app.workspace.getActiveFile();
 
         if (!activeFile) {
-            // coulnd't get active file
             contentEl.createEl('p', { text: 'No active file found' });
             return;
         }
