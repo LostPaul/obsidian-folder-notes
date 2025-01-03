@@ -53,7 +53,7 @@ export class FolderOverviewView extends ItemView {
         ctx?: MarkdownPostProcessorContext,
         file?: TFile | null
     ) {
-        
+
         this.contentEl = contentEl;
         this.yaml = yaml;
         this.defaultSettings = defaultSettings;
@@ -67,17 +67,6 @@ export class FolderOverviewView extends ItemView {
         }
 
         const activeFile = plugin.app.workspace.getActiveFile();
-        if (!activeFile) {
-            let msg = contentEl.querySelector('.fn-no-file-msg');
-            if (!msg) {
-                msg = contentEl.createEl('p', { cls: 'fn-no-file-msg' });
-            }
-            msg.textContent = 'No active file found';
-            return;
-        } else {
-            const msg = contentEl.querySelector('.fn-no-file-msg');
-            if (msg) msg.remove();
-        }
 
         const overviews = await getOverviews(plugin, activeFile);
 
@@ -93,16 +82,18 @@ export class FolderOverviewView extends ItemView {
             .setName('Select overview')
             .setClass('fn-select-overview-setting')
             .addDropdown((cb) => {
-                const options = overviews.reduce((acc, overview) => {
-                    acc[overview.id] = parseOverviewTitle(
-                        overview as any as yamlSettings,
-                        plugin,
-                        activeFile.parent
-                    );
-                    return acc;
-                }, {} as Record<string, string>);
-
-                cb.addOptions(options);
+                if (activeFile) {
+                    const options = overviews.reduce((acc, overview) => {
+                        acc[overview.id] = parseOverviewTitle(
+                            overview as any as yamlSettings,
+                            plugin,
+                            activeFile.parent
+                        );
+                        return acc;
+                    }, {} as Record<string, string>);
+                    cb.addOptions(options);
+                }
+                
                 cb.addOption('default', 'Default');
                 cb.setValue(yaml?.id ?? 'default');
                 console.log(yaml);

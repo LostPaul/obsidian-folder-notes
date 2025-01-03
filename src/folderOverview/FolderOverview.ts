@@ -464,8 +464,9 @@ export function getCodeBlockEndLine(text: string, startLine: number, count = 1) 
     return line;
 }
 
-export async function getOverviews(plugin: FolderNotesPlugin, file: TFile) {
+export async function getOverviews(plugin: FolderNotesPlugin, file: TFile | null) {
     // is an object with unkown keys
+    if (!file) return [];
     const overviews: { [key: string]: string }[] = [];
     const content = await plugin.app.vault.read(file);
     if (!content) return overviews;
