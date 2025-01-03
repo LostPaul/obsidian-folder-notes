@@ -17,6 +17,8 @@ export class FolderOverviewView extends ItemView {
         super(leaf);
         this.plugin = plugin;
 
+        this.display = this.display.bind(this);
+
         this.registerEvent(
             this.plugin.app.workspace.on('file-open', (file) => {
                 this.activeFile = file;
@@ -41,52 +43,91 @@ export class FolderOverviewView extends ItemView {
         this.display(this.contentEl, this.yaml, this.plugin, this.defaultSettings, this.display, undefined, undefined, this.activeFile);
     }
 
-    async display(contentEl: HTMLElement, yaml: yamlSettings, plugin: FolderNotesPlugin, defaultSettings: boolean, display: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null) {
-        contentEl.empty();
-        contentEl.createEl('h4', { text: 'Folder Overview settings' });
+    async display(
+        contentEl: HTMLElement,
+        yaml: yamlSettings,
+        plugin: FolderNotesPlugin,
+        defaultSettings: boolean,
+        display: CallableFunction,
+        el?: HTMLElement,
+        ctx?: MarkdownPostProcessorContext,
+        file?: TFile | null
+    ) {
+        
+        this.contentEl = contentEl;
+        this.yaml = yaml;
+        this.defaultSettings = defaultSettings;
+        if (file) { this.activeFile = file; }
+        let header = contentEl.querySelector('.fn-folder-overview-header');
+        if (!header) {
+            header = contentEl.createEl('h4', {
+                cls: 'fn-folder-overview-header',
+                text: 'Folder Overview settings'
+            });
+        }
 
         const activeFile = plugin.app.workspace.getActiveFile();
-
         if (!activeFile) {
-            contentEl.createEl('p', { text: 'No active file found' });
+            let msg = contentEl.querySelector('.fn-no-file-msg');
+            if (!msg) {
+                msg = contentEl.createEl('p', { cls: 'fn-no-file-msg' });
+            }
+            msg.textContent = 'No active file found';
             return;
+        } else {
+            const msg = contentEl.querySelector('.fn-no-file-msg');
+            if (msg) msg.remove();
         }
 
         const overviews = await getOverviews(plugin, activeFile);
 
-        const overviewSetting = new Setting(contentEl);
-        overviewSetting.setName('Select overview');
-        overviewSetting.setClass('fn-select-overview-setting');
-        overviewSetting.addDropdown((cb) => {
-            const options = overviews.reduce((acc, overview) => {
-                acc[overview.id] = parseOverviewTitle(overview as any as yamlSettings, plugin, activeFile.parent);
-                return acc;
-            }, {} as Record<string, string>);
-            cb.addOptions(options);
-            cb.addOption('default', 'Default');
-            cb.setValue(yaml?.id ?? 'default');
+        let settingsContainer = contentEl.querySelector('.fn-settings-container') as HTMLElement;
+        if (!settingsContainer) {
+            settingsContainer = contentEl.createDiv({ cls: 'fn-settings-container' });
+        } else {
+            settingsContainer.empty();
+        }
 
-            if (cb.getValue() === 'default' || defaultSettings) {
-                yaml = plugin.settings.defaultOverview;
-                defaultSettings = true;
-                cb.setValue('default');
-            } else {
-                yaml = overviews.find((overview) => overview.id === yaml.id) as any as yamlSettings;
-                defaultSettings = false;
-            }
+        const overviewSetting = new Setting(settingsContainer);
+        overviewSetting
+            .setName('Select overview')
+            .setClass('fn-select-overview-setting')
+            .addDropdown((cb) => {
+                const options = overviews.reduce((acc, overview) => {
+                    acc[overview.id] = parseOverviewTitle(
+                        overview as any as yamlSettings,
+                        plugin,
+                        activeFile.parent
+                    );
+                    return acc;
+                }, {} as Record<string, string>);
 
-            cb.onChange(async (value) => {
-                if (value === 'default') {
+                cb.addOptions(options);
+                cb.addOption('default', 'Default');
+                cb.setValue(yaml?.id ?? 'default');
+                console.log(yaml);
+
+                if (cb.getValue() === 'default' || defaultSettings) {
                     yaml = plugin.settings.defaultOverview;
                     defaultSettings = true;
+                    cb.setValue('default');
                 } else {
-                    yaml = overviews.find((overview) => overview.id === value) as any as yamlSettings;
+                    yaml = overviews.find((overview) => overview.id === yaml.id) as any as yamlSettings;
                     defaultSettings = false;
                 }
-                display(contentEl, yaml, plugin, defaultSettings, display, undefined, undefined, activeFile);
-            });
-        });
 
-        createOverviewSettings(contentEl, yaml, plugin, defaultSettings, display, undefined, undefined, activeFile);
+                cb.onChange(async (value) => {
+                    if (value === 'default') {
+                        yaml = plugin.settings.defaultOverview;
+                        defaultSettings = true;
+                    } else {
+                        yaml = overviews.find((overview) => overview.id === value) as any as yamlSettings;
+                        defaultSettings = false;
+                    }
+                    display(contentEl, yaml, plugin, defaultSettings, display, undefined, undefined, activeFile);
+                });
+            });
+
+        createOverviewSettings(settingsContainer, yaml, plugin, defaultSettings, display, undefined, undefined, activeFile);
     }
 }

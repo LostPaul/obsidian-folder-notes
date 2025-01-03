@@ -18,7 +18,7 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlS
                 .onChange(async (value) => {
                     yaml.showTitle = value;
                     updateSettings(contentEl, yaml, plugin, defaultSettings, el, ctx, file);;
-                    display(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
+                    refresh(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
                 })
         );
     if (yaml.showTitle) {
@@ -61,7 +61,7 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlS
                 .onChange(async (value: 'list') => {
                     yaml.style = value;
                     updateSettings(contentEl, yaml, plugin, defaultSettings, el, ctx, file);
-                    display(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
+                    refresh(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
                 })
         );
 
@@ -85,7 +85,7 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlS
     list.on('update', (values) => {
         yaml.includeTypes = values;
         updateSettings(contentEl, yaml, plugin, defaultSettings, el, ctx, file);
-        display(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
+        refresh(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
     });
 
     if ((yaml?.includeTypes?.length || 0) < 8 && !yaml.includeTypes?.includes('all')) {
@@ -118,7 +118,7 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlS
                 }
                 await list.addValue(value.toLowerCase());
                 updateSettings(contentEl, yaml, plugin, defaultSettings, el, ctx, file);
-                display(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
+                refresh(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
             });
         });
     }
@@ -212,7 +212,7 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlS
                         yaml.showEmptyFolders = value;
                         yaml.onlyIncludeSubfolders = false;
                         updateSettings(contentEl, yaml, plugin, defaultSettings, el, ctx, file);
-                        display(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
+                        refresh(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
                     });
             });
 
@@ -259,7 +259,6 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlS
 
 async function updateSettings(contentEl: HTMLElement, yaml: yamlSettings, plugin: FolderNotesPlugin, defaultSettings: boolean, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null) {
     if (defaultSettings) {
-        plugin.updateOverviewView();
         return plugin.saveSettings();
     }
 
@@ -270,4 +269,12 @@ async function updateSettings(contentEl: HTMLElement, yaml: yamlSettings, plugin
     if (file) {
         await updateYamlById(plugin, yaml.id, file, yaml);
     }
+    plugin.updateOverviewView();
+}
+
+function refresh(contentEl: HTMLElement, yaml: yamlSettings, plugin: FolderNotesPlugin, defaultSettings: boolean, display: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: SettingsTab, modal?: FolderOverviewSettings) {
+    if (file) {
+        contentEl = contentEl.parentElement as HTMLElement;
+    }
+    display(contentEl, yaml, plugin, defaultSettings, display, el, ctx, file, settingsTab, modal);
 }
