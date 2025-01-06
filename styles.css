@@ -271,3 +271,57 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     box-shadow: var(--shadow-s);
     z-index: var(--layer-notice);
 }
+
+
+/* Mobile style overrides */
+.is-phone .fn-overview-folder-path .setting-item-control{
+    display: block;
+}
+
+/* Default desktop layout */
+.fn-whitelist-folder-input-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+}
+
+.fn-whitelist-folder-input-container input {
+    flex-grow: 1;
+    width: auto;
+    box-sizing: border-box;
+    margin-right: 8px;
+    height: 40px; /* Ensure consistent height */
+}
+
+.fn-whitelist-folder-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+/* Mobile-specific layout */
+@media (max-width: 768px) {
+    .fn-whitelist-folder-input-container {
+        display: block;
+        width: 100%;
+        text-align: center; /* Center elements vertically when stacked */
+    }
+
+    .fn-whitelist-folder-input-container input {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .fn-whitelist-folder-buttons {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+    }
+}

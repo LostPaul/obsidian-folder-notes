@@ -1,21 +1,22 @@
-import { MarkdownPostProcessorContext, TFolder, TFile } from 'obsidian';
-import { getFolderNote } from '../functions/folderNoteFunctions';
-import FolderNotesPlugin from '../main';
-import { FolderOverview, yamlSettings } from './FolderOverview';
-import { getFolderPathFromString } from '../functions/utils';
+import { MarkdownPostProcessorContext, TFolder, TFile, Plugin } from 'obsidian';
+import { getFolderNote } from '../../functions/folderNoteFunctions';
+import { FolderOverview, overviewSettings } from './FolderOverview';
+import { getFolderPathFromString } from '../../functions/utils';
+import FolderOverviewPlugin from 'src/main';
+import FolderNotesPlugin from '../../main';
 
-export function renderListOverview(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: yamlSettings, pathBlacklist: string[], folderOverview: FolderOverview) {
+export function renderListOverview(plugin: FolderOverviewPlugin | FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: overviewSettings, pathBlacklist: string[], folderOverview: FolderOverview) {
     let tFolder = plugin.app.vault.getAbstractFileByPath(yaml.folderPath);
-            if (!tFolder && yaml.folderPath.trim() == '') {
-                if (ctx.sourcePath.includes('/')) {
-                    tFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath));
-                } else {
-                    yaml.folderPath = '/';
-                    tFolder = plugin.app.vault.getAbstractFileByPath('/');
-                }
-            }
+    if (!tFolder && yaml.folderPath.trim() == '') {
+        if (ctx.sourcePath.includes('/')) {
+            tFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath));
+        } else {
+            yaml.folderPath = '/';
+            tFolder = plugin.app.vault.getAbstractFileByPath('/');
+        }
+    }
     if (!(tFolder instanceof TFolder)) { return; }
-    
+
     let files = tFolder.children;
     if (!files) { return; }
     const ul = folderOverview.listEl;
@@ -39,16 +40,24 @@ export function renderListOverview(plugin: FolderNotesPlugin, ctx: MarkdownPostP
     });
 }
 
-export function addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], folder: TFolder, folderOverview: FolderOverview) {
+export function addFolderList(plugin: FolderOverviewPlugin | FolderNotesPlugin | FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], folder: TFolder, folderOverview: FolderOverview) {
     const folderItem = list.createEl('li', { cls: 'folder-overview-list folder-list' });
-    const folderNote = getFolderNote(plugin, folder.path);
-    if (folderNote instanceof TFile) {
-        const folderNoteLink = folderItem.createEl('a', { cls: 'folder-overview-list-item folder-name-item internal-link', href: folderNote.path });
-        folderNoteLink.innerText = folder.name;
-        pathBlacklist.push(folderNote.path);
-        folderNoteLink.oncontextmenu = (e) => {
-            e.stopImmediatePropagation();
-            folderOverview.fileMenu(folderNote, e);
+    if (plugin instanceof FolderNotesPlugin) {
+        const folderNote = getFolderNote(plugin, folder.path);
+        if (folderNote instanceof TFile) {
+            const folderNoteLink = folderItem.createEl('a', { cls: 'folder-overview-list-item folder-name-item internal-link', href: folderNote.path });
+            folderNoteLink.innerText = folder.name;
+            pathBlacklist.push(folderNote.path);
+            folderNoteLink.oncontextmenu = (e) => {
+                e.stopImmediatePropagation();
+                folderOverview.fileMenu(folderNote, e);
+            }
+        } else {
+            const folderName = folderItem.createEl('span', { cls: 'folder-overview-list-item folder-name-item' });
+            folderName.innerText = folder.name;
+            folderName.oncontextmenu = (e) => {
+                folderOverview.folderMenu(folder, e);
+            }
         }
     } else {
         const folderName = folderItem.createEl('span', { cls: 'folder-overview-list-item folder-name-item' });
@@ -57,11 +66,12 @@ export function addFolderList(plugin: FolderNotesPlugin, list: HTMLUListElement 
             folderOverview.folderMenu(folder, e);
         }
     }
+
     return folderItem;
 }
 
-async function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement | HTMLUListElement, folder: TFolder,
-    depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: yamlSettings,
+async function goThroughFolders(plugin: FolderOverviewPlugin | FolderNotesPlugin, list: HTMLLIElement | HTMLUListElement, folder: TFolder,
+    depth: number, sourceFolderPath: string, ctx: MarkdownPostProcessorContext, yaml: overviewSettings,
     pathBlacklist: string[], includeTypes: string[], disableFileTag: boolean, folderOverview: FolderOverview) {
     if (sourceFolderPath === '') {
         depth--;
@@ -88,7 +98,7 @@ async function goThroughFolders(plugin: FolderNotesPlugin, list: HTMLLIElement |
     });
 }
 
-function addFileList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], file: TFile, includeTypes: string[], disableFileTag: boolean, folderOverview: FolderOverview) {
+function addFileList(plugin: FolderOverviewPlugin | FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], file: TFile, includeTypes: string[], disableFileTag: boolean, folderOverview: FolderOverview) {
     if (includeTypes.length > 0 && !includeTypes.includes('all')) {
         if (file.extension === 'md' && !includeTypes.includes('markdown')) return;
         if (file.extension === 'canvas' && !includeTypes.includes('canvas')) return;
@@ -102,7 +112,7 @@ function addFileList(plugin: FolderNotesPlugin, list: HTMLUListElement | HTMLLIE
         const allTypes = ['md', 'canvas', 'pdf', ...imageTypes, ...videoTypes, ...audioTypes];
         if (!allTypes.includes(file.extension) && !includeTypes.includes('other')) return;
     }
-    
+
     if (!folderOverview.yaml.showFolderNotes) {
         if (pathBlacklist.includes(file.path)) return;
     }

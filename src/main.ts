@@ -1,3 +1,4 @@
+
 import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, WorkspaceLeaf, requireApiVersion } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/SettingsTab';
 import { Commands } from './Commands';
@@ -8,8 +9,8 @@ import { handleRename } from './events/handleRename';
 import { getFolderNote, getFolder, openFolderNote } from './functions/folderNoteFunctions';
 import { handleCreate } from './events/handleCreate';
 import { FrontMatterTitlePluginHandler } from './events/FrontMatterTitle';
-import { FolderOverviewSettings } from './folderOverview/ModalSettings';
-import { FolderOverview } from './folderOverview/FolderOverview';
+import { FolderOverviewSettings } from './folderOverview/src/modals/Settings';
+import { FolderOverview } from './folderOverview/src/FolderOverview';
 import { TabManager } from './events/TabManager';
 import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
@@ -17,7 +18,8 @@ import { addCSSClassToTitleEL, getEl, loadFileClasses } from './functions/styleF
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { ClipBoardManager, FileExplorerView, InternalPlugin } from 'obsidian-typings'
 import { getFocusedItem } from './functions/utils';
-import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './folderOverview/view';
+import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './folderOverview/src/view';
+import {getFolderPathFromString } from './functions/utils';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -204,7 +206,7 @@ export default class FolderNotesPlugin extends Plugin {
 					e.stopImmediatePropagation();
 					e.preventDefault();
 					e.stopPropagation();
-					new FolderOverviewSettings(this.app, this, parseYaml(source), ctx, el).open();
+					new FolderOverviewSettings(this.app, this, parseYaml(source), ctx, el, this.settings.defaultOverview).open();
 				}, { capture: true });
 			}
 		});
@@ -216,11 +218,11 @@ export default class FolderNotesPlugin extends Plugin {
 
 		try {
 			if (this.app.workspace.layoutReady) {
-				const folderOverview = new FolderOverview(this, ctx, source, el);
+				const folderOverview = new FolderOverview(this, ctx, source, el, this.settings.defaultOverview);
 				folderOverview.create(this, parseYaml(source), el, ctx);
 			} else {
 				this.app.workspace.onLayoutReady(() => {
-					const folderOverview = new FolderOverview(this, ctx, source, el);
+					const folderOverview = new FolderOverview(this, ctx, source, el, this.settings.defaultOverview);
 					folderOverview.create(this, parseYaml(source), el, ctx);
 				});
 			}
@@ -251,7 +253,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const { workspace } = this.app;
 		const leaf = workspace.getLeavesOfType(FOLDER_OVERVIEW_VIEW)[0];
 		if (!leaf) return;
-		const view = leaf.view as FolderOverviewView;
+		const view = leaf.view as any as FolderOverviewView;
 		view.display(view.contentEl, view.yaml, this, view.defaultSettings, view.display, undefined, undefined, view.activeFile);
 	}
 

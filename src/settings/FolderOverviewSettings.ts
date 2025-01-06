@@ -1,9 +1,9 @@
-import { Setting, TFolder } from "obsidian";
+import { PluginSettingTab, Setting, TFolder } from "obsidian";
 import { SettingsTab } from "./SettingsTab";
 import { ListComponent } from 'src/functions/ListComponent';
-import { includeTypes } from 'src/folderOverview/FolderOverview';
+import { includeTypes } from 'src/folderOverview/src/FolderOverview';
 import { FolderSuggest } from "src/suggesters/FolderSuggester";
-import { createOverviewSettings } from "src/folderOverview/settings";
+import { createOverviewSettings } from "src/folderOverview/src/settings";
 
 export async function renderFolderOverview(settingsTab: SettingsTab) {
     const { plugin } = settingsTab;
@@ -11,5 +11,5 @@ export async function renderFolderOverview(settingsTab: SettingsTab) {
     const containerEl = settingsTab.settingsPage;
     containerEl.createEl('p', { text: 'Change the default settings for folder overviews', cls: 'setting-item-description' });
 
-    createOverviewSettings(containerEl, overviewSettings, plugin, true, settingsTab.display, undefined, undefined, undefined, settingsTab);
+    createOverviewSettings(containerEl, overviewSettings, plugin, plugin.settings.defaultOverview, settingsTab.display, undefined, undefined, undefined, settingsTab );
 }

@@ -1,14 +1,36 @@
-import { MarkdownPostProcessorContext, Setting, TFile, TFolder } from 'obsidian';
-import { updateYaml, updateYamlById, yamlSettings, includeTypes } from './FolderOverview';
-import { FolderSuggest } from 'src/suggesters/FolderSuggester';
-import { ListComponent } from 'src/functions/ListComponent';
-import FolderNotesPlugin from 'src/main';
+import { MarkdownPostProcessorContext, Plugin, PluginSettingTab, Setting, TFile, TFolder } from 'obsidian';
+import { updateYaml, updateYamlById, overviewSettings, includeTypes } from './FolderOverview';
+import { FolderSuggest } from './suggesters/FolderSuggester';
+import { ListComponent } from './utils/ListComponent';
 import { Callback } from 'front-matter-plugin-api-provider';
-import { SettingsTab } from 'src/settings/SettingsTab';
-import { FolderOverviewSettings } from './ModalSettings';
+import { FolderOverviewSettings } from './modals/Settings';
+import FolderOverviewPlugin from 'src/main';
+import FolderNotesPlugin from '../../main';
 
-export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlSettings, plugin: FolderNotesPlugin, defaultSettings: boolean, display: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: SettingsTab, modal?: FolderOverviewSettings) {
 
+
+
+export const DEFAULT_SETTINGS: overviewSettings = {
+    id: '',
+    folderPath: '',
+    title: '{{folderName}} overview',
+    showTitle: false,
+    depth: 3,
+    includeTypes: ['folder', 'markdown'],
+    style: 'list',
+    disableFileTag: false,
+    sortBy: 'name',
+    sortByAsc: true,
+    showEmptyFolders: false,
+    onlyIncludeSubfolders: false,
+    storeFolderCondition: true,
+    showFolderNotes: false,
+    disableCollapseIcon: true,
+    alwaysCollapse: false,
+}
+
+export async function createOverviewSettings(contentEl: HTMLElement, yaml: overviewSettings, plugin: FolderOverviewPlugin | FolderNotesPlugin, defaultSettings: overviewSettings, display: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: PluginSettingTab, modal?: FolderOverviewSettings) {
+    console.log('yaml 5: ', yaml);
     new Setting(contentEl)
         .setName('Show the title')
         .setDesc('Choose if the title should be shown')
@@ -35,7 +57,7 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlS
             );
     }
 
-    new Setting(contentEl)
+    const folderPathSetting = new Setting(contentEl)
         .setName('Folder path for the overview')
         .setDesc('Choose the folder path for the overview')
         .addSearch((search) => {
@@ -49,6 +71,8 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlS
                     updateSettings(contentEl, yaml, plugin, defaultSettings, el, ctx, file);;
                 });
         });
+    // add css class to the setting
+    folderPathSetting.settingEl.classList.add('fn-overview-folder-path');
 
     new Setting(contentEl)
         .setName('Overview style')
@@ -90,7 +114,7 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlS
 
     if ((yaml?.includeTypes?.length || 0) < 8 && !yaml.includeTypes?.includes('all')) {
         setting.addDropdown((dropdown) => {
-            if (!yaml.includeTypes) yaml.includeTypes = plugin.settings.defaultOverview.includeTypes || [];
+            if (!yaml.includeTypes) yaml.includeTypes = (plugin instanceof FolderNotesPlugin) ? plugin.settings.defaultOverview.includeTypes : plugin.settings.includeTypes || [];
             yaml.includeTypes = yaml.includeTypes.map((type: string) => type.toLowerCase()) as includeTypes[];
             const options = [
                 { value: 'markdown', label: 'Markdown' },
@@ -257,7 +281,7 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: yamlS
     }
 }
 
-async function updateSettings(contentEl: HTMLElement, yaml: yamlSettings, plugin: FolderNotesPlugin, defaultSettings: boolean, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null) {
+async function updateSettings(contentEl: HTMLElement, yaml: overviewSettings, plugin: FolderOverviewPlugin | FolderNotesPlugin, defaultSettings: overviewSettings, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null) {
     if (defaultSettings) {
         return plugin.saveSettings();
     }
@@ -272,7 +296,7 @@ async function updateSettings(contentEl: HTMLElement, yaml: yamlSettings, plugin
     plugin.updateOverviewView();
 }
 
-function refresh(contentEl: HTMLElement, yaml: yamlSettings, plugin: FolderNotesPlugin, defaultSettings: boolean, display: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: SettingsTab, modal?: FolderOverviewSettings) {
+function refresh(contentEl: HTMLElement, yaml: overviewSettings, plugin: FolderOverviewPlugin | FolderNotesPlugin, defaultSettings: overviewSettings, display: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: PluginSettingTab, modal?: FolderOverviewSettings) {
     if (file) {
         contentEl = contentEl.parentElement as HTMLElement;
     }

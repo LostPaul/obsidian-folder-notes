@@ -24,3 +24,11 @@ data.json
 
 venv
 
+/src/folderOverview/src/main.ts
+/src/folderOverview/node_modules
+/src/folderOverview/package-lock.json
+/src/folderOverview/package.json
+/src/folderOverview/tsconfig.json
+/src/folderOverview/README.md
+/src/folderOverview/manifest.json
+/src/folderOverview/manifest-beta.json

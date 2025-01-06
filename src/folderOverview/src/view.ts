@@ -1,19 +1,19 @@
-import { ItemView, Setting, TFile, WorkspaceLeaf, MarkdownPostProcessorContext } from 'obsidian';
-import FolderNotesPlugin from '../main';
-import { FolderOverview, getOverviews, yamlSettings, parseOverviewTitle } from './FolderOverview';
-import { FileSuggest } from 'src/suggesters/FileSuggester';
+import { ItemView, Setting, TFile, WorkspaceLeaf, MarkdownPostProcessorContext, Notice, Plugin } from 'obsidian';
+import { FolderOverview, getOverviews, overviewSettings, parseOverviewTitle } from './FolderOverview';
+import { FileSuggest } from './suggesters/FileSuggester';
 import { createOverviewSettings } from './settings';
-
+import FolderOverviewPlugin from 'src/main';
 export const FOLDER_OVERVIEW_VIEW = 'folder-overview-view';
+import FolderNotesPlugin from '../../main';
 
 export class FolderOverviewView extends ItemView {
-    plugin: FolderNotesPlugin;
+    plugin: FolderOverviewPlugin | FolderNotesPlugin;
     activeFile: TFile | null;
     overviewId: string | null;
-    yaml: yamlSettings;
-    defaultSettings: boolean;
+    yaml: overviewSettings;
+    defaultSettings: overviewSettings;
     contentEl: HTMLElement = this.containerEl.children[1] as HTMLElement;
-    constructor(leaf: WorkspaceLeaf, plugin: FolderNotesPlugin) {
+    constructor(leaf: WorkspaceLeaf, plugin: FolderOverviewPlugin | FolderNotesPlugin) {
         super(leaf);
         this.plugin = plugin;
 
@@ -45,15 +45,14 @@ export class FolderOverviewView extends ItemView {
 
     async display(
         contentEl: HTMLElement,
-        yaml: yamlSettings,
-        plugin: FolderNotesPlugin,
-        defaultSettings: boolean,
+        yaml: overviewSettings,
+        plugin: FolderOverviewPlugin | FolderNotesPlugin,
+        defaultSettings: overviewSettings,
         display: CallableFunction,
         el?: HTMLElement,
         ctx?: MarkdownPostProcessorContext,
         file?: TFile | null
     ) {
-
         this.contentEl = contentEl;
         this.yaml = yaml;
         this.defaultSettings = defaultSettings;
@@ -85,7 +84,7 @@ export class FolderOverviewView extends ItemView {
                 if (activeFile) {
                     const options = overviews.reduce((acc, overview) => {
                         acc[overview.id] = parseOverviewTitle(
-                            overview as any as yamlSettings,
+                            overview as any as overviewSettings,
                             plugin,
                             activeFile.parent
                         );
@@ -93,32 +92,28 @@ export class FolderOverviewView extends ItemView {
                     }, {} as Record<string, string>);
                     cb.addOptions(options);
                 }
-                
+
                 cb.addOption('default', 'Default');
                 cb.setValue(yaml?.id ?? 'default');
                 console.log(yaml);
 
                 if (cb.getValue() === 'default' || defaultSettings) {
-                    yaml = plugin.settings.defaultOverview;
-                    defaultSettings = true;
+                    yaml = defaultSettings;
                     cb.setValue('default');
                 } else {
-                    yaml = overviews.find((overview) => overview.id === yaml.id) as any as yamlSettings;
-                    defaultSettings = false;
+                    yaml = overviews.find((overview) => overview.id === yaml.id) as any as overviewSettings;
                 }
 
                 cb.onChange(async (value) => {
                     if (value === 'default') {
-                        yaml = plugin.settings.defaultOverview;
-                        defaultSettings = true;
+                        yaml = defaultSettings;
                     } else {
-                        yaml = overviews.find((overview) => overview.id === value) as any as yamlSettings;
-                        defaultSettings = false;
+                        yaml = overviews.find((overview) => overview.id === value) as any as overviewSettings;
                     }
-                    display(contentEl, yaml, plugin, defaultSettings, display, undefined, undefined, activeFile);
+                    await display(contentEl, yaml, plugin, defaultSettings, display, undefined, undefined, activeFile);
                 });
             });
 
-        createOverviewSettings(settingsContainer, yaml, plugin, defaultSettings, display, undefined, undefined, activeFile);
+        await createOverviewSettings(settingsContainer, yaml, plugin, defaultSettings, display, undefined, undefined, activeFile);
     }
 }

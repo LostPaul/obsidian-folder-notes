@@ -1,19 +1,19 @@
-import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile, stringifyYaml, Notice, Menu, MarkdownRenderChild } from 'obsidian';
-import { getFolderNote } from '../functions/folderNoteFunctions';
-import FolderNotesPlugin from '../main';
-import { FolderOverviewSettings } from './ModalSettings';
-import { getExcludedFolder } from '../ExcludeFolders/functions/folderFunctions';
-import { getFolderPathFromString } from '../functions/utils';
-import { getEl } from 'src/functions/styleFunctions';
+import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile, stringifyYaml, Notice, Menu, MarkdownRenderChild, Plugin, App, } from 'obsidian';
+import { getFolderNote } from '../../functions/folderNoteFunctions';
+import { FolderOverviewSettings } from './modals/Settings';
+import { getExcludedFolder } from '../../ExcludeFolders/functions/folderFunctions';
+import { getFolderPathFromString } from '../../functions/utils';
+import { getEl } from '../../functions/styleFunctions';
 import { FileExplorerOverview } from './FileExplorer';
 import { renderListOverview } from './ListStyle';
-import NewFolderNameModal from 'src/modals/NewFolderName';
-import { CustomEventEmitter } from 'src/events/EventEmitter';
-
+import NewFolderNameModal from '../../modals/NewFolderName';
+import { CustomEventEmitter } from './utils/EventEmitter';
+import FolderOverviewPlugin from 'src/main';
+import FolderNotesPlugin from '../../main';
 
 export type includeTypes = 'folder' | 'markdown' | 'canvas' | 'other' | 'pdf' | 'image' | 'audio' | 'video' | 'all';
 
-export type yamlSettings = {
+export type overviewSettings = {
     id: string;
     folderPath: string;
     title: string;
@@ -34,8 +34,8 @@ export type yamlSettings = {
 
 export class FolderOverview {
     emitter: CustomEventEmitter;
-    yaml: yamlSettings;
-    plugin: FolderNotesPlugin;
+    yaml: overviewSettings;
+    plugin: FolderOverviewPlugin | FolderNotesPlugin;
     ctx: MarkdownPostProcessorContext;
     source: string;
     folderName: string | null;
@@ -46,37 +46,43 @@ export class FolderOverview {
     sourceFolder: TFolder | undefined;
     root: HTMLElement;
     listEl: HTMLUListElement;
+    defaultSettings: overviewSettings;
 
     eventListeners: (() => void)[] = [];
-    constructor(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, source: string, el: HTMLElement) {
-        this.emitter = new CustomEventEmitter();
-        let yaml: yamlSettings = parseYaml(source);
-        if (!yaml) { yaml = {} as yamlSettings; }
-        const includeTypes = yaml?.includeTypes || plugin.settings.defaultOverview.includeTypes || ['folder', 'markdown'];
+    constructor(plugin: FolderNotesPlugin | FolderOverviewPlugin, ctx: MarkdownPostProcessorContext, source: string, el: HTMLElement, defaultSettings: overviewSettings) {
+        console.log('creating folder overview');
+        console.log('defaultSettings', defaultSettings);
         this.plugin = plugin;
+        this.emitter = new CustomEventEmitter();
+        let yaml: overviewSettings = parseYaml(source);
+        if (!yaml) { yaml = {} as overviewSettings; }
+        console.log('yaml', yaml);
+        const includeTypes = yaml?.includeTypes || defaultSettings.includeTypes || ['folder', 'markdown'];
         this.ctx = ctx;
         this.source = source;
         this.el = el;
         this.sourceFilePath = this.ctx.sourcePath;
-        this.sourceFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath)) as TFolder;
+        this.sourceFolder = this.plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath)) as TFolder;
+        this.defaultSettings = defaultSettings;
         this.yaml = {
             id: yaml?.id ?? crypto.randomUUID(),
             folderPath: yaml?.folderPath ?? getFolderPathFromString(ctx.sourcePath),
-            title: yaml?.title ?? plugin.settings.defaultOverview.title,
-            showTitle: yaml?.showTitle ?? plugin.settings.defaultOverview.showTitle,
-            depth: yaml?.depth ?? plugin.settings.defaultOverview.depth,
+            title: yaml?.title ?? defaultSettings.title,
+            showTitle: yaml?.showTitle ?? defaultSettings.showTitle,
+            depth: yaml?.depth ?? defaultSettings.depth,
             style: yaml?.style ?? 'list',
             includeTypes: includeTypes.map((type) => type.toLowerCase()) as includeTypes[],
-            disableFileTag: yaml?.disableFileTag ?? plugin.settings.defaultOverview.disableFileTag,
-            sortBy: yaml?.sortBy ?? plugin.settings.defaultOverview.sortBy,
-            sortByAsc: yaml?.sortByAsc ?? plugin.settings.defaultOverview.sortByAsc,
-            showEmptyFolders: yaml?.showEmptyFolders ?? plugin.settings.defaultOverview.showEmptyFolders,
-            onlyIncludeSubfolders: yaml?.onlyIncludeSubfolders ?? plugin.settings.defaultOverview.onlyIncludeSubfolders,
-            storeFolderCondition: yaml?.storeFolderCondition ?? plugin.settings.defaultOverview.storeFolderCondition,
-            showFolderNotes: yaml?.showFolderNotes ?? plugin.settings.defaultOverview.showFolderNotes,
-            disableCollapseIcon: yaml?.disableCollapseIcon ?? plugin.settings.defaultOverview.disableCollapseIcon,
-            alwaysCollapse: yaml?.alwaysCollapse ?? plugin.settings.defaultOverview.alwaysCollapse,
+            disableFileTag: yaml?.disableFileTag ?? defaultSettings.disableFileTag,
+            sortBy: yaml?.sortBy ?? defaultSettings.sortBy,
+            sortByAsc: yaml?.sortByAsc ?? defaultSettings.sortByAsc,
+            showEmptyFolders: yaml?.showEmptyFolders ?? defaultSettings.showEmptyFolders,
+            onlyIncludeSubfolders: yaml?.onlyIncludeSubfolders ?? defaultSettings.onlyIncludeSubfolders,
+            storeFolderCondition: yaml?.storeFolderCondition ?? defaultSettings.storeFolderCondition,
+            showFolderNotes: yaml?.showFolderNotes ?? defaultSettings.showFolderNotes,
+            disableCollapseIcon: yaml?.disableCollapseIcon ?? defaultSettings.disableCollapseIcon,
+            alwaysCollapse: yaml?.alwaysCollapse ?? defaultSettings.alwaysCollapse,
         };
+        console.log('this.yaml', this.yaml);
 
 
         const customChild = new CustomMarkdownRenderChild(el, this);
@@ -119,7 +125,7 @@ export class FolderOverview {
         this.eventListeners.push(() => plugin.app.vault.off('delete', handleDelete));
     }
 
-    async create(plugin: FolderNotesPlugin, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+    async create(plugin: FolderOverviewPlugin | FolderNotesPlugin, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
         el.empty();
         el.parentElement?.classList.add('folder-overview-container');
 
@@ -144,13 +150,13 @@ export class FolderOverview {
 
         this.registerListeners();
 
-        let sourceFolder: TFolder | undefined;
+        let sourceFolder;
 
         if (sourceFolderPath !== '/') {
             if (this.yaml.folderPath === '') {
-                sourceFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath)) as TFolder;
+                sourceFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(ctx.sourcePath));
             } else {
-                sourceFolder = plugin.app.vault.getAbstractFileByPath(this.yaml.folderPath) as TFolder;
+                sourceFolder = plugin.app.vault.getAbstractFileByPath(this.yaml.folderPath);
             }
         }
 
@@ -168,6 +174,7 @@ export class FolderOverview {
         if (!sourceFolder && sourceFolderPath == '') {
             sourceFolderPath = '/';
         }
+        if (!(sourceFolder instanceof TFolder)) { return; }
 
         if (sourceFolderPath == '/') {
             const rootFiles: TAbstractFile[] = [];
@@ -251,23 +258,28 @@ export class FolderOverview {
     }
 
     addEditButton(root: HTMLElement) {
+        console.log('adding edit button');
         const editButton = root.createEl('button', { cls: 'folder-overview-edit-button' });
         editButton.innerText = 'Edit overview';
         editButton.addEventListener('click', (e) => {
             e.stopImmediatePropagation();
             e.preventDefault();
             e.stopPropagation();
-            new FolderOverviewSettings(this.plugin.app, this.plugin, this.yaml, this.ctx, this.el).open();
+            console.log({ 'this.plugin': this.plugin, 'this.yaml': this.yaml, 'this.ctx': this.ctx, 'this.el': this.el });
+            new FolderOverviewSettings(this.plugin.app as App, this.plugin, this.yaml, this.ctx, this.el, this.plugin.settings as overviewSettings).open();
         }, { capture: true });
     }
 
-    async filterFiles(files: TAbstractFile[], plugin: FolderNotesPlugin, sourceFolderPath: string, depth: number, pathBlacklist: string[]) {
+    async filterFiles(files: TAbstractFile[], plugin: FolderOverviewPlugin | FolderNotesPlugin, sourceFolderPath: string, depth: number, pathBlacklist: string[]) {
         const filteredFiles = await Promise.all(files.map(async (file) => {
             const folderPath = getFolderPathFromString(file.path);
             const isBlacklisted = pathBlacklist.includes(file.path);
             const isSubfolder = folderPath.startsWith(sourceFolderPath) && sourceFolderPath !== '/';
             const isSourceFile = file.path === this.sourceFilePath;
-            const isExcludedFromOverview = (await getExcludedFolder(plugin, file.path, true))?.excludeFromFolderOverview;
+            let isExcludedFromOverview = false;
+            if (plugin instanceof FolderNotesPlugin) {
+                isExcludedFromOverview = (await getExcludedFolder(plugin, file.path, true))?.excludeFromFolderOverview ?? false;
+            }
 
             if ((isBlacklisted && !this.yaml.showFolderNotes) || !isSubfolder || isSourceFile || isExcludedFromOverview) {
                 return null;
@@ -285,8 +297,8 @@ export class FolderOverview {
         const yaml = this.yaml;
 
         if (!yaml?.sortBy) {
-            yaml.sortBy = this.plugin.settings.defaultOverview.sortBy ?? 'name';
-            yaml.sortByAsc = this.plugin.settings.defaultOverview.sortByAsc ?? false;
+            yaml.sortBy = this.defaultSettings.sortBy ?? 'name';
+            yaml.sortByAsc = this.defaultSettings.sortByAsc ?? false;
         }
 
         files.sort((a, b) => {
@@ -321,7 +333,7 @@ export class FolderOverview {
         return files;
     }
 
-    removeEmptyFolders(ul: HTMLUListElement | HTMLLIElement, depth: number, yaml: yamlSettings) {
+    removeEmptyFolders(ul: HTMLUListElement | HTMLLIElement, depth: number, yaml: overviewSettings) {
         const childrensToRemove: ChildNode[] = [];
         ul.childNodes.forEach((el) => {
             if ((el.childNodes[0] as HTMLElement)?.classList && (el.childNodes[0] as HTMLElement)?.classList.contains('internal-link')) { return; }
@@ -399,7 +411,9 @@ export class FolderOverview {
             item.setTitle('Rename');
             item.setIcon('pencil');
             item.onClick(async () => {
-                new NewFolderNameModal(plugin.app, plugin, folder).open();
+                if (plugin instanceof FolderNotesPlugin) {
+                    new NewFolderNameModal(plugin.app, plugin, folder).open();
+                }
             });
         });
 
@@ -427,7 +441,7 @@ export class FolderOverview {
 
 }
 
-export async function updateYaml(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, el: HTMLElement, yaml: yamlSettings) {
+export async function updateYaml(plugin: FolderOverviewPlugin | FolderNotesPlugin, ctx: MarkdownPostProcessorContext, el: HTMLElement, yaml: overviewSettings) {
     const file = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
     if (!(file instanceof TFile)) return;
     let stringYaml = stringifyYaml(yaml);
@@ -464,7 +478,7 @@ export function getCodeBlockEndLine(text: string, startLine: number, count = 1) 
     return line;
 }
 
-export async function getOverviews(plugin: FolderNotesPlugin, file: TFile | null) {
+export async function getOverviews(plugin: FolderOverviewPlugin | FolderNotesPlugin, file: TFile | null) {
     // is an object with unkown keys
     if (!file) return [];
     const overviews: { [key: string]: string }[] = [];
@@ -482,7 +496,7 @@ export async function getOverviews(plugin: FolderNotesPlugin, file: TFile | null
     return overviews;
 }
 
-export async function updateYamlById(plugin: FolderNotesPlugin, overviewId: string, file: TFile, newYaml: yamlSettings) {
+export async function updateYamlById(plugin: FolderOverviewPlugin | FolderNotesPlugin, overviewId: string, file: TFile, newYaml: overviewSettings) {
     plugin.app.vault.process(file, (text) => {
         const yamlBlocks = text.match(/```folder-overview\n([\s\S]*?)```/g);
         if (!yamlBlocks) return text;
@@ -500,7 +514,7 @@ export async function updateYamlById(plugin: FolderNotesPlugin, overviewId: stri
 
 }
 
-export function parseOverviewTitle(overview: yamlSettings, plugin: FolderNotesPlugin, folder: TFolder | null) {
+export function parseOverviewTitle(overview: overviewSettings, plugin: FolderOverviewPlugin | FolderNotesPlugin, folder: TFolder | null) {
     const sourceFolderPath = overview.folderPath;
     let sourceFolder: TFolder | undefined | null;
     let title = overview.title;

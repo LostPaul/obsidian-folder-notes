@@ -3,7 +3,7 @@ import FolderNotesPlugin from '../main';
 import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 import { getFolderNote } from '../functions/folderNoteFunctions';
-import { yamlSettings } from '../folderOverview/FolderOverview';
+import { overviewSettings } from '../folderOverview/src/FolderOverview';
 import { renderGeneral } from './GeneralSettings';
 import { renderFileExplorer } from './FileExplorerSettings';
 import { renderPath } from './PathSettings';
@@ -38,7 +38,7 @@ export interface FolderNotesSettings {
 	disableFolderHighlighting: boolean;
 	storageLocation: 'insideFolder' | 'parentFolder' | 'vaultFolder';
 	syncDelete: boolean;
-	defaultOverview: yamlSettings;
+	defaultOverview: overviewSettings;
 	useSubmenus: boolean;
 	syncMove: boolean;
 	frontMatterTitle: {
@@ -226,7 +226,7 @@ export class SettingsTab extends PluginSettingTab {
 
 	}
 
-	display(contentEl?: HTMLElement, yaml?: yamlSettings, plugin?: FolderNotesPlugin, defaultSettings?: boolean, display?: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: this) {
+	display(contentEl?: HTMLElement, yaml?: overviewSettings, plugin?: FolderNotesPlugin, defaultSettings?: boolean, display?: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: this) {
 		plugin = this?.plugin ?? plugin;
 		plugin.settingsOpened = true;
 		settingsTab = this ?? settingsTab;

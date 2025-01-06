@@ -1,24 +1,26 @@
 import { MarkdownPostProcessorContext, parseYaml, TAbstractFile, TFolder, TFile, stringifyYaml, Notice, Menu } from 'obsidian';
-import { getFolderNote } from '../functions/folderNoteFunctions';
-import FolderNotesPlugin from '../main';
-import { FolderOverviewSettings } from './ModalSettings';
-import { getExcludedFolder } from '../ExcludeFolders/functions/folderFunctions';
-import { getFolderPathFromString } from '../functions/utils';
-import { getEl } from 'src/functions/styleFunctions';
-import { FolderOverview, yamlSettings } from './FolderOverview';
-import FolderNameModal from 'src/modals/FolderName';
-import NewFolderNameModal from 'src/modals/NewFolderName';
+import { getFolderNote } from '../../functions/folderNoteFunctions';
+import { FolderOverviewSettings } from './modals/Settings';
+import { getExcludedFolder } from '../../ExcludeFolders/functions/folderFunctions';
+import { getFolderPathFromString } from '../../functions/utils';
+import { getEl } from '../../functions/styleFunctions';
+import { FolderOverview, overviewSettings } from './FolderOverview';
+import FolderNameModal from '../../modals/FolderName';
+import NewFolderNameModal from '../../modals/NewFolderName';
+import FolderOverviewPlugin from 'src/main';
+import FolderNotesPlugin from '../../main';
+import { DragManager } from 'obsidian-typings';
 
 export class FileExplorerOverview {
-    plugin: FolderNotesPlugin;
+    plugin: FolderOverviewPlugin | FolderNotesPlugin;
     folderOverview: FolderOverview;
     pathBlacklist: string[];
     source: string;
-    yaml: yamlSettings;
+    yaml: overviewSettings;
     root: HTMLElement;
 
     eventListeners: (() => void)[] = [];
-    constructor(plugin: FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: yamlSettings, pathBlacklist: string[], folderOverview: FolderOverview) {
+    constructor(plugin: FolderOverviewPlugin | FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: overviewSettings, pathBlacklist: string[], folderOverview: FolderOverview) {
         this.plugin = plugin;
         this.folderOverview = folderOverview;
         this.pathBlacklist = pathBlacklist;
@@ -41,7 +43,10 @@ export class FileExplorerOverview {
         const root = this.folderOverview.root;
         const yaml = this.folderOverview.yaml;
         const folderOverview = this.folderOverview;
-        const folder = getEl(yaml.folderPath, plugin);
+        let folder: HTMLElement | null = null;
+        if (plugin instanceof FolderOverviewPlugin) {
+            folder = getEl(yaml.folderPath, plugin);
+        }
         let folderElement = folder?.parentElement;
         const source = ctx.sourcePath;
         const overviewList = folderOverview.listEl;
@@ -96,8 +101,10 @@ export class FileExplorerOverview {
             }
 
             if (el.classList.contains('has-folder-note')) {
-                const folderNote = getFolderNote(plugin, folder.path);
-                if (folderNote) { folderOverview.pathBlacklist.push(folderNote.path); }
+                if (plugin instanceof FolderNotesPlugin) {
+                    const folderNote = getFolderNote(plugin, folder.path);
+                    if (folderNote) { folderOverview.pathBlacklist.push(folderNote.path); }
+                }
             }
         });
 
@@ -155,7 +162,7 @@ export class FileExplorerOverview {
 
     }
 
-    async handleCollapseClick(el: HTMLElement, plugin: FolderNotesPlugin, yaml: yamlSettings, pathBlacklist: string[], sourceFolderPath: string, folderOverview: FolderOverview, folder?: TFolder | undefined | null | TAbstractFile) {
+    async handleCollapseClick(el: HTMLElement, plugin: FolderOverviewPlugin | FolderNotesPlugin, yaml: overviewSettings, pathBlacklist: string[], sourceFolderPath: string, folderOverview: FolderOverview, folder?: TFolder | undefined | null | TAbstractFile) {
         el.classList.toggle('is-collapsed');
         if (el.classList.contains('is-collapsed')) {
             if (!(folder instanceof TFolder)) return;
@@ -173,16 +180,22 @@ export class FileExplorerOverview {
         }
     }
 
-    async createFolderEL(plugin: FolderNotesPlugin, child: TFolder, folderOverview: FolderOverview, childrenElement: HTMLElement, sourceFolderPath: string) {
+    async createFolderEL(plugin: FolderOverviewPlugin | FolderNotesPlugin, child: TFolder, folderOverview: FolderOverview, childrenElement: HTMLElement, sourceFolderPath: string) {
         const pathBlacklist = folderOverview.pathBlacklist;
         const source = folderOverview.source;
-        const folderNote = getFolderNote(plugin, child.path);
+        let folderNote: TFile | null | undefined = undefined;
+        if (plugin instanceof FolderNotesPlugin) {
+            folderNote = getFolderNote(plugin, child.path);
+        }
         const yaml = folderOverview.yaml;
         let folderTitle: HTMLElement | null = null;
         let folderElement: HTMLElement | null = null;
 
         if (folderNote) { pathBlacklist.push(folderNote.path); }
-        const excludedFolder = await getExcludedFolder(plugin, child.path, true);
+        let excludedFolder = undefined;
+        if (plugin instanceof FolderNotesPlugin) {
+            excludedFolder = await getExcludedFolder(plugin, child.path, true);
+        }
         if (excludedFolder?.excludeFromFolderOverview) { return; }
 
         const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon right-triangle"><path d="M3 8L12 17L21 8"></path></svg>';
@@ -286,7 +299,7 @@ export class FileExplorerOverview {
         }
     }
 
-    async createFileEL(plugin: FolderNotesPlugin, child: TFile, folderOverview: FolderOverview, childrenElement: HTMLElement) {
+    async createFileEL(plugin: FolderOverviewPlugin | FolderNotesPlugin, child: TFile, folderOverview: FolderOverview, childrenElement: HTMLElement) {
         const yaml = folderOverview.yaml;
         const pathBlacklist = folderOverview.pathBlacklist;
 
