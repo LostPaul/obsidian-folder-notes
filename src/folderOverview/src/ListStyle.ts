@@ -6,6 +6,8 @@ import FolderOverviewPlugin from 'src/main';
 import FolderNotesPlugin from '../../main';
 
 export function renderListOverview(plugin: FolderOverviewPlugin | FolderNotesPlugin, ctx: MarkdownPostProcessorContext, root: HTMLElement, yaml: overviewSettings, pathBlacklist: string[], folderOverview: FolderOverview) {
+    const overviewList = folderOverview.listEl;
+        overviewList?.empty();
     let tFolder = plugin.app.vault.getAbstractFileByPath(yaml.folderPath);
     if (!tFolder && yaml.folderPath.trim() == '') {
         if (ctx.sourcePath.includes('/')) {
@@ -22,7 +24,6 @@ export function renderListOverview(plugin: FolderOverviewPlugin | FolderNotesPlu
     const ul = folderOverview.listEl;
     const sourceFolderPath = tFolder.path;
 
-
     const folders = folderOverview.sortFiles(files.filter(f => f instanceof TFolder));
     files = folderOverview.sortFiles(files.filter(f => f instanceof TFile));
     folders.forEach((file) => {
@@ -38,6 +39,22 @@ export function renderListOverview(plugin: FolderOverviewPlugin | FolderNotesPlu
             addFileList(plugin, ul, folderOverview.pathBlacklist, file, folderOverview.yaml.includeTypes, folderOverview.yaml.disableFileTag, folderOverview);
         }
     });
+
+    // Event system for rendering list style
+    const debouncedRenderListOverview = debounce(() => renderListOverview(plugin, ctx, root, yaml, pathBlacklist, folderOverview), 300);
+    const handleVaultChange = () => {
+        debouncedRenderListOverview();
+    }
+
+    folderOverview.on('vault-change', handleVaultChange);
+}
+
+function debounce(func: Function, wait: number) {
+    let timeout: number | undefined;
+    return (...args: any[]) => {
+        clearTimeout(timeout);
+        timeout = window.setTimeout(() => func.apply(this, args), wait);
+    };
 }
 
 export function addFolderList(plugin: FolderOverviewPlugin | FolderNotesPlugin | FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], folder: TFolder, folderOverview: FolderOverview) {
