@@ -379,7 +379,7 @@ export class FolderOverview {
         fileMenu.addSeparator();
 
         fileMenu.addItem((item) => {
-            item.setTitle(window.i18next.t("plugins.file-explorer.menu-opt-rename"));
+            item.setTitle(window.i18next.t('plugins.file-explorer.menu-opt-rename'));
             item.setIcon('pencil');
             item.onClick(async () => {
                 plugin.app.fileManager.promptForFileRename(file)
@@ -387,7 +387,7 @@ export class FolderOverview {
         });
 
         fileMenu.addItem((item) => {
-            item.setTitle(window.i18next.t("plugins.file-explorer.menu-opt-delete"));
+            item.setTitle(window.i18next.t('plugins.file-explorer.menu-opt-delete'));
             item.setIcon('trash');
             item.dom.addClass('is-warning');
             item.dom.setAttribute('data-section', 'danger')
@@ -398,7 +398,7 @@ export class FolderOverview {
 
         fileMenu.addSeparator();
 
-        plugin.app.workspace.trigger('file-menu', fileMenu, file, "folder-overview-file-context-menu", null);
+        plugin.app.workspace.trigger('file-menu', fileMenu, file, 'folder-overview-file-context-menu', null);
         fileMenu.showAtPosition({ x: e.pageX, y: e.pageY });
     }
 
@@ -429,12 +429,12 @@ export class FolderOverview {
 
         folderMenu.addSeparator();
 
-        plugin.app.workspace.trigger('file-menu', folderMenu, folder, "folder-overview-folder-context-menu", null);
+        plugin.app.workspace.trigger('file-menu', folderMenu, folder, 'folder-overview-folder-context-menu', null);
         folderMenu.showAtPosition({ x: e.pageX, y: e.pageY });
     }
 
     getElFromOverview(path: string): HTMLElement | null {
-        const el = this.listEl.querySelector(`[data-path="${CSS.escape(path)}"]`) as HTMLElement | null;
+        const el = this.listEl.querySelector(`[data-path='${CSS.escape(path)}']`) as HTMLElement | null;
         return el;
     }
 

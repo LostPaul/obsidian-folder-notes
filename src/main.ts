@@ -16,7 +16,7 @@ import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
 import { addCSSClassToTitleEL, getEl, loadFileClasses } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import { ClipBoardManager, FileExplorerView, InternalPlugin } from 'obsidian-typings'
+import { FileExplorerView, InternalPlugin } from 'obsidian-typings'
 import { getFocusedItem } from './functions/utils';
 import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './folderOverview/src/view';
 import {getFolderPathFromString } from './functions/utils';
@@ -173,7 +173,7 @@ export default class FolderNotesPlugin extends Plugin {
 		editMode.clipboardManager.constructor.prototype.handleDragOver = function (evt, ...args) {
 			const { draggable } = plugin.app.dragManager;
 			if (draggable && draggable.file instanceof TFolder && getFolderNote(plugin, draggable.file.path)) {
-				plugin.app.dragManager.setAction(window.i18next.t("interface.drag-and-drop.insert-link-here"));
+				plugin.app.dragManager.setAction(window.i18next.t('interface.drag-and-drop.insert-link-here'));
 			} else {
 				originalHandleDragOver.call(this, evt, ...args);
 			}
@@ -186,9 +186,9 @@ export default class FolderNotesPlugin extends Plugin {
 			const { draggable } = plugin.app.dragManager;
 			if (draggable && draggable.file instanceof TFolder && getFolderNote(plugin, draggable.file.path)) {
 				const folderNote = getFolderNote(plugin, draggable.file.path);
-				if (draggable?.type === "folder" && draggable.file instanceof TFolder && folderNote) {
+				if (draggable?.type === 'folder' && draggable.file instanceof TFolder && folderNote) {
 					draggable.file = folderNote;
-					draggable.type = "file";
+					draggable.type = 'file';
 				}
 			}
 			return originalHandleDrop.call(this, evt, ...args);

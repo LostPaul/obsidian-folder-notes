@@ -27,7 +27,7 @@ export default class AddSupportedFileModal extends Modal {
         });
         contentEl.createEl('h2', { text: 'Extension name' });
         new Setting(contentEl)
-            .setName('Enter the name of the extension (only the short form, e.g. "md")')
+            .setName('Enter the name of the extension (only the short form, e.g. 'md')')
             .addText((text) =>
                 text
                     .setValue('')

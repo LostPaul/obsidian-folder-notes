@@ -1,9 +1,9 @@
-import { PluginSettingTab, Setting, TFolder } from "obsidian";
-import { SettingsTab } from "./SettingsTab";
+import { PluginSettingTab, Setting, TFolder } from 'obsidian';
+import { SettingsTab } from './SettingsTab';
 import { ListComponent } from 'src/functions/ListComponent';
 import { includeTypes } from 'src/folderOverview/src/FolderOverview';
-import { FolderSuggest } from "src/suggesters/FolderSuggester";
-import { createOverviewSettings } from "src/folderOverview/src/settings";
+import { FolderSuggest } from 'src/suggesters/FolderSuggester';
+import { createOverviewSettings } from 'src/folderOverview/src/settings';
 
 export async function renderFolderOverview(settingsTab: SettingsTab) {
     const { plugin } = settingsTab;

@@ -1,4 +1,4 @@
-import FolderOverviewPlugin from "./main";
+import FolderOverviewPlugin from './main';
 
 export function registerCommands(plugin: FolderOverviewPlugin) {
     plugin.addCommand({

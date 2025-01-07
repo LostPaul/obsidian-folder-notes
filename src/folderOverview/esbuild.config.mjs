@@ -1,5 +1,5 @@
-import esbuild from "esbuild";
-import process from "process";
+import esbuild from 'esbuild';
+import process from 'process';
 import builtins from 'builtin-modules'
 
 const banner =
@@ -35,7 +35,7 @@ esbuild.build({
 	format: 'cjs',
 	watch: !prod,
 	target: 'es2018',
-	logLevel: "info",
+	logLevel: 'info',
 	sourcemap: prod ? false : 'inline',
 	treeShaking: true,
 	outfile: 'main.js',

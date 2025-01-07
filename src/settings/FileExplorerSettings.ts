@@ -1,5 +1,5 @@
-import { Setting } from "obsidian";
-import { SettingsTab } from "./SettingsTab";
+import { Setting } from 'obsidian';
+import { SettingsTab } from './SettingsTab';
 export async function renderFileExplorer(settingsTab: SettingsTab) {
     const containerEl = settingsTab.settingsPage;
 

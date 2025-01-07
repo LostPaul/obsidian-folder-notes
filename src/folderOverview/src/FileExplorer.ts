@@ -198,7 +198,7 @@ export class FileExplorerOverview {
         }
         if (excludedFolder?.excludeFromFolderOverview) { return; }
 
-        const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon right-triangle"><path d="M3 8L12 17L21 8"></path></svg>';
+        const svg = '<svg xmlns='http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon right-triangle"><path d="M3 8L12 17L21 8'></path></svg>';
         if (yaml.includeTypes.includes('folder')) {
             folderElement = childrenElement.createDiv({
                 cls: 'tree-item nav-folder',
@@ -242,7 +242,7 @@ export class FileExplorerOverview {
                 const { draggable } = plugin.app.dragManager;
                 if (draggable && draggable.file instanceof TFolder) {
                     folderElement?.classList.add('is-being-dragged-over');
-                    plugin.app.dragManager.setAction(window.i18next.t("interface.drag-and-drop.move-into-folder", { folder: child.name }));
+                    plugin.app.dragManager.setAction(window.i18next.t('interface.drag-and-drop.move-into-folder', { folder: child.name }));
                 }
             });
 
@@ -337,7 +337,7 @@ export class FileExplorerOverview {
             e.preventDefault();
             const { draggable } = plugin.app.dragManager;
             if (draggable && draggable.file instanceof TFolder) {
-                plugin.app.dragManager.setAction(window.i18next.t("interface.drag-and-drop.move-into-folder", { folder: child.parent?.name || '' }));
+                plugin.app.dragManager.setAction(window.i18next.t('interface.drag-and-drop.move-into-folder', { folder: child.parent?.name || '' }));
                 const folderEL = folderOverview.getElFromOverview(child.parent?.path || '')
                 if (folderEL) {
                     folderEL.parentElement?.classList.add('is-being-dragged-over');

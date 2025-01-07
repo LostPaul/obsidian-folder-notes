@@ -1,11 +1,11 @@
-import { Setting, Platform, SettingTab } from "obsidian";
-import { SettingsTab } from "./SettingsTab";
+import { Setting, Platform, SettingTab } from 'obsidian';
+import { SettingsTab } from './SettingsTab';
 import { ListComponent } from '../functions/ListComponent';
 import AddSupportedFileModal from '../modals/AddSupportedFileType';
 import { FrontMatterTitlePluginHandler } from '../events/FrontMatterTitle';
-import ConfirmationModal from "../modals/ConfirmCreation";
+import ConfirmationModal from '../modals/ConfirmCreation';
 import { TemplateSuggest } from '../suggesters/TemplateSuggester';
-import { loadFileClasses } from "../functions/styleFunctions";
+import { loadFileClasses } from '../functions/styleFunctions';
 
 export async function renderGeneral(settingsTab: SettingsTab) {
     const containerEl = settingsTab.settingsPage;
@@ -36,7 +36,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
     if (settingsTab.plugin.settings.newFolderNoteName !== '{{folder_name}}') {
         new Setting(containerEl)
             .setName('Use folder name instead of folder note name in the tab title')
-            .setDesc('When you\'re using a folder note name like "folder note" and have multiple folder notes open you can\'t separate them anymore by their name. This setting uses the folder name instead and allows you to indentify the different files.')
+            .setDesc('When you\'re using a folder note name like 'folder note' and have multiple folder notes open you can\'t separate them anymore by their name. This setting uses the folder name instead and allows you to indentify the different files.')
             .addToggle((toggle) =>
                 toggle
                     .setValue(settingsTab.plugin.settings.tabManagerEnabled)

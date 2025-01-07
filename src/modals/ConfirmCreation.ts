@@ -40,7 +40,7 @@ export default class ConfirmationModal extends Modal {
 				.setDesc('Choose the file extension for the folder notes.')
 				.addDropdown((cb) => {
 					this.plugin.settings.supportedFileTypes.forEach((extension) => {
-						cb.addOption("." + extension, extension);
+						cb.addOption('.' + extension, extension);
 					});
 					cb.setValue(this.extension);
 					cb.onChange(async (value) => {

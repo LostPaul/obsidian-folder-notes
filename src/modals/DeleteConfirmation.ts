@@ -17,13 +17,13 @@ export default class DeleteConfirmationModal extends Modal {
 		const modalTitle = contentEl.createDiv({ cls: 'fn-modal-title' });
 		const modalContent = contentEl.createDiv({ cls: 'fn-modal-content' });
 		modalTitle.createEl('h2', { text: 'Delete folder note' });
-		modalContent.createEl('p', { text: `Are you sure you want to delete the folder note "${this.file.name}" ?` });
+		modalContent.createEl('p', { text: `Are you sure you want to delete the folder note '${this.file.name}' ?` });
 		switch (plugin.settings.deleteFilesAction) {
 			case 'trash':
 				modalContent.createEl('p', { text: 'It will be moved to your system trash.' });
 				break;
 			case 'obsidianTrash':
-				modalContent.createEl('p', { text: 'It will be moved to your Obsidian trash, which is located in the ".trash" hidden folder in your vault.' });
+				modalContent.createEl('p', { text: 'It will be moved to your Obsidian trash, which is located in the '.trash' hidden folder in your vault.' });
 				break;
 			case 'delete':
 				modalContent.createEl('p', { text: 'It will be permanently deleted.' }).setCssStyles({ color: 'red' });
