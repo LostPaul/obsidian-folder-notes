@@ -21,8 +21,6 @@ export class FolderOverviewSettings extends Modal {
 		if (!yaml) {
 			this.yaml = this.defaultSettings;
 		} else if (ctx) {
-			console.log('yaml 3: ', yaml);
-			console.log('settings: ', defaultSettings);
 			const includeTypes = yaml?.includeTypes || defaultSettings.includeTypes || ['folder', 'markdown'];
 			this.yaml = {
 				id: yaml?.id ?? crypto.randomUUID(),
@@ -55,8 +53,6 @@ export class FolderOverviewSettings extends Modal {
 
 	onOpen() {
 		const { contentEl } = this;
-		console.log('yaml 6: ', this.yaml);
-		console.log('settings: ', this.defaultSettings);
 		this.display(contentEl, this.yaml, this.plugin, this.defaultSettings, this.display, this.el, this.ctx);
 	}
 
@@ -75,8 +71,6 @@ export class FolderOverviewSettings extends Modal {
 			contentEl.createEl('h2', { text: 'Default folder overview settings' });
 		}
 
-		console.log('yaml 4: ', yaml);
-		console.log('settings: ', defaultSettings);
 		createOverviewSettings(contentEl, yaml, plugin, defaultSettings, display, el, ctx, undefined, undefined, modal);
 	}
 

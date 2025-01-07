@@ -1,5 +1,5 @@
 import { MarkdownPostProcessorContext, TFolder, TFile, Plugin } from 'obsidian';
-import { getFolderNote } from '../../functions/folderNoteFunctions';
+import { extractFolderName, getFolderNote } from '../../functions/folderNoteFunctions';
 import { FolderOverview, overviewSettings } from './FolderOverview';
 import { getFolderPathFromString } from '../../functions/utils';
 import FolderOverviewPlugin from 'src/main';
@@ -41,6 +41,14 @@ export function renderListOverview(plugin: FolderOverviewPlugin | FolderNotesPlu
 }
 
 export function addFolderList(plugin: FolderOverviewPlugin | FolderNotesPlugin | FolderNotesPlugin, list: HTMLUListElement | HTMLLIElement, pathBlacklist: string[], folder: TFolder, folderOverview: FolderOverview) {
+    const isFirstLevelSub = folder.path.split('/').length === folderOverview.yaml.folderPath.split('/').length + 1;
+    if (!folderOverview.yaml.showEmptyFolders && folder.children.length === 0 && !folderOverview.yaml.onlyIncludeSubfolders) {
+        return;
+    } else if (folderOverview.yaml.onlyIncludeSubfolders && !isFirstLevelSub && folder.children.length === 0) {
+        return;
+    }
+
+
     const folderItem = list.createEl('li', { cls: 'folder-overview-list folder-list' });
     if (plugin instanceof FolderNotesPlugin) {
         const folderNote = getFolderNote(plugin, folder.path);
@@ -115,6 +123,9 @@ function addFileList(plugin: FolderOverviewPlugin | FolderNotesPlugin, list: HTM
 
     if (!folderOverview.yaml.showFolderNotes) {
         if (pathBlacklist.includes(file.path)) return;
+        if (plugin instanceof FolderNotesPlugin && extractFolderName(plugin.settings.folderNoteName, file.basename) === file.parent?.name) {
+            return;
+        }
     }
 
     const listItem = list.createEl('li', { cls: 'folder-overview-list file-link' });

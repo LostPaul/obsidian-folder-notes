@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, Plugin, PluginSettingTab, Setting, TFile, TFolder } from 'obsidian';
+import { MarkdownPostProcessorContext, Plugin, Plugin$1, PluginSettingTab, Setting, TFile, TFolder } from 'obsidian';
 import { updateYaml, updateYamlById, overviewSettings, includeTypes } from './FolderOverview';
 import { FolderSuggest } from './suggesters/FolderSuggester';
 import { ListComponent } from './utils/ListComponent';
@@ -29,8 +29,25 @@ export const DEFAULT_SETTINGS: overviewSettings = {
     alwaysCollapse: false,
 }
 
+export class SettingsTab extends PluginSettingTab {
+    plugin: FolderOverviewPlugin;
+
+    constructor(plugin: FolderOverviewPlugin) {
+        super(plugin.app, plugin);
+    }
+
+    display() {
+        const { containerEl } = this;
+
+        this.display = this.display.bind(this);
+
+		containerEl.empty();
+        createOverviewSettings(containerEl, this.plugin.settings, this.plugin, this.plugin.settings, this.display, undefined, undefined, undefined, this);
+
+    }
+}
+
 export async function createOverviewSettings(contentEl: HTMLElement, yaml: overviewSettings, plugin: FolderOverviewPlugin | FolderNotesPlugin, defaultSettings: overviewSettings, display: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: PluginSettingTab, modal?: FolderOverviewSettings) {
-    console.log('yaml 5: ', yaml);
     new Setting(contentEl)
         .setName('Show the title')
         .setDesc('Choose if the title should be shown')
@@ -242,7 +259,7 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: overv
 
         if (yaml.showEmptyFolders) {
             new Setting(contentEl)
-                .setName('Only show first empty subfolders of current folder')
+                .setName('Only show empty folders which are on the first level of the folder overview')
                 .addToggle((toggle) => {
                     toggle
                         .setValue(yaml.onlyIncludeSubfolders)
@@ -282,7 +299,7 @@ export async function createOverviewSettings(contentEl: HTMLElement, yaml: overv
 }
 
 async function updateSettings(contentEl: HTMLElement, yaml: overviewSettings, plugin: FolderOverviewPlugin | FolderNotesPlugin, defaultSettings: overviewSettings, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null) {
-    if (defaultSettings) {
+    if (!yaml.id) {
         return plugin.saveSettings();
     }
 

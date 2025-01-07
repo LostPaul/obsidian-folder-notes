@@ -18,6 +18,11 @@ export class FolderOverviewView extends ItemView {
         this.plugin = plugin;
 
         this.display = this.display.bind(this);
+        if (plugin instanceof FolderOverviewPlugin) {
+            this.defaultSettings = this.plugin.settings as overviewSettings;
+        } else {
+            this.defaultSettings = plugin.settings.defaultOverview;
+        }
 
         this.registerEvent(
             this.plugin.app.workspace.on('file-open', (file) => {
@@ -95,9 +100,8 @@ export class FolderOverviewView extends ItemView {
 
                 cb.addOption('default', 'Default');
                 cb.setValue(yaml?.id ?? 'default');
-                console.log(yaml);
 
-                if (cb.getValue() === 'default' || defaultSettings) {
+                if (cb.getValue() === 'default' || !yaml?.id.trim()) {
                     yaml = defaultSettings;
                     cb.setValue('default');
                 } else {

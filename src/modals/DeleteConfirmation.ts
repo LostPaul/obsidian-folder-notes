@@ -23,7 +23,7 @@ export default class DeleteConfirmationModal extends Modal {
 				modalContent.createEl('p', { text: 'It will be moved to your system trash.' });
 				break;
 			case 'obsidianTrash':
-				modalContent.createEl('p', { text: 'It will be moved to your Obsidian trash, which is located in the '.trash' hidden folder in your vault.' });
+				modalContent.createEl('p', { text: 'It will be moved to your Obsidian trash, which is located in the ".trash" hidden folder in your vault.' });
 				break;
 			case 'delete':
 				modalContent.createEl('p', { text: 'It will be permanently deleted.' }).setCssStyles({ color: 'red' });

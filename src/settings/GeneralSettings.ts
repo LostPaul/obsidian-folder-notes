@@ -36,7 +36,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
     if (settingsTab.plugin.settings.newFolderNoteName !== '{{folder_name}}') {
         new Setting(containerEl)
             .setName('Use folder name instead of folder note name in the tab title')
-            .setDesc('When you\'re using a folder note name like 'folder note' and have multiple folder notes open you can\'t separate them anymore by their name. This setting uses the folder name instead and allows you to indentify the different files.')
+            .setDesc('When you\'re using a folder note name like "folder note" and have multiple folder notes open you can\'t separate them anymore by their name. This setting uses the folder name instead and allows you to indentify the different files.')
             .addToggle((toggle) =>
                 toggle
                     .setValue(settingsTab.plugin.settings.tabManagerEnabled)
