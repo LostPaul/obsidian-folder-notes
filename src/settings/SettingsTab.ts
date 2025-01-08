@@ -3,7 +3,7 @@ import FolderNotesPlugin from '../main';
 import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 import { getFolderNote } from '../functions/folderNoteFunctions';
-import { overviewSettings } from '../folderOverview/src/FolderOverview';
+import { overviewSettings } from '../obsidian-folder-overview/src/FolderOverview';
 import { renderGeneral } from './GeneralSettings';
 import { renderFileExplorer } from './FileExplorerSettings';
 import { renderPath } from './PathSettings';

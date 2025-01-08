@@ -1,4 +1,3 @@
-import { TFile, TFolder } from 'obsidian';
 import { FileExplorerWorkspaceLeaf } from 'src/globals';
 import FolderNotesPlugin from 'src/main';
 import { FileExplorerLeaf } from 'obsidian-typings';
@@ -47,6 +46,6 @@ export function getFileExplorerView(plugin: FolderNotesPlugin) {
 
 export function getFocusedItem(plugin: FolderNotesPlugin) {
 	const fileExplorer = getFileExplorer(plugin) as any as FileExplorerLeaf;
-	const focusedItem = fileExplorer.view.tree.focusedItem
+	const focusedItem = fileExplorer.view.tree.focusedItem;
 	return focusedItem;
 }

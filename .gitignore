@@ -24,11 +24,11 @@ data.json
 
 venv
 
-/src/folderOverview/src/main.ts
-/src/folderOverview/node_modules
-/src/folderOverview/package-lock.json
-/src/folderOverview/package.json
-/src/folderOverview/tsconfig.json
-/src/folderOverview/README.md
-/src/folderOverview/manifest.json
-/src/folderOverview/manifest-beta.json
+/src/obsidian-folder-overview/src/main.ts
+/src/obsidian-folder-overview/node_modules
+/src/obsidian-folder-overview/package-lock.json
+/src/obsidian-folder-overview/package.json
+/src/obsidian-folder-overview/tsconfig.json
+/src/obsidian-folder-overview/README.md
+/src/obsidian-folder-overview/manifest.json
+/src/obsidian-folder-overview/manifest-beta.json

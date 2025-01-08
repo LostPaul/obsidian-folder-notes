@@ -36,6 +36,16 @@ export class Commands {
 			}
 		});
 
+		console.log('registering commands')
+		this.plugin.addCommand({
+			id: 'open-folder-overview-view',
+			name: 'Change folder overview settings',
+			callback: () => {
+				this.plugin.activateOverviewView();
+			}
+		});
+
+
 		this.plugin.addCommand({
 			id: 'open-folder-overview-view',
 			name: 'Change folder overview settings',
@@ -109,6 +119,7 @@ export class Commands {
 				deleteFolderNote(this.plugin, folderNote, true);
 			}
 		});
+
 		this.plugin.addCommand({
 			id: 'open-folder-note-for-current-folder',
 			name: 'Open folder note of current folder of active note',

@@ -9,8 +9,8 @@ import { handleRename } from './events/handleRename';
 import { getFolderNote, getFolder, openFolderNote } from './functions/folderNoteFunctions';
 import { handleCreate } from './events/handleCreate';
 import { FrontMatterTitlePluginHandler } from './events/FrontMatterTitle';
-import { FolderOverviewSettings } from './folderOverview/src/modals/Settings';
-import { FolderOverview } from './folderOverview/src/FolderOverview';
+import { FolderOverviewSettings } from './obsidian-folder-overview/src/modals/Settings';
+import { FolderOverview } from './obsidian-folder-overview/src/FolderOverview';
 import { TabManager } from './events/TabManager';
 import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
@@ -18,7 +18,7 @@ import { addCSSClassToTitleEL, getEl, loadFileClasses } from './functions/styleF
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { FileExplorerView, InternalPlugin } from 'obsidian-typings'
 import { getFocusedItem } from './functions/utils';
-import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './folderOverview/src/view';
+import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './obsidian-folder-overview/src/view';
 import {getFolderPathFromString } from './functions/utils';
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
