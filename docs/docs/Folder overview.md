@@ -1,5 +1,7 @@
 # Folder overview
 
+This page will be updated soon and there also will be new features.
+
 ## Create overview 
 There are two options to create a folder overview in a note
 
