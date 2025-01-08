@@ -23,12 +23,3 @@ data.json
 .DS_Store
 
 venv
-
-/src/obsidian-folder-overview/src/main.ts
-/src/obsidian-folder-overview/node_modules
-/src/obsidian-folder-overview/package-lock.json
-/src/obsidian-folder-overview/package.json
-/src/obsidian-folder-overview/tsconfig.json
-/src/obsidian-folder-overview/README.md
-/src/obsidian-folder-overview/manifest.json
-/src/obsidian-folder-overview/manifest-beta.json
