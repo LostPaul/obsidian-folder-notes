@@ -117,9 +117,13 @@ export default class FolderNotesPlugin extends Plugin {
 			handleDelete(file, this);
 		}));
 
-		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-			this.handleOverviewBlock(source, el, ctx);
-		});
+		// @ts-ignore
+		const folderOverviewEnabled = this.app.plugins.getPlugin('folder-overview')
+		if (!folderOverviewEnabled) {
+			this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+				this.handleOverviewBlock(source, el, ctx);
+			});
+		}
 
 		if (this.app.workspace.layoutReady) {
 			loadFileClasses(undefined, this);
