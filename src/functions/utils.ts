@@ -1,7 +1,7 @@
 import { FileExplorerWorkspaceLeaf } from "src/globals";
 
 export function getFileNameFromPathString(path: string): string {
-    return path.substring(path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/' || '\\') + 1 : 0);
+    return path.substring(path.lastIndexOf('/') >= 0 ? path.lastIndexOf('/') + 1 : 0);
 }
 
 export function getFolderNameFromPathString(path: string): string {
@@ -21,7 +21,7 @@ export function getExtensionFromPathString(path: string): string {
 }
 
 export function getFolderPathFromString(path: string): string {
-    const subString = path.lastIndexOf('/' || '\\') >= 0 ? path.lastIndexOf('/') : 0;
+    const subString = path.lastIndexOf('/') >= 0 ? path.lastIndexOf('/') : 0;
     const folderPath = path.substring(0, subString);
     if (folderPath === '') {
         return '/';

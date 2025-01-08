@@ -12,7 +12,7 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 	const isRename = (file.parent?.path === getFolderPathFromString(oldPath))
 	if (folder instanceof TFolder) {
 		if (plugin.isEmptyFolderNoteFolder(folder)) {
-			addCSSClassToTitleEL(plugin, folder.path, 'only-has-folder-note');
+			addCSSClassToTitleEL(folder.path, 'only-has-folder-note');
 		} else {
 			removeCSSClassFromEL(folder.path, 'only-has-folder-note');
 		}
@@ -20,7 +20,7 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 
 	if (oldFolder instanceof TFolder) {
 		if (plugin.isEmptyFolderNoteFolder(oldFolder)) {
-			addCSSClassToTitleEL(plugin, oldFolder.path, 'only-has-folder-note');
+			addCSSClassToTitleEL(oldFolder.path, 'only-has-folder-note');
 		} else {
 			removeCSSClassFromEL(oldFolder.path, 'only-has-folder-note');
 		}
@@ -143,8 +143,8 @@ export async function handleFileRename(file: TFile, oldPath: string, plugin: Fol
 	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
 
 	if (!excludedFolder?.disableFolderNote && folderName === newFolder?.name && !detachedExcludedFolder) {
-		addCSSClassToTitleEL(plugin, file.path, 'is-folder-note');
-		addCSSClassToTitleEL(plugin, newFolder.path, 'has-folder-note');
+		addCSSClassToTitleEL(file.path, 'is-folder-note');
+		addCSSClassToTitleEL(newFolder.path, 'has-folder-note');
 		return;
 	} else if (excludedFolder?.disableFolderNote || (folderName !== newFolder?.name)) {
 		removeCSSClassFromEL(file.path, 'is-folder-note');
@@ -155,9 +155,9 @@ export async function handleFileRename(file: TFile, oldPath: string, plugin: Fol
 
 
 	if (folderName === newFolder?.name) {
-		addCSSClassToTitleEL(plugin, file.path, 'is-folder-note');
+		addCSSClassToTitleEL(file.path, 'is-folder-note');
 		removeCSSClassFromEL(oldFolder?.path, 'has-folder-note');
-		addCSSClassToTitleEL(plugin, newFolder.path, 'has-folder-note');
+		addCSSClassToTitleEL(newFolder.path, 'has-folder-note');
 		return;
 	}
 
@@ -179,8 +179,8 @@ async function renameFolderOnFileRename(file: TFile, oldPath: string, oldFolder:
 		removeCSSClassFromEL(file.path, 'is-folder-note');
 		return;
 	} else if (newFolderName === oldFolder.name) {
-		addCSSClassToTitleEL(plugin, oldFolder.path, 'has-folder-note');
-		addCSSClassToTitleEL(plugin, file.path, 'is-folder-note');
+		addCSSClassToTitleEL(oldFolder.path, 'has-folder-note');
+		addCSSClassToTitleEL(file.path, 'is-folder-note');
 		return;
 	}
 
