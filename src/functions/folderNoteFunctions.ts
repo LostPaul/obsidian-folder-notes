@@ -140,8 +140,8 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 
 	const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
 	if (!(folder instanceof TFolder)) return;
-	addCSSClassToTitleEL(plugin, path, 'is-folder-note', true);
-	addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
+	addCSSClassToTitleEL(path, 'is-folder-note', true);
+	addCSSClassToTitleEL(folder.path, 'has-folder-note');
 }
 
 export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile, skipConfirmation?: boolean) {
@@ -186,8 +186,8 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 	}
 
 	await plugin.app.fileManager.renameFile(file, path);
-	addCSSClassToTitleEL(plugin, path, 'is-folder-note', true);
-	addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
+	addCSSClassToTitleEL(path, 'is-folder-note', true);
+	addCSSClassToTitleEL(folder.path, 'has-folder-note');
 
 	if (plugin.activeFolderDom) {
 		plugin.activeFolderDom.removeClass('fn-is-active');

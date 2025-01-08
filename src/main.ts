@@ -118,9 +118,12 @@ export default class FolderNotesPlugin extends Plugin {
 			handleDelete(file, this);
 		}));
 
-		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-			this.handleOverviewBlock(source, el, ctx);
-		});
+		const folderOverviewEnabled = this.app.plugins.getPlugin('folder-overview')
+		if (!folderOverviewEnabled) {
+			this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+				this.handleOverviewBlock(source, el, ctx);
+			});
+		}
 
 		if (this.app.workspace.layoutReady) {
 			// loadFileClasses(undefined, this);
@@ -155,7 +158,7 @@ export default class FolderNotesPlugin extends Plugin {
 		// @ts-ignore
 		const editMode = view.editMode ?? view.sourceMode ?? this.app.workspace.activeEditor?.editMode;
 		if (!editMode) { return; }
-		
+
 		// console.log('editMode', editMode);
 		const plugin = this;
 
