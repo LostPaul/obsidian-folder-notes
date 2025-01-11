@@ -19,7 +19,9 @@ import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { FileExplorerView, InternalPlugin } from 'obsidian-typings'
 import { getFocusedItem } from './functions/utils';
 import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './obsidian-folder-overview/src/view';
-import {getFolderPathFromString } from './functions/utils';
+import { getFolderPathFromString } from './functions/utils';
+import { registerOverviewCommands } from './obsidian-folder-overview/src/Commands';
+
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
 	settings: FolderNotesSettings;
@@ -61,6 +63,7 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 
 		new Commands(this.app, this).registerCommands();
+		registerOverviewCommands(this);
 
 		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
 

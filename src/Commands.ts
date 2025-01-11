@@ -36,24 +36,6 @@ export class Commands {
 			}
 		});
 
-		console.log('registering commands')
-		this.plugin.addCommand({
-			id: 'open-folder-overview-view',
-			name: 'Change folder overview settings',
-			callback: () => {
-				this.plugin.activateOverviewView();
-			}
-		});
-
-
-		this.plugin.addCommand({
-			id: 'open-folder-overview-view',
-			name: 'Change folder overview settings',
-			callback: () => {
-				this.plugin.activateOverviewView();
-			}
-		});
-
 		this.plugin.addCommand({
 			id: 'create-folder-note',
 			name: 'Create folder note with a new folder for the active note in the current folder',
@@ -133,33 +115,7 @@ export class Commands {
 				openFolderNote(this.plugin, folderNote);
 			}
 		});
-		this.plugin.addCommand({
-			id: 'insert-folder-overview-fn',
-			name: 'Insert folder overview',
-			editorCheckCallback: (checking: boolean, editor: Editor) => {
-				const line = editor.getCursor().line;
-				const lineText = editor.getLine(line);
-				if (lineText.trim() === '' || lineText.trim() === '>') {
-					if (!checking) {
-						let json = Object.assign({}, this.plugin.settings.defaultOverview);
-						json.id = crypto.randomUUID();
-						const yaml = stringifyYaml(json)
-						if (lineText.trim() === '') {
-							editor.replaceSelection(`\`\`\`folder-overview\n${yaml}\`\`\`\n`);
-						} else if (lineText.trim() === '>') {
-							// add > to the beginning of each line
-							const lines = yaml.split('\n');
-							const newLines = lines.map((line) => {
-								return `> ${line}`;
-							});
-							editor.replaceSelection(`\`\`\`folder-overview\n${newLines.join('\n')}\`\`\`\n`);
-						}
-					}
-					return true;
-				}
-				return false;
-			},
-		})
+
 		this.plugin.addCommand({
 			id: 'create-folder-note-from-selected-text',
 			name: 'Create folder note from selected text',
@@ -445,27 +401,6 @@ export class Commands {
 			const text = editor.getSelection().trim();
 			const line = editor.getCursor().line;
 			const lineText = editor.getLine(line);
-			if (lineText.trim() === '' || lineText.trim() === '>') {
-				menu.addItem((item) => {
-					item.setTitle('Create folder overview')
-						.setIcon('edit')
-						.onClick(() => {
-							let json = Object.assign({}, this.plugin.settings.defaultOverview);
-							json.id = crypto.randomUUID();
-							const yaml = stringifyYaml(json)
-							if (lineText.trim() === '') {
-								editor.replaceSelection(`\`\`\`folder-overview\n${yaml}\`\`\`\n`);
-							} else if (lineText.trim() === '>') {
-								// add > to the beginning of each line
-								const lines = yaml.split('\n');
-								const newLines = lines.map((line) => {
-									return `> ${line}`;
-								});
-								editor.replaceSelection(`\`\`\`folder-overview\n${newLines.join('\n')}\`\`\`\n`);
-							}
-						});
-				});
-			}
 			if (!text || text.trim() === '') return;
 			menu.addItem((item) => {
 				item.setTitle('Create folder note')
