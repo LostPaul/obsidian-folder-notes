@@ -228,7 +228,9 @@ export class SettingsTab extends PluginSettingTab {
 
 	display(contentEl?: HTMLElement, yaml?: overviewSettings, plugin?: FolderNotesPlugin, defaultSettings?: boolean, display?: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: this) {
 		plugin = this?.plugin ?? plugin;
+		if (!plugin) { return; }
 		plugin.settingsOpened = true;
+		if (!settingsTab) { return; }
 		settingsTab = this ?? settingsTab;
 		const { containerEl } = settingsTab;
 
@@ -245,10 +247,12 @@ export class SettingsTab extends PluginSettingTab {
 				// @ts-ignore
 				for (const tabEl of tabBar.children) {
 					tabEl.removeClass('fn-settings-tab-active');
+					if (!plugin) { return; }
 					plugin.settings.settingsTab = tabId.toLocaleLowerCase();
 					plugin.saveSettings();
 				}
 				tabEl.addClass('fn-settings-tab-active');
+				if (!settingsTab) { return; }
 				settingsTab.renderSettingsPage(tabId);
 			});
 		}
