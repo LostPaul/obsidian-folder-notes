@@ -228,7 +228,9 @@ export class SettingsTab extends PluginSettingTab {
 
 	display(contentEl?: HTMLElement, yaml?: overviewSettings, plugin?: FolderNotesPlugin, defaultSettings?: boolean, display?: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: this) {
 		plugin = this?.plugin ?? plugin;
-		plugin.settingsOpened = true;
+		if (plugin) {
+			plugin.settingsOpened = true;
+		}
 		settingsTab = this ?? settingsTab;
 		const { containerEl } = settingsTab;
 
@@ -238,7 +240,7 @@ export class SettingsTab extends PluginSettingTab {
 		for (const [tabId, tabInfo] of Object.entries(settingsTab.TABS)) {
 			const tabEl = tabBar.createEl('div', { cls: 'fn-settings-tab' });
 			const tabName = tabEl.createEl('div', { cls: 'fn-settings-tab-name', text: tabInfo.name });
-			if (plugin.settings.settingsTab.toLocaleLowerCase() === tabId.toLocaleLowerCase()) {
+			if (plugin && plugin.settings.settingsTab.toLocaleLowerCase() === tabId.toLocaleLowerCase()) {
 				tabEl.addClass('fn-settings-tab-active');
 			}
 			tabEl.addEventListener('click', () => {
@@ -255,7 +257,9 @@ export class SettingsTab extends PluginSettingTab {
 			});
 		}
 		settingsTab.settingsPage = containerEl.createDiv({ cls: 'fn-settings-page' });
-		settingsTab.renderSettingsPage(plugin.settings.settingsTab);
+		if (plugin) {
+			settingsTab.renderSettingsPage(plugin.settings.settingsTab);
+		}
 	}
 
 	updateFolderNotes(newTemplate: string) {
