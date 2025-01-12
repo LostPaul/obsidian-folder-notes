@@ -51,7 +51,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 
 	if (!(event.target instanceof HTMLElement)) return;
 	if (!event || !event.target) return;
-	event.stopImmediatePropagation();
+	
 	if (!event.shiftKey) {
 		event.stopImmediatePropagation();
 	} else {
