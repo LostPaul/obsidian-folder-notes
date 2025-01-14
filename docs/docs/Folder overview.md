@@ -1,6 +1,7 @@
 # Folder overview
 
 This page will be updated soon and there also will be new features.
+This feature/plugin creates a code block 
 
 ## Create overview 
 There are two options to create a folder overview in a note
