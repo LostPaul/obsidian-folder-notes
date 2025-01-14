@@ -1,3 +1,5 @@
+
+
 .fn-whitespace-stop-collapsing .nav-folder-title-content {
     flex-grow: 1 !important;
     display: flex;
@@ -42,6 +44,9 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     cursor: pointer;
 }
 
+.hide {
+    display: none;
+}
 
 .hide-folder-note .is-folder-note {
     display: none;
@@ -175,6 +180,16 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
 
 .folder-overview-grid-item-article h1 {
     font-size: 1.2rem;
+}
+
+.overview-setting-item-fv {
+    border-top: 1px solid var(--background-modifier-border);
+    padding: 0.75em 0;
+    align-items: center;
+}
+
+.overview-setting-item-fv .setting-item {
+    padding: 0;
 }
 
 
