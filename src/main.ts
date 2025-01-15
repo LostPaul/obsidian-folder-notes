@@ -21,6 +21,7 @@ import { getFocusedItem } from './functions/utils';
 import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './obsidian-folder-overview/src/view';
 import { getFolderPathFromString } from './functions/utils';
 import { registerOverviewCommands } from './obsidian-folder-overview/src/Commands';
+import { updateOverviewView, updateViewDropdown } from './obsidian-folder-overview/src/main';
 
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
@@ -252,13 +253,8 @@ export default class FolderNotesPlugin extends Plugin {
 		workspace.revealLeaf(leaf);
 	}
 
-	async updateOverviewView() {
-		const { workspace } = this.app;
-		const leaf = workspace.getLeavesOfType(FOLDER_OVERVIEW_VIEW)[0];
-		if (!leaf) return;
-		const view = leaf.view as any as FolderOverviewView;
-		view.display(view.contentEl, view.yaml, this, view.defaultSettings, view.display, undefined, undefined, view.activeFile);
-	}
+	updateOverviewView = updateOverviewView
+	updateViewDropdown = updateViewDropdown
 
 	isEmptyFolderNoteFolder(folder: TFolder): boolean {
 		let attachmentFolderPath = this.app.vault.getConfig('attachmentFolderPath') as string;
