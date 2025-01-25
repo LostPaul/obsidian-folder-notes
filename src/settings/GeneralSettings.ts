@@ -90,7 +90,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
         'Adding more file types may cause performance issues becareful when adding more file types and don\'t add too many.',
     )
     setting0.setDesc(desc0);
-    const list = new ListComponent(setting0.settingEl,settingsTab.plugin.settings.supportedFileTypes || [], ['md', 'canvas'] );
+    const list = new ListComponent(setting0.settingEl, settingsTab.plugin.settings.supportedFileTypes || [], ['md', 'canvas']);
     list.on('update', async (values: string[]) => {
         settingsTab.plugin.settings.supportedFileTypes = values;
         await settingsTab.plugin.saveSettings();
@@ -133,26 +133,24 @@ export async function renderGeneral(settingsTab: SettingsTab) {
     }
 
 
-    const setting = new Setting(containerEl);
-    const desc = document.createDocumentFragment();
-    desc.append(
-        'Restart after changing the template path',
-    );
-    setting.setName('Template path');
-    setting.setDesc(desc).descEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
-    setting.addSearch((cb) => {
-        new TemplateSuggest(cb.inputEl, settingsTab.plugin);
-        cb.setPlaceholder('Template path');
-        cb.setValue(settingsTab.plugin.app.vault.getAbstractFileByPath(settingsTab.plugin.settings.templatePath)?.name.replace('.md', '') || '');
-        cb.onChange(async (value) => {
-            if (value.trim() === '') {
-                settingsTab.plugin.settings.templatePath = '';
-                await settingsTab.plugin.saveSettings();
-                settingsTab.display();
-                return;
-            }
+    const templateSetting = new Setting(containerEl)
+        .setDesc('Requires templates/templater plugin to be enabled')
+        .setName('Template path')
+        .addSearch((cb) => {
+            new TemplateSuggest(cb.inputEl, settingsTab.plugin);
+            cb.setPlaceholder('Template path');
+            cb.setValue(settingsTab.plugin.app.vault.getAbstractFileByPath(settingsTab.plugin.settings.templatePath)?.name.replace('.md', '') || '');
+            cb.onChange(async (value) => {
+                if (value.trim() === '') {
+                    settingsTab.plugin.settings.templatePath = '';
+                    await settingsTab.plugin.saveSettings();
+                    settingsTab.display();
+                    return;
+                }
+            });
         });
-    });
+    templateSetting.infoEl.appendText('Requires a restart to take effect');
+    templateSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
     const storageLocation = new Setting(containerEl)
         .setName('Storage location')
@@ -305,7 +303,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                 settingsTab.display();
             });
         });
-    
+
     if (Platform.isDesktop) {
         const setting3 = new Setting(containerEl);
         setting3.setName('Open folder note in a new tab by default');
