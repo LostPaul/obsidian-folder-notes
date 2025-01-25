@@ -91,6 +91,13 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     width: 100%;
 }
 
+/* Modal styles */
+
+.fn-backup-warning-modal .fn-modal-button-container {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
 
 .fn-confirmation-modal {
     padding-bottom: 0;

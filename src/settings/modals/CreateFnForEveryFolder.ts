@@ -1,5 +1,5 @@
 import { App, ButtonComponent, Modal, Setting, TFolder, Notice } from 'obsidian';
-import FolderNotesPlugin from '../main';
+import FolderNotesPlugin from '../../main';
 import { createFolderNote, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getTemplatePlugins } from 'src/template';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';

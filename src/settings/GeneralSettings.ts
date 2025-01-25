@@ -3,9 +3,10 @@ import { SettingsTab } from './SettingsTab';
 import { ListComponent } from '../functions/ListComponent';
 import AddSupportedFileModal from '../modals/AddSupportedFileType';
 import { FrontMatterTitlePluginHandler } from '../events/FrontMatterTitle';
-import ConfirmationModal from '../modals/ConfirmCreation';
+import ConfirmationModal from './modals/CreateFnForEveryFolder';
 import { TemplateSuggest } from '../suggesters/TemplateSuggester';
 import { loadFileClasses } from '../functions/styleFunctions';
+import BackupWarningModal from './modals/BackupWarning';
 
 export async function renderGeneral(settingsTab: SettingsTab) {
     const containerEl = settingsTab.settingsPage;
@@ -26,8 +27,13 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                 .setButtonText('Rename existing folder notes')
                 .setCta()
                 .onClick(async () => {
-                    settingsTab.updateFolderNotes(settingsTab.plugin.settings.newFolderNoteName);
-                    settingsTab.display();
+                    new BackupWarningModal(
+                        settingsTab.plugin, 
+                        'Rename all existing folder notes', 
+                        'When you click on "Confirm" all existing folder notes will be renamed to the new folder note name.',
+                        settingsTab.updateFolderNotes, 
+                        [settingsTab.plugin.settings.newFolderNoteName])
+                        .open();
                 })
         );
     nameSetting.infoEl.appendText('Requires a restart to take effect');
