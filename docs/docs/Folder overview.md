@@ -3,6 +3,10 @@
 This page will be updated soon and there also will be new features.
 This feature/plugin creates a code block 
 
+This feature/plugin creates a [code block](https://help.obsidian.md/Editing+and+formatting/Basic+formatting+syntax#Code+blocks) that provides an overview of your entire vault or specific folders. Instructions for creating or editing a folder overview, along with additional guidance, can be found further down the page.
+Currently there are two styles available: **file explorer** & **list style**, with more coming soon. The **overview updates** itself **automatically** when you create, delete or modify a file. You can also integrate it into **templates**, as explained further down below this page.
+
+Additionally, you can **customize** the overview by selecting **specific file types**, adjusting **file depth**, and changing the **file order** (e.g., alphabetical: A-Z).
 ## Create overview 
 There are two options to create a folder overview in a note
 
