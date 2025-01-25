@@ -1,6 +1,6 @@
 import { TFile, TFolder } from 'obsidian';
 import FolderNotesPlugin from '../main';
-import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
+import { getDetachedFolder, getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getFileExplorer } from './utils';
 
@@ -39,8 +39,9 @@ export async function applyCSSClassesToFolder(folderPath: string, plugin: Folder
 	if (!folder || !(folder instanceof TFolder)) { return; }
 
 	const folderNote = getFolderNote(plugin, folder.path);
+	const detachedFolderNote = getDetachedFolder(plugin, folder.path);
 
-	if (!folderNote) {
+	if (!folderNote || detachedFolderNote) {
 		removeCSSClassFromEL(folder?.path, 'has-folder-note', plugin);
 		removeCSSClassFromEL(folder?.path, 'only-has-folder-note', plugin);
 		return;
