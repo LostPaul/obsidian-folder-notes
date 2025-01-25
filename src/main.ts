@@ -138,21 +138,12 @@ export default class FolderNotesPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
 			this.handleOverviewBlock(source, el, ctx);
 		});
-
-		if (this.app.workspace.layoutReady) {
-			this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
-				return new FolderOverviewView(leaf, this);
-			});
-		} else {
-			this.app.workspace.onLayoutReady(async () => {
-				this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
-					return new FolderOverviewView(leaf, this);
-				});
-			});
-		}
 	}
 
 	onLayoutReady() {
+		this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
+			return new FolderOverviewView(leaf, this);
+		});
 		if (this.settings.frontMatterTitle.enabled) {
 			this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
 		}
@@ -196,9 +187,7 @@ export default class FolderNotesPlugin extends Plugin {
 				}
 			}
 			return originalHandleDrop.call(this, evt, ...args);
-		}
-
-		// const fileExplorerPluginInstance = this.app.internalPlugins.getEnabledPluginById(InternalPluginName.FileExplorer);		
+		}	
 	}
 
 
