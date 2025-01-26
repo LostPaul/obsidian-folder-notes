@@ -32,6 +32,7 @@ export interface FolderNotesSettings {
 	underlineFolderInPath: boolean;
 	openFolderNoteOnClickInPath: boolean;
 	openInNewTab: boolean;
+	oldFolderNoteName: string | undefined;
 	folderNoteName: string;
 	newFolderNoteName: string;
 	folderNoteType: string;
@@ -88,6 +89,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	underlineFolderInPath: true,
 	openFolderNoteOnClickInPath: true,
 	openInNewTab: false,
+	oldFolderNoteName: undefined,
 	folderNoteName: '{{folder_name}}',
 	folderNoteType: '.md',
 	disableFolderHighlighting: false,
@@ -262,19 +264,23 @@ export class SettingsTab extends PluginSettingTab {
 		}
 	}
 
-	updateFolderNotes(newTemplate: string) {
+	updateFolderNotes() {
 		new Notice('Starting to update folder notes...');
+		const oldTemplate = this.plugin.settings.oldFolderNoteName ?? '{{folder_name}}';
 		for (const folder of this.app.vault.getAllLoadedFiles()) {
 			if (folder instanceof TFolder) {
-				const folderNote = getFolderNote(this.plugin, folder.path);
+				const folderNote = getFolderNote(this.plugin, folder.path, undefined, undefined, oldTemplate);
 				if (!(folderNote instanceof TFile)) { continue }
-				const folderNoteName = newTemplate.replace('{{folder_name}}', folder.name)
-				const newPath = `${folder.path}/${folderNoteName}.${folderNote.extension}`;
+				const oldFolderNoteName = oldTemplate.replace('{{folder_name}}', folder.name);
+				const oldPath = `${folder.path}/${oldFolderNoteName}.${folderNote.extension}`;
+				if (folderNote.path !== oldPath) { continue }
+				const newFolderNoteName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name);
+				const newPath = `${folder.path}/${newFolderNoteName}.${folderNote.extension}`;
 				if (this.plugin.app.vault.getAbstractFileByPath(newPath)) { continue }
 				this.plugin.app.fileManager.renameFile(folderNote, newPath);
 			}
 		}
-		this.plugin.settings.folderNoteName = newTemplate;
+		this.plugin.settings.oldFolderNoteName = this.plugin.settings.folderNoteName;
 		this.plugin.saveSettings();
 		new Notice('Finished updating folder notes');
 	}

@@ -187,7 +187,7 @@ export default class FolderNotesPlugin extends Plugin {
 				}
 			}
 			return originalHandleDrop.call(this, evt, ...args);
-		}	
+		}
 	}
 
 
@@ -355,6 +355,10 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
+		if (!this.settings.oldFolderNoteName) {
+			this.settings.oldFolderNoteName = this.settings.folderNoteName;
+		}
+
 		if (!data) { return; }
 		const overview = (data as any).defaultOverview;
 		if (!overview) { return; }

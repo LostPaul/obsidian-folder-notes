@@ -262,16 +262,17 @@ export function extractFolderName(template: string, changedFileName: string) {
 	return null;
 }
 
-export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, storageLocation?: string, file?: TFile) {
+export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, storageLocation?: string, file?: TFile, oldFolderNoteName?: string) {
 	if (!folderPath) return null;
 	const folder = {
 		path: folderPath,
 		name: getFolderNameFromPathString(folderPath),
 	};
+	const folderNoteName = oldFolderNoteName ?? plugin.settings.folderNoteName;
 
-	let fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name);
+	let fileName = folderNoteName.replace('{{folder_name}}', folder.name);
 	if (file) {
-		fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', file.basename);
+		fileName = folderNoteName.replace('{{folder_name}}', file.basename);
 	}
 	if (!fileName) return null;
 

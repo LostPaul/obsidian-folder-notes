@@ -15,10 +15,10 @@ export async function renderGeneral(settingsTab: SettingsTab) {
         .setDesc('{{folder_name}} will be replaced with the name of the folder')
         .addText((text) =>
             text
-                .setValue(settingsTab.plugin.settings.newFolderNoteName)
+                .setValue(settingsTab.plugin.settings.folderNoteName)
                 .onChange(async (value) => {
                     if (value.trim() === '') { return; }
-                    settingsTab.plugin.settings.newFolderNoteName = value;
+                    settingsTab.plugin.settings.folderNoteName = value;
                     await settingsTab.plugin.saveSettings();
                 })
         )
@@ -32,7 +32,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                         'Rename all existing folder notes', 
                         'When you click on "Confirm" all existing folder notes will be renamed to the new folder note name.',
                         settingsTab.updateFolderNotes, 
-                        [settingsTab.plugin.settings.newFolderNoteName])
+                        [])
                         .open();
                 })
         );
