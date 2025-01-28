@@ -280,11 +280,10 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, sto
 		folder.path = getFolderPathFromString(folderPath);
 	}
 
+
 	let path = `${folder.path}/${fileName}`;
-	if (folder.path.trim() === '') {
-		folder.path = fileName;
-		path = `${fileName}`;
-	}
+	folder.path == '/' ? path = fileName : path = `${folder.path}/${fileName}`;
+
 
 	let folderNoteType = plugin.settings.folderNoteType;
 	if (folderNoteType === '.excalidraw') {
