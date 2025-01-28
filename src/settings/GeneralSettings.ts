@@ -173,13 +173,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                     settingsTab.display();
                     loadFileClasses(undefined, settingsTab.plugin);
                 })
-        );
-    storageLocation.infoEl.appendText('Requires a restart to take effect');
-    storageLocation.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
-
-    const switchLocation = new Setting(containerEl)
-        .setName('Switch to new storage location')
-        .setDesc('Move all folder notes to the new storage location')
+        )
         .addButton((button) =>
             button
                 .setButtonText('Switch')
@@ -191,11 +185,17 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                     } else if (settingsTab.plugin.settings.storageLocation === 'insideFolder') {
                         oldStorageLocation = 'parentFolder';
                     }
-                    settingsTab.switchStorageLocation(oldStorageLocation);
+                    new BackupWarningModal(
+                        settingsTab.plugin,
+                        'Switch storage location',
+                        'When you click on "Confirm" all folder notes will be moved to the new storage location.',
+                        settingsTab.switchStorageLocation,
+                        [oldStorageLocation]
+                    ).open();
                 })
         );
-    switchLocation.infoEl.appendText('Requires a restart to take effect');
-    switchLocation.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
+    storageLocation.infoEl.appendText('Requires a restart to take effect');
+    storageLocation.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
     if (settingsTab.plugin.settings.storageLocation === 'parentFolder') {
         new Setting(containerEl)
