@@ -7,6 +7,7 @@ import ConfirmationModal from './modals/CreateFnForEveryFolder';
 import { TemplateSuggest } from '../suggesters/TemplateSuggester';
 import { loadFileClasses } from '../functions/styleFunctions';
 import BackupWarningModal from './modals/BackupWarning';
+import RenameFolderNotesModal from './modals/RenameFns';
 
 export async function renderGeneral(settingsTab: SettingsTab) {
     const containerEl = settingsTab.settingsPage;
@@ -27,7 +28,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                 .setButtonText('Rename existing folder notes')
                 .setCta()
                 .onClick(async () => {
-                    new BackupWarningModal(
+                    new RenameFolderNotesModal(
                         settingsTab.plugin, 
                         'Rename all existing folder notes', 
                         'When you click on "Confirm" all existing folder notes will be renamed to the new folder note name.',

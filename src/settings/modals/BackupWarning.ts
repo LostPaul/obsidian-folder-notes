@@ -25,6 +25,8 @@ export default class BackupWarningModal extends Modal {
 
         contentEl.createEl('p', { text: this.desc });
 
+        this.insertCustomHtml();
+
 		contentEl.createEl('p', { text: 'Make sure to backup your vault before using this feature.' }).style.color = '#fb464c';
 
         const buttonContainer = contentEl.createDiv({ cls: 'fn-modal-button-container' });
@@ -41,6 +43,10 @@ export default class BackupWarningModal extends Modal {
             .onClick(() => {
                 this.close();
             });
+    }
+
+    insertCustomHtml(): void {
+
     }
 
     onClose() {
