@@ -40,7 +40,8 @@ jobs:
 
       - name: Copy built files to folder-overview
         run: |
-          cp main.js styles.css folder-overview/
+           cp src/obsidian-folder-overview/main.js src/obsidian-folder-overview/styles.css folder-overview/
+
 
       - name: Create branch and push to folder-overview
         run: |
