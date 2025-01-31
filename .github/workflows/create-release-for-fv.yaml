@@ -43,13 +43,14 @@ jobs:
            cp src/obsidian-folder-overview/main.js src/obsidian-folder-overview/styles.css folder-overview/
 
 
-      - name: Create branch and push to folder-overview
+      - name: Commit and push built files
         run: |
-          cd folder-overview
-          git checkout -b auto-build-${{ github.ref_name }}
-          git add main.js styles.css
-          git commit -m "Auto-build from folder-notes ${{ github.ref_name }}"
-          git push origin auto-build-${{ github.ref_name }}
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add -f main.js styles.css
+          git commit -m "Add built files for release"
+          git push origin auto-build-main
+
 
       - name: Trigger release workflow in folder-overview
         run: |
