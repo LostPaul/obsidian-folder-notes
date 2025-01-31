@@ -139,6 +139,10 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
 
 /* Folder overview */
 
+.folder-overview-container.fv-remove-edit-button .folder-overview-edit-button {
+    display: none;
+}
+
 .fn-folder-overview-collapse-icon {
     display: block !important;
 }
