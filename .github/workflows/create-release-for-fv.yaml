@@ -31,26 +31,36 @@ jobs:
           npm install
           npm run fv-build
 
-      - name: Checkout folder-overview
+      - name: Checkout folder-overview repository
         uses: actions/checkout@v3
         with:
           repository: LostPaul/obsidian-folder-overview
           token: ${{ secrets.PAT }}
           path: folder-overview
 
-      - name: Copy built files to folder-overview
+      - name: Initialize and update submodule for folder-overview
         run: |
-           cp src/obsidian-folder-overview/main.js src/obsidian-folder-overview/styles.css folder-overview/
+          cd folder-overview
+          git submodule update --init --recursive
 
-
-      - name: Commit and push built files
+      - name: Copy built files from folder-notes to folder-overview
         run: |
+          # Make sure the built files exist and copy them
+          if [ -f "src/obsidian-folder-overview/main.js" ] && [ -f "src/obsidian-folder-overview/styles.css" ]; then
+            cp src/obsidian-folder-overview/main.js src/obsidian-folder-overview/styles.css folder-overview/
+          else
+            echo "Built files not found, exiting"
+            exit 1
+          fi
+
+      - name: Commit and push built files to folder-overview
+        run: |
+          cd folder-overview
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add -f src/obsidian-folder-overview/main.js src/obsidian-folder-overview/styles.css folder-overview/
+          git add -f main.js styles.css  # Add the files inside folder-overview
           git commit -m "Add built files for release"
-          git push origin auto-build-main
-
+          git push origin main  # Push to main branch or correct branch
 
       - name: Trigger release workflow in folder-overview
         run: |
