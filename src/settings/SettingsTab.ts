@@ -22,6 +22,7 @@ export interface FolderNotesSettings {
 	autoCreate: boolean;
 	autoCreateForAttachmentFolder: boolean;
 	autoCreateFocusFiles: boolean;
+	autoCreateForFiles: boolean;
 	enableCollapsing: boolean;
 	excludeFolders: (ExcludePattern | ExcludedFolder)[];
 	whitelistFolders: (WhitelistedFolder | WhitelistedPattern)[];
@@ -80,6 +81,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	autoCreate: false,
 	autoCreateFocusFiles: true,
 	autoCreateForAttachmentFolder: false,
+	autoCreateForFiles: false,
 	enableCollapsing: false,
 	excludeFolders: [],
 	whitelistFolders: [],
@@ -266,7 +268,6 @@ export class SettingsTab extends PluginSettingTab {
 
 	renameFolderNotes() {
 		new Notice('Starting to update folder notes...');
-		console.log('starting to update folder notes 2');
 		const oldTemplate = this.plugin.settings.oldFolderNoteName ?? '{{folder_name}}';
 
 		for (const folder of this.app.vault.getAllLoadedFiles()) {

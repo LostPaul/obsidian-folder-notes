@@ -1,8 +1,9 @@
 import { TAbstractFile, TFolder, TFile } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
-import { createFolderNote, getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
+import { createFolderNote, getFolder, getFolderNote, turnIntoFolderNote } from 'src/functions/folderNoteFunctions';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { removeCSSClassFromEL, addCSSClassToTitleEL } from 'src/functions/styleFunctions';
+import { removeExtension } from 'src/functions/utils';
 
 export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
     if (!plugin.app.workspace.layoutReady) return;
@@ -25,15 +26,24 @@ export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugi
 
 async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin) {
     const folder = getFolder(plugin, file);
-    if (!(folder instanceof TFolder)) { return; }
-    const detachedFolder = await getExcludedFolder(plugin, folder.path, true);
-    if (detachedFolder) { return; }
-    const folderNote = getFolderNote(plugin, folder.path);
 
-    if (folderNote && folderNote.path === file.path) {
-        addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
-        addCSSClassToTitleEL(file.path, 'is-folder-note', plugin);
-        return;
+    if (!(folder instanceof TFolder) && plugin.settings.autoCreateForFiles) {
+        if (!file.parent) { return; }
+        const newFolder = await plugin.app.fileManager.createNewFolder(file.parent)
+        turnIntoFolderNote(plugin, file, newFolder);
+    } else if (folder instanceof TFolder) {
+        const detachedFolder = await getExcludedFolder(plugin, folder.path, true);
+        if (detachedFolder) { return; }
+        const folderNote = getFolderNote(plugin, folder.path);
+
+        if (folderNote && folderNote.path === file.path) {
+            addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
+            addCSSClassToTitleEL(file.path, 'is-folder-note', plugin);
+        } else {
+            if (!file.parent) { return; }
+            const newFolder = await plugin.app.fileManager.createNewFolder(file.parent)
+            turnIntoFolderNote(plugin, file, newFolder);
+        }
     }
 }
 

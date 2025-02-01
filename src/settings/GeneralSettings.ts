@@ -40,7 +40,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
     nameSetting.infoEl.appendText('Requires a restart to take effect');
     nameSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
-    if (settingsTab.plugin.settings.newFolderNoteName !== '{{folder_name}}') {
+    if (settingsTab.plugin.settings.folderNoteName !== '{{folder_name}}') {
         new Setting(containerEl)
             .setName('Use folder name instead of folder note name in the tab title')
             .setDesc('When you\'re using a folder note name like "folder note" and have multiple folder notes open you can\'t separate them anymore by their name. This setting uses the folder name instead and allows you to indentify the different files.')
@@ -404,4 +404,17 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                     })
             );
     }
+
+    new Setting(containerEl)
+        .setName('Automatically create folder note when you create a note')
+        .setDesc('Automatically create a folder note when a note is created. It has to be a file type that you selected in the supported file types')
+        .addToggle((toggle) =>
+            toggle
+                .setValue(settingsTab.plugin.settings.autoCreateForFiles)
+                .onChange(async (value) => {
+                    settingsTab.plugin.settings.autoCreateForFiles = value;
+                    await settingsTab.plugin.saveSettings();
+                    settingsTab.display();
+                })
+        );
 }
