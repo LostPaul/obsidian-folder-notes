@@ -2,7 +2,7 @@ import { App, Notice, PluginSettingTab, TFile, TFolder, MarkdownPostProcessorCon
 import FolderNotesPlugin from '../main';
 import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
-import { getFolderNote } from '../functions/folderNoteFunctions';
+import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctions';
 import { overviewSettings } from '../obsidian-folder-overview/src/FolderOverview';
 import { renderGeneral } from './GeneralSettings';
 import { renderFileExplorer } from './FileExplorerSettings';
@@ -264,22 +264,34 @@ export class SettingsTab extends PluginSettingTab {
 		}
 	}
 
-	updateFolderNotes() {
+	renameFolderNotes() {
 		new Notice('Starting to update folder notes...');
+		console.log('starting to update folder notes 2');
 		const oldTemplate = this.plugin.settings.oldFolderNoteName ?? '{{folder_name}}';
+
 		for (const folder of this.app.vault.getAllLoadedFiles()) {
 			if (folder instanceof TFolder) {
 				const folderNote = getFolderNote(this.plugin, folder.path, undefined, undefined, oldTemplate);
-				if (!(folderNote instanceof TFile)) { continue }
-				const oldFolderNoteName = oldTemplate.replace('{{folder_name}}', folder.name);
-				const oldPath = `${folder.path}/${oldFolderNoteName}.${folderNote.extension}`;
-				if (folderNote.path !== oldPath) { continue }
-				const newFolderNoteName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name);
-				const newPath = `${folder.path}/${newFolderNoteName}.${folderNote.extension}`;
-				if (this.plugin.app.vault.getAbstractFileByPath(newPath)) { continue }
-				this.plugin.app.fileManager.renameFile(folderNote, newPath);
+				if (!(folderNote instanceof TFile)) { continue; }
+
+				const folderName = extractFolderName(oldTemplate, folderNote.basename) ?? '';
+				const newFolderNoteName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
+				let newPath = '';
+
+				if (this.plugin.settings.storageLocation === 'parentFolder') {
+					if (getFolderPathFromString(folder.path).trim() === '/') {
+						newPath = `${newFolderNoteName}.${folderNote.extension}`;
+					} else {
+						newPath = `${folderNote.parent?.path}/${newFolderNoteName}.${folderNote.extension}`;
+					}
+				} else if (this.plugin.settings.storageLocation === 'insideFolder') {
+					newPath = `${folder.path}/${newFolderNoteName}.${folderNote.extension}`;
+				}
+
+				this.app.fileManager.renameFile(folderNote, newPath);
 			}
 		}
+
 		this.plugin.settings.oldFolderNoteName = this.plugin.settings.folderNoteName;
 		this.plugin.saveSettings();
 		new Notice('Finished updating folder notes');

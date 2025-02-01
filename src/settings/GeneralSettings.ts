@@ -32,7 +32,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
                         settingsTab.plugin, 
                         'Rename all existing folder notes', 
                         'When you click on "Confirm" all existing folder notes will be renamed to the new folder note name.',
-                        settingsTab.updateFolderNotes, 
+                        settingsTab.renameFolderNotes, 
                         [])
                         .open();
                 })

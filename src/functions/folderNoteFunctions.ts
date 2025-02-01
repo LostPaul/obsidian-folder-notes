@@ -335,7 +335,7 @@ export function getFolder(plugin: FolderNotesPlugin, file: TFile, storageLocatio
 	let folderPath = getFolderPathFromString(file.path);
 	let folder: TFolder | TAbstractFile | null = null;
 	if ((plugin.settings.storageLocation === 'parentFolder' || storageLocation === 'parentFolder') && storageLocation !== 'insideFolder') {
-		if (folderPath.trim() === '') {
+		if (folderPath.trim() === '' || folderPath === '/') {
 			folderPath = folderName;
 		} else {
 			folderPath = `${folderPath}/${folderName}`;
