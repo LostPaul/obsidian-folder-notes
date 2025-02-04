@@ -1,7 +1,4 @@
-// Credits go to Liam's Periodic Notes Plugin: https://github.com/liamcain/obsidian-periodic-notes and https://github.com/SilentVoid13/Templater
-
-import { TAbstractFile, TFile, TFolder, Vault } from 'obsidian';
-import { TextInputSuggest } from './Suggest';
+import { TAbstractFile, TFile, TFolder, Vault, AbstractInputSuggest } from 'obsidian';
 import FolderNotesPlugin from '../main';
 import { getTemplatePlugins } from 'src/template';
 export enum FileSuggestMode {
@@ -9,12 +6,12 @@ export enum FileSuggestMode {
     ScriptFiles,
 }
 
-export class TemplateSuggest extends TextInputSuggest<TFile> {
+export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 	constructor(
         public inputEl: HTMLInputElement,
-        plugin: FolderNotesPlugin
+        public plugin: FolderNotesPlugin
 	) {
-		super(inputEl, plugin);
+		super(plugin.app, inputEl);
 	}
 
 
@@ -28,37 +25,48 @@ export class TemplateSuggest extends TextInputSuggest<TFile> {
 	}
 
 	getSuggestions(input_str: string): TFile[] {
-		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.plugin.app);
-		if ((!templateFolder || templateFolder?.trim() === '') && !templaterPlugin) {
-			this.plugin.settings.templatePath = '';
-			this.plugin.saveSettings();
-			return [];
-		}
-		let folder: TFolder;
-		if (templaterPlugin) {
-			folder = this.plugin.app.vault.getAbstractFileByPath(templaterPlugin.plugin?.settings?.templates_folder as string) as TFolder;
-
-		} else {
-			folder = this.plugin.app.vault.getAbstractFileByPath(templateFolder) as TFolder;
-		}
-
-		const files: TFile[] = [];
+		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.app);
+	
+		let files: TFile[] = [];
 		const lower_input_str = input_str.toLowerCase();
-
-		Vault.recurseChildren(folder, (file: TAbstractFile) => {
-			if (file instanceof TFile &&
-                file.path.toLowerCase().contains(lower_input_str)
-			) {
-				files.push(file);
+	
+		if ((!templateFolder || templateFolder.trim() === '') && !templaterPlugin) {
+			console.log('Template folder not found');
+			console.log(lower_input_str)
+			files = this.plugin.app.vault.getFiles().filter((file) =>
+				file.path.toLowerCase().includes(lower_input_str)
+			);
+		} else {
+			let folder: TFolder;
+			if (templaterPlugin) {
+				folder = this.plugin.app.vault.getAbstractFileByPath(
+					templaterPlugin.plugin?.settings?.templates_folder as string
+				) as TFolder;
+			} else {
+				folder = this.plugin.app.vault.getAbstractFileByPath(templateFolder) as TFolder;
 			}
-		});
-
+	
+			Vault.recurseChildren(folder, (file: TAbstractFile) => {
+				if (file instanceof TFile && file.path.toLowerCase().includes(lower_input_str)) {
+					files.push(file);
+				}
+			});
+		}
+	
 		return files;
 	}
+	
 
 	renderSuggestion(file: TFile, el: HTMLElement): void {
-		el.setText(file.name.replace('.md', ''));
+		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.app);
+	
+		if ((!templateFolder || templateFolder.trim() === '') && !templaterPlugin) {
+			el.setText(`${file.parent?.path}/${file.name.replace('.md', '')}`);
+		} else {
+			el.setText(file.name.replace('.md', ''));
+		}
 	}
+	
 
 	selectSuggestion(file: TFile): void {
 		this.inputEl.value = file.name.replace('.md', '');
