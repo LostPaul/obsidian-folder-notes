@@ -39,7 +39,7 @@ async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin) {
         if (folderNote && folderNote.path === file.path) {
             addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
             addCSSClassToTitleEL(file.path, 'is-folder-note', plugin);
-        } else {
+        } else if (plugin.settings.autoCreateForFiles) {
             if (!file.parent) { return; }
             const newFolder = await plugin.app.fileManager.createNewFolder(file.parent)
             turnIntoFolderNote(plugin, file, newFolder);
