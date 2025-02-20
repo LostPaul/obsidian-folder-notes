@@ -14,7 +14,6 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      # Checkout folder-notes repository
       - name: Checkout folder-notes
         uses: actions/checkout@v3
         with:
@@ -23,48 +22,52 @@ jobs:
           submodules: recursive
           path: folder-notes
 
-      # Install dependencies and run the fv-build process
+      - name: Force update submodules
+        run: |
+          cd folder-notes
+          git submodule sync --recursive
+          git submodule update --init --recursive --force
+
+      - name: Reset submodule to latest commit
+        run: |
+          cd folder-notes/src/obsidian-folder-overview
+          git fetch origin main
+          git checkout origin/main
+
       - name: Run npm install and build in folder-notes
         run: |
           cd folder-notes
           npm install
           npm run fv-build
 
-      # Verify that the built files exist
-      - name: Check built files
+      - name: Verify built files
         run: |
           ls -la folder-notes/src/obsidian-folder-overview/
 
-      # Checkout folder-overview repository on the main branch
       - name: Checkout folder-overview
         uses: actions/checkout@v3
         with:
           repository: LostPaul/obsidian-folder-overview
           token: ${{ secrets.PAT }}
-          ref: main  # Ensures we are on the main branch
+          ref: main
           path: folder-overview
 
-      # Ensure we're on the main branch
       - name: Ensure we are on main branch
         run: |
           cd folder-overview
           git checkout main || git checkout -b main
 
-      # Copy the built files from folder-notes to folder-overview
       - name: Copy built files to folder-overview
         run: |
           cp folder-notes/src/obsidian-folder-overview/main.js \
              folder-notes/src/obsidian-folder-overview/styles.css folder-overview/
 
-      # Commit and push built files only if they changed
       - name: Commit and push built files
         run: |
           cd folder-overview
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add main.js styles.css
-
-          # Only commit if there are changes
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
@@ -72,7 +75,6 @@ jobs:
             git push origin main
           fi
 
-      # Trigger release workflow in folder-overview
       - name: Trigger release workflow in folder-overview
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.PAT }}" \
@@ -84,7 +86,6 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      # Checkout folder-overview again for cleanup
       - name: Checkout folder-overview for cleanup
         uses: actions/checkout@v3
         with:
@@ -93,7 +94,6 @@ jobs:
           ref: main
           path: folder-overview
 
-      # Remove built files after release
       - name: Remove built files after release
         run: |
           cd folder-overview
