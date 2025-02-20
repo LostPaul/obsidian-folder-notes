@@ -22,27 +22,20 @@ jobs:
           submodules: recursive
           path: folder-notes
 
-      - name: Force update submodules
-        run: |
-          cd folder-notes
-          git submodule sync --recursive
-          git submodule update --init --recursive --force
-
-      - name: Reset submodule to latest commit
-        run: |
-          cd folder-notes/src/obsidian-folder-overview
-          git fetch origin main
-          git checkout origin/main
-
-      - name: Run npm install and build in folder-notes
+      - name: Install dependencies
         run: |
           cd folder-notes
           npm install
-          npm run fv-build
 
-      - name: Verify built files
+      - name: Build folder-overview
+        run: |
+          cd folder-notes
+          npm run fv-build  # This will run esbuild.config.mjs
+
+      - name: Verify build output
         run: |
           ls -la folder-notes/src/obsidian-folder-overview/
+          ls -la folder-notes/dist/
 
       - name: Checkout folder-overview
         uses: actions/checkout@v3
@@ -51,11 +44,6 @@ jobs:
           token: ${{ secrets.PAT }}
           ref: main
           path: folder-overview
-
-      - name: Ensure we are on main branch
-        run: |
-          cd folder-overview
-          git checkout main || git checkout -b main
 
       - name: Copy built files to folder-overview
         run: |
@@ -74,29 +62,3 @@ jobs:
             git commit -m "Add built files for release"
             git push origin main
           fi
-
-      - name: Trigger release workflow in folder-overview
-        run: |
-          curl -X POST -H "Authorization: token ${{ secrets.PAT }}" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/LostPaul/obsidian-folder-overview/actions/workflows/release.yaml/dispatches \
-          -d '{"ref": "main", "inputs": {"tag": "${{ github.ref_name }}"}}'
-
-  cleanup:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout folder-overview for cleanup
-        uses: actions/checkout@v3
-        with:
-          repository: LostPaul/obsidian-folder-overview
-          token: ${{ secrets.PAT }}
-          ref: main
-          path: folder-overview
-
-      - name: Remove built files after release
-        run: |
-          cd folder-overview
-          git rm -f main.js styles.css || true
-          git commit -m "Cleanup built files after release" || echo "No changes to commit"
-          git push origin main || echo "No changes to push"
