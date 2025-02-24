@@ -1,6 +1,7 @@
 import { FileExplorerWorkspaceLeaf } from 'src/globals';
 import FolderNotesPlugin from 'src/main';
 import { FileExplorerLeaf } from 'obsidian-typings';
+import FolderOverviewPlugin from 'src/obsidian-folder-overview/src/main';
 
 export function getFileNameFromPathString(path: string): string {
 	return path.substring(path.lastIndexOf('/') >= 0 ? path.lastIndexOf('/') + 1 : 0);
@@ -36,7 +37,7 @@ export function getParentFolderPath(path: string): string {
 	return this.getFolderPathFromString(this.getFolderPathFromString(path));
 }
 
-export function getFileExplorer(plugin: FolderNotesPlugin) {
+export function getFileExplorer(plugin: FolderNotesPlugin | FolderOverviewPlugin) {
 	return plugin.app.workspace.getLeavesOfType('file-explorer')[0] as any as FileExplorerWorkspaceLeaf;
 }
 

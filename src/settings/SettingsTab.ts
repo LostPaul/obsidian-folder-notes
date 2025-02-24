@@ -116,6 +116,8 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		showFolderNotes: false,
 		disableCollapseIcon: true,
 		alwaysCollapse: false,
+		autoSync: true,
+		allowDragAndDrop: true
 	},
 	useSubmenus: true,
 	syncMove: true,

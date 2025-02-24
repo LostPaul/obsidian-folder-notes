@@ -3,6 +3,7 @@ import FolderNotesPlugin from '../main';
 import { getDetachedFolder, getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getFileExplorer } from './utils';
+import FolderOverviewPlugin from 'src/obsidian-folder-overview/src/main';
 
 export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) {
 	if (plugin.activeFileExplorer === getFileExplorer(plugin) && !forceReload) { return; }
@@ -143,7 +144,7 @@ export function removeCSSClassFromEL(path: string | undefined, cssClass: string,
 	fileExplorerItem.removeClass(cssClass);
 }
 
-export function getEl(path: string, plugin: FolderNotesPlugin): HTMLElement | null {
+export function getEl(path: string, plugin: FolderNotesPlugin | FolderOverviewPlugin): HTMLElement | null {
 	const fileExplorer = getFileExplorer(plugin);
 	if (!fileExplorer) { return null; }
 	if (!fileExplorer.view) { return null; }
