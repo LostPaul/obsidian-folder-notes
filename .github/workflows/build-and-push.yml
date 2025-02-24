@@ -14,8 +14,13 @@ jobs:
       - name: Checkout folder-notes
         uses: actions/checkout@v3
         with:
-          submodules: recursive
+          submodules: false
           fetch-depth: 0
+
+      - name: Update submodules manually
+        run: |
+            git submodule sync
+            git submodule update --init --recursive --remote
 
       - name: Install dependencies
         run: npm install
