@@ -11,7 +11,7 @@ export class WhitelistedPattern {
 	enableFolderNote: boolean;
 	enableCollapsing: boolean;
 	showInFolderOverview: boolean;
-    hideInSettings: boolean;
+	hideInSettings: boolean;
 	constructor(pattern: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
 		this.type = 'pattern';
 		this.id = id || crypto.randomUUID();

@@ -9,7 +9,7 @@ import { getFolderPathFromString, removeExtension, getFileNameFromPathString } f
 export function handleRename(file: TAbstractFile, oldPath: string, plugin: FolderNotesPlugin) {
 	const folder = file.parent;
 	const oldFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(oldPath));
-	const isRename = (file.parent?.path === getFolderPathFromString(oldPath))
+	const isRename = (file.parent?.path === getFolderPathFromString(oldPath));
 	if (folder instanceof TFolder) {
 		if (plugin.isEmptyFolderNoteFolder(folder)) {
 			addCSSClassToTitleEL(folder.path, 'only-has-folder-note', plugin);
@@ -138,8 +138,8 @@ export async function handleFileRename(file: TFile, oldPath: string, plugin: Fol
 	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename) || file.basename;
 	const oldFolderName = extractFolderName(plugin.settings.folderNoteName, oldFileName) || oldFileName;
 	const newFolder = getFolderNoteFolder(plugin, file, file.basename);
-	let excludedFolder = await getExcludedFolder(plugin, newFolder?.path || '', true);
-	const detachedExcludedFolder = getDetachedFolder(plugin, newFolder?.path || '')
+	const excludedFolder = await getExcludedFolder(plugin, newFolder?.path || '', true);
+	const detachedExcludedFolder = getDetachedFolder(plugin, newFolder?.path || '');
 	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
 
 	if (!excludedFolder?.disableFolderNote && folderName === newFolder?.name && !detachedExcludedFolder) {

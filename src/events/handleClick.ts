@@ -51,7 +51,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 
 	if (!(event.target instanceof HTMLElement)) return;
 	if (!event || !event.target) return;
-	
+
 	if (!event.shiftKey) {
 		event.stopImmediatePropagation();
 	} else {
@@ -82,7 +82,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 			return openFolderNote(plugin, folderNote, event);
 		} else {
 			if (plugin.settings.enableCollapsing) return;
-			event.target.parentElement?.click()
+			event.target.parentElement?.click();
 			return;
 		}
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {

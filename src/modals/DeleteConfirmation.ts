@@ -33,10 +33,10 @@ export default class DeleteConfirmationModal extends Modal {
 		const buttonContainer = contentEl.createEl('div', { cls: 'modal-button-container' });
 
 		if (!Platform.isMobile) {
-			const checkbox = buttonContainer.createEl('label', { cls: 'mod-checkbox'  })
-			checkbox.tabIndex = -1
+			const checkbox = buttonContainer.createEl('label', { cls: 'mod-checkbox' });
+			checkbox.tabIndex = -1;
 			const input = checkbox.createEl('input', { type: 'checkbox' });
-			checkbox.appendText('Don\'t ask again')
+			checkbox.appendText('Don\'t ask again');
 			input.addEventListener('change', (e) => {
 				const target = e.target as HTMLInputElement;
 				if (target.checked) {

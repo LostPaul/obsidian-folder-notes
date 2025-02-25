@@ -8,7 +8,7 @@ import { SettingsTab } from '../../settings/SettingsTab';
 import WhitelistededFoldersSettings from '../modals/WhitelistedFoldersSettings';
 import WhitelistFolderSettings from '../modals/WhitelistFolderSettings';
 import { updateWhitelistedPattern, getWhitelistedFoldersByPattern, addWhitelistedPatternListItem } from './whitelistPatternFunctions';
-Platform.isMobileApp
+Platform.isMobileApp;
 
 export function getWhitelistedFolder(plugin: FolderNotesPlugin, path: string) {
 	let whitelistedFolder = {} as WhitelistedFolder | WhitelistedPattern | undefined;
@@ -20,12 +20,12 @@ export function getWhitelistedFolder(plugin: FolderNotesPlugin, path: string) {
 		'enableAutoCreate',
 		'enableFolderNote',
 		'enableSync',
-		'showInFolderOverview'
+		'showInFolderOverview',
 	];
 
 	if (combinedWhitelistedFolders.length > 0) {
 		for (const matchedFolder of combinedWhitelistedFolders) {
-			propertiesToCopy.forEach(property => {
+			propertiesToCopy.forEach((property) => {
 				if (matchedFolder[property] === true) {
 					(whitelistedFolder as any)[property] = true;
 				} else if (!matchedFolder[property]) {
@@ -87,7 +87,7 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 	setting.setClass('fn-exclude-folder-list');
 
 	const inputContainer = setting.settingEl.createDiv({ cls: 'fn-whitelist-folder-input-container' });
-	const SearchComponent = new Setting(inputContainer)
+	const SearchComponent = new Setting(inputContainer);
 	SearchComponent.addSearch((cb) => {
 		new FolderSuggest(
 			cb.inputEl,

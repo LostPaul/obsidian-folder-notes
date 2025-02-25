@@ -26,13 +26,13 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 
 	getSuggestions(input_str: string): TFile[] {
 		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.app);
-	
+
 		let files: TFile[] = [];
 		const lower_input_str = input_str.toLowerCase();
-	
+
 		if ((!templateFolder || templateFolder.trim() === '') && !templaterPlugin) {
 			console.log('Template folder not found');
-			console.log(lower_input_str)
+			console.log(lower_input_str);
 			files = this.plugin.app.vault.getFiles().filter((file) =>
 				file.path.toLowerCase().includes(lower_input_str)
 			);
@@ -45,28 +45,28 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 			} else {
 				folder = this.plugin.app.vault.getAbstractFileByPath(templateFolder) as TFolder;
 			}
-	
+
 			Vault.recurseChildren(folder, (file: TAbstractFile) => {
 				if (file instanceof TFile && file.path.toLowerCase().includes(lower_input_str)) {
 					files.push(file);
 				}
 			});
 		}
-	
+
 		return files;
 	}
-	
+
 
 	renderSuggestion(file: TFile, el: HTMLElement): void {
 		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.app);
-	
+
 		if ((!templateFolder || templateFolder.trim() === '') && !templaterPlugin) {
 			el.setText(`${file.parent?.path}/${file.name.replace('.md', '')}`);
 		} else {
 			el.setText(file.name.replace('.md', ''));
 		}
 	}
-	
+
 
 	selectSuggestion(file: TFile): void {
 		this.inputEl.value = file.name.replace('.md', '');

@@ -11,7 +11,7 @@ export class ExcludedFolder {
 	enableCollapsing: boolean;
 	position: number;
 	excludeFromFolderOverview: boolean;
-    hideInSettings: boolean;
+	hideInSettings: boolean;
 	detached: boolean;
 	detachedFilePath?: string;
 	hideNote: boolean;
@@ -27,7 +27,7 @@ export class ExcludedFolder {
 		this.position = position;
 		this.excludeFromFolderOverview = plugin.settings.excludeFolderDefaultSettings.excludeFromFolderOverview;
 		this.string = '';
-        this.hideInSettings = false;
+		this.hideInSettings = false;
 		this.hideNote = false;
 	}
 }

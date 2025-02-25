@@ -117,7 +117,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		disableCollapseIcon: true,
 		alwaysCollapse: false,
 		autoSync: true,
-		allowDragAndDrop: true
+		allowDragAndDrop: true,
 	},
 	useSubmenus: true,
 	syncMove: true,
@@ -191,15 +191,15 @@ export class SettingsTab extends PluginSettingTab {
 	TABS = {
 		GENERAL: {
 			name: 'General',
-			id: 'general'
+			id: 'general',
 		},
 		FOLDER_OVERVIEW: {
 			name: 'Folder overview',
-			id: 'folder_overview'
+			id: 'folder_overview',
 		},
 		EXCLUDE_FOLDERS: {
 			name: 'Exclude folders',
-			id: 'exclude_folders'
+			id: 'exclude_folders',
 		},
 		FILE_EXPLORER: {
 			name: 'File explorer',
@@ -207,9 +207,9 @@ export class SettingsTab extends PluginSettingTab {
 		},
 		PATH: {
 			name: 'Path',
-			id: 'path'
-		}
-	}
+			id: 'path',
+		},
+	};
 	renderSettingsPage(tabId: string) {
 		this.settingsPage.empty();
 		switch (tabId.toLocaleLowerCase()) {

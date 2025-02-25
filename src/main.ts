@@ -16,7 +16,7 @@ import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
 import { addCSSClassToTitleEL, getEl, loadFileClasses } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import { FileExplorerView, InternalPlugin } from 'obsidian-typings'
+import { FileExplorerView, InternalPlugin } from 'obsidian-typings';
 import { getFocusedItem } from './functions/utils';
 import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './obsidian-folder-overview/src/view';
 import { getFolderPathFromString } from './functions/utils';
@@ -118,7 +118,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 			const folder = getFolder(this, openFile);
 			if (!folder) { return; }
-			const excludedFolder = await getExcludedFolder(this, folder.path, true)
+			const excludedFolder = await getExcludedFolder(this, folder.path, true);
 			if (excludedFolder?.disableFolderNote) return;
 			const folderNote = getFolderNote(this, folder.path);
 			if (!folderNote) { return; }
@@ -187,7 +187,7 @@ export default class FolderNotesPlugin extends Plugin {
 				}
 			}
 			return originalHandleDrop.call(this, evt, ...args);
-		}
+		};
 	}
 
 
@@ -242,11 +242,11 @@ export default class FolderNotesPlugin extends Plugin {
 		workspace.revealLeaf(leaf);
 	}
 
-	updateOverviewView = updateOverviewView
-	updateViewDropdown = updateViewDropdown
+	updateOverviewView = updateOverviewView;
+	updateViewDropdown = updateViewDropdown;
 
 	isEmptyFolderNoteFolder(folder: TFolder): boolean {
-		let attachmentFolderPath = this.app.vault.getConfig('attachmentFolderPath') as string;
+		const attachmentFolderPath = this.app.vault.getConfig('attachmentFolderPath') as string;
 		const cleanAttachmentFolderPath = attachmentFolderPath?.replace('./', '') || '';
 		const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
 		const threshold = this.settings.storageLocation === 'insideFolder' ? 1 : 0;
@@ -260,7 +260,7 @@ export default class FolderNotesPlugin extends Plugin {
 			if (attachmentsAreInRootFolder) {
 				return false;
 			} else if (this.settings.ignoreAttachmentFolder && this.app.vault.getAbstractFileByPath(`${folder.path}/${cleanAttachmentFolderPath}`)) {
-				const folderPath = `${folder.path}/${cleanAttachmentFolderPath}`
+				const folderPath = `${folder.path}/${cleanAttachmentFolderPath}`;
 				const attachmentFolder = this.app.vault.getAbstractFileByPath(folderPath);
 				if (attachmentFolder instanceof TFolder && folder.children.length <= threshold + 1) {
 					if (!folder.collapsed) {
@@ -287,7 +287,7 @@ export default class FolderNotesPlugin extends Plugin {
 			return;
 		}
 
-		fileExplorerItem = fileExplorerItem?.querySelector('div.nav-folder-title-content')
+		fileExplorerItem = fileExplorerItem?.querySelector('div.nav-folder-title-content');
 		if (!fileExplorerItem) { return; }
 		if (this.settings.frontMatterTitle.explorer && this.settings.frontMatterTitle.enabled) {
 			fileExplorerItem.innerText = name;

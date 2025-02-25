@@ -5,7 +5,7 @@ import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString } from './functions/utils';
 import { getExcludedFolderByPattern } from './ExcludeFolders/functions/patternFunctions';
 import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder, getExcludedFoldersByPath, updateExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSettings'
+import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSettings';
 import { ExcludePattern } from './ExcludeFolders/ExcludePattern';
 import PatternSettings from './ExcludeFolders/modals/PatternSettings';
 import { applyCSSClassesToFolder } from './functions/styleFunctions';
@@ -33,7 +33,7 @@ export class Commands {
 				if (!(folder instanceof TFolder)) return;
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				turnIntoFolderNote(this.plugin, file, folder, folderNote);
-			}
+			},
 		});
 
 		this.plugin.addCommand({
@@ -58,8 +58,8 @@ export class Commands {
 				createFolderNote(this.plugin, folder.path, true, '.' + file.extension, false, file);
 				this.plugin.settings.autoCreate = automaticallyCreateFolderNote;
 				this.plugin.saveSettings();
-			}
-		})
+			},
+		});
 
 		this.plugin.addCommand({
 			id: 'create-folder-note-for-current-folder',
@@ -70,7 +70,7 @@ export class Commands {
 				const folder = file.parent;
 				if (!(folder instanceof TFolder)) return;
 				createFolderNote(this.plugin, folder.path, true, '.md', false);
-			}
+			},
 		});
 
 		this.plugin.settings.supportedFileTypes.forEach((fileType) => {
@@ -84,7 +84,7 @@ export class Commands {
 					const folder = file.parent;
 					if (!(folder instanceof TFolder)) return;
 					createFolderNote(this.plugin, folder.path, true, '.' + fileType, false);
-				}
+				},
 			});
 		});
 
@@ -99,7 +99,7 @@ export class Commands {
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				if (!(folderNote instanceof TFile)) return;
 				deleteFolderNote(this.plugin, folderNote, true);
-			}
+			},
 		});
 
 		this.plugin.addCommand({
@@ -113,7 +113,7 @@ export class Commands {
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				if (!(folderNote instanceof TFile)) return;
 				openFolderNote(this.plugin, folderNote);
-			}
+			},
 		});
 
 		this.plugin.addCommand({
@@ -173,7 +173,7 @@ export class Commands {
 				}
 				return false;
 			},
-		})
+		});
 	}
 
 	fileCommands() {
@@ -195,7 +195,7 @@ export class Commands {
 
 				if (folder instanceof TFolder) {
 					const folderNote = getFolderNote(this.plugin, folder.path);
-					const excludedFolder = await getExcludedFolder(this.plugin, folder.path, true)
+					const excludedFolder = await getExcludedFolder(this.plugin, folder.path, true);
 					if (folderNote?.path === file.path && !excludedFolder?.detached) { return; }
 				} else if (file.parent instanceof TFolder) {
 					folder = file.parent;
@@ -254,8 +254,8 @@ export class Commands {
 					});
 				}
 				if (!(file instanceof TFolder)) return;
-				const excludedFolder = await getExcludedFolder(this.plugin, file.path, false)
-				const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path)
+				const excludedFolder = await getExcludedFolder(this.plugin, file.path, false);
+				const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path);
 				if (excludedFolder && !excludedFolder.hideNote) {
 					// I'm not sure if I'm ever going to add this because of the possibility that a folder got more than one excluded
 					// subMenu.addItem((item) => {
