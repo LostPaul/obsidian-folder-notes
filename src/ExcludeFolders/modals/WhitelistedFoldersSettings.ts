@@ -1,4 +1,4 @@
-import { App, ButtonComponent, Modal, Setting, TFolder, Notice } from 'obsidian';
+import { App, Modal, Setting } from 'obsidian';
 import { SettingsTab } from 'src/settings/SettingsTab';
 import FolderNotesPlugin from '../../main';
 import { WhitelistedFolder } from '../WhitelistFolder';

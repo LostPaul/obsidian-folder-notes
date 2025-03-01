@@ -1,4 +1,4 @@
-import { Setting, Platform, SettingTab } from 'obsidian';
+import { Setting, Platform } from 'obsidian';
 import { SettingsTab } from './SettingsTab';
 import { ListComponent } from '../functions/ListComponent';
 import AddSupportedFileModal from '../modals/AddSupportedFileType';

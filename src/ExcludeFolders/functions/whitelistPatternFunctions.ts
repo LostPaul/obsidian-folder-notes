@@ -1,7 +1,7 @@
 import FolderNotesPlugin from '../../main';
 import { Setting } from 'obsidian';
 import { SettingsTab } from '../../settings/SettingsTab';
-import { addExcludedFolder, resyncArray, updateExcludedFolder } from './folderFunctions';
+import { resyncArray } from './folderFunctions';
 import WhitelistPatternSettings from '../modals/WhitelistPatternSettings';
 import { WhitelistedPattern } from '../WhitelistPattern';
 import { addWhitelistedFolder, updateWhitelistedFolder } from './whitelistFolderFunctions';
@@ -18,7 +18,7 @@ export function deletePattern(plugin: FolderNotesPlugin, pattern: WhitelistedPat
 }
 
 export function getWhitelistedFolderByPattern(plugin: FolderNotesPlugin, folderName: string) {
-	return plugin.settings.whitelistFolders.filter((s) => s.type == 'pattern').find((pattern) => {
+	return plugin.settings.whitelistFolders.filter((s) => s.type === 'pattern').find((pattern) => {
 		if (!pattern.string) { return false; }
 		const string = pattern.string.trim();
 		if (!string.startsWith('{regex}') && !(string.startsWith('*') || string.endsWith('*'))) { return false; }
@@ -46,7 +46,7 @@ export function getWhitelistedFolderByPattern(plugin: FolderNotesPlugin, folderN
 }
 
 export function getWhitelistedFoldersByPattern(plugin: FolderNotesPlugin, folderName: string) {
-	return plugin.settings.whitelistFolders.filter((s) => s.type == 'pattern').filter((pattern) => {
+	return plugin.settings.whitelistFolders.filter((s) => s.type === 'pattern').filter((pattern) => {
 		if (!pattern.string) { return false; }
 		const string = pattern.string.trim();
 		if (!string.startsWith('{regex}') && !(string.startsWith('*') || string.endsWith('*'))) { return false; }

@@ -17,7 +17,7 @@ export function deletePattern(plugin: FolderNotesPlugin, pattern: ExcludePattern
 }
 
 export function getExcludedFoldersByPattern(plugin: FolderNotesPlugin, folderName: string): ExcludePattern[] {
-	return plugin.settings.excludeFolders.filter((s) => s.type == 'pattern').filter((pattern) => {
+	return plugin.settings.excludeFolders.filter((s) => s.type === 'pattern').filter((pattern) => {
 		if (!pattern.string) { return false; }
 		const string = pattern.string.trim();
 		if (!string.startsWith('{regex}') && !(string.startsWith('*') || string.endsWith('*'))) { return false; }
@@ -45,7 +45,7 @@ export function getExcludedFoldersByPattern(plugin: FolderNotesPlugin, folderNam
 }
 
 export function getExcludedFolderByPattern(plugin: FolderNotesPlugin, folderName: string): ExcludePattern | undefined{
-	return plugin.settings.excludeFolders.filter((s) => s.type == 'pattern').find((pattern) => {
+	return plugin.settings.excludeFolders.filter((s) => s.type === 'pattern').find((pattern) => {
 		if (!pattern.string) { return false; }
 		const string = pattern.string.trim();
 		if (!string.startsWith('{regex}') && !(string.startsWith('*') || string.endsWith('*'))) { return false; }

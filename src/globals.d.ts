@@ -1,4 +1,4 @@
-import { Plugin, TAbstractFile, View, WorkspaceLeaf } from 'obsidian';
+import { TAbstractFile, View, WorkspaceLeaf } from 'obsidian';
 
 declare module 'obsidian' {
 	interface Setting {

@@ -5,7 +5,6 @@ import { WhitelistedPattern } from '../WhitelistPattern';
 import { Setting, Platform, ButtonComponent } from 'obsidian';
 import { FolderSuggest } from '../../suggesters/FolderSuggester';
 import { SettingsTab } from '../../settings/SettingsTab';
-import WhitelistededFoldersSettings from '../modals/WhitelistedFoldersSettings';
 import WhitelistFolderSettings from '../modals/WhitelistFolderSettings';
 import { updateWhitelistedPattern, getWhitelistedFoldersByPattern, addWhitelistedPatternListItem } from './whitelistPatternFunctions';
 Platform.isMobileApp;

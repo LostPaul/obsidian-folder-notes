@@ -245,7 +245,7 @@ export class SettingsTab extends PluginSettingTab {
 		const tabBar = containerEl.createEl('nav', { cls: 'fn-settings-tab-bar' });
 		for (const [tabId, tabInfo] of Object.entries(settingsTab.TABS)) {
 			const tabEl = tabBar.createEl('div', { cls: 'fn-settings-tab' });
-			const tabName = tabEl.createEl('div', { cls: 'fn-settings-tab-name', text: tabInfo.name });
+			tabEl.createEl('div', { cls: 'fn-settings-tab-name', text: tabInfo.name });
 			if (plugin && plugin.settings.settingsTab.toLocaleLowerCase() === tabId.toLocaleLowerCase()) {
 				tabEl.addClass('fn-settings-tab-active');
 			}

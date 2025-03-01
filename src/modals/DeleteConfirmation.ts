@@ -1,7 +1,6 @@
-import { App, Modal, Setting, TFile, Platform } from 'obsidian';
+import { App, Modal, TFile, Platform } from 'obsidian';
 import FolderNotesPlugin from '../main';
-import { deleteFolderNote, getFolder } from 'src/functions/folderNoteFunctions';
-import { removeCSSClassFromEL } from 'src/functions/styleFunctions';
+import { deleteFolderNote } from 'src/functions/folderNoteFunctions';
 export default class DeleteConfirmationModal extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;

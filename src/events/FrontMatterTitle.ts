@@ -1,7 +1,7 @@
 import FolderNotesPlugin from 'src/main';
 import { getDefer, Listener, Events, ApiInterface, DeferInterface, ListenerRef, EventDispatcherInterface } from 'front-matter-plugin-api-provider';
 import { App, TFile, TFolder } from 'obsidian';
-import { extractFolderName, getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
+import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 export class FrontMatterTitlePluginHandler {
 	plugin: FolderNotesPlugin;
 	app: App;

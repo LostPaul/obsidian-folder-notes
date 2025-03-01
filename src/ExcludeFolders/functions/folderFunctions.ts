@@ -81,7 +81,7 @@ export async function getExcludedFolder(plugin: FolderNotesPlugin, path: string,
 }
 
 export function getDetachedFolder(plugin: FolderNotesPlugin, path: string) {
-	return plugin.settings.excludeFolders.find((f) => f.path == path && f.detached);
+	return plugin.settings.excludeFolders.find((f) => f.path === path && f.detached);
 }
 
 

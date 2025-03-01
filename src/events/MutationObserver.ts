@@ -1,10 +1,9 @@
 import FolderNotesPlugin from 'src/main';
 import { Platform, Keymap } from 'obsidian';
-import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
+import { getFolderNote } from 'src/functions/folderNoteFunctions';
 import { handleFolderClick, handleViewHeaderClick } from './handleClick';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
-import { applyCSSClassesToFolder, applyCSSClassesToFolderNote } from 'src/functions/styleFunctions';
-import { getFolderNameFromPathString } from 'src/functions/utils';
+import { applyCSSClassesToFolder } from 'src/functions/styleFunctions';
 
 export async function addObserver(plugin: FolderNotesPlugin) {
 	plugin.observer = new MutationObserver((mutations: MutationRecord[]) => {
@@ -88,7 +87,7 @@ async function initializeFolderTitle(folderTitle: HTMLElement, plugin: any) {
 
 	// Handle middle click (auxclick)
 	folderTitle.addEventListener('auxclick', (event: MouseEvent) => {
-		if (event.button == 1) {
+		if (event.button === 1) {
 			handleFolderClick(event, plugin);
 		}
 	}, { capture: true });

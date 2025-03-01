@@ -85,7 +85,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	if (!folderNote) {
 		let content = '';
 		if (extension !== '.md') {
-			if (plugin.settings.templatePath && folderNoteType.split('.').pop() == plugin.settings.templatePath.split('.').pop()) {
+			if (plugin.settings.templatePath && folderNoteType.split('.').pop() === plugin.settings.templatePath.split('.').pop()) {
 				const templateFile = plugin.app.vault.getAbstractFileByPath(plugin.settings.templatePath);
 				if (templateFile instanceof TFile) {
 					if (['md', 'canvas', 'txt'].includes(templateFile.extension)) {
@@ -133,7 +133,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		}
 	}
 
-	const matchingExtension = extension?.split('.').pop() == plugin.settings.templatePath.split('.').pop();
+	const matchingExtension = extension?.split('.').pop() === plugin.settings.templatePath.split('.').pop();
 	if (folderNote && matchingExtension && plugin.settings.folderNoteType !== '.excalidraw') {
 		applyTemplate(plugin, folderNote, leaf, plugin.settings.templatePath);
 	}
@@ -219,7 +219,7 @@ export async function tempDisableSync(plugin: FolderNotesPlugin, folder: TFolder
 
 export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractFile, evt?: MouseEvent) {
 	const path = file.path;
-	if (plugin.app.workspace.getActiveFile()?.path === path && !(Keymap.isModEvent(evt) == 'tab')) { return; }
+	if (plugin.app.workspace.getActiveFile()?.path === path && !(Keymap.isModEvent(evt) === 'tab')) { return; }
 	const leaf = plugin.app.workspace.getLeaf(Keymap.isModEvent(evt) || plugin.settings.openInNewTab);
 	if (file instanceof TFile) {
 		await leaf.openFile(file);
@@ -282,7 +282,7 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, sto
 
 
 	let path = `${folder.path}/${fileName}`;
-	folder.path == '/' ? path = fileName : path = `${folder.path}/${fileName}`;
+	folder.path === '/' ? path = fileName : path = `${folder.path}/${fileName}`;
 
 
 	let folderNoteType = plugin.settings.folderNoteType;

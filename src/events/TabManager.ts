@@ -1,5 +1,5 @@
 import FolderNotesPlugin from 'src/main';
-import { App, EditableFileView, TFile, TFolder } from 'obsidian';
+import { App, EditableFileView, TFolder } from 'obsidian';
 import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 export class TabManager {
 	plugin: FolderNotesPlugin;
@@ -55,7 +55,7 @@ export class TabManager {
 	}
 
 	isEnabled() {
-		if (this.plugin.settings.folderNoteName == '{{folder_name}}') return false;
+		if (this.plugin.settings.folderNoteName === '{{folder_name}}') return false;
 		return this.plugin.settings.tabManagerEnabled;
 	}
 }

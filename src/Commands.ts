@@ -1,13 +1,9 @@
-import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform, stringifyYaml } from 'obsidian';
+import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName, detachFolderNote } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString } from './functions/utils';
-import { getExcludedFolderByPattern } from './ExcludeFolders/functions/patternFunctions';
-import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder, getExcludedFoldersByPath, updateExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSettings';
-import { ExcludePattern } from './ExcludeFolders/ExcludePattern';
-import PatternSettings from './ExcludeFolders/modals/PatternSettings';
+import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { applyCSSClassesToFolder } from './functions/styleFunctions';
 
 export class Commands {
@@ -121,7 +117,6 @@ export class Commands {
 			name: 'Create folder note from selected text',
 			editorCheckCallback: (checking: boolean, editor: Editor, view: MarkdownView) => {
 				const text = editor.getSelection().trim();
-				const line = editor.getCursor().line;
 				const file = view.file;
 				if (!(file instanceof TFile)) return false;
 				if (text && text.trim() !== '') {
@@ -399,8 +394,6 @@ export class Commands {
 	editorCommands() {
 		this.plugin.registerEvent(this.plugin.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
 			const text = editor.getSelection().trim();
-			const line = editor.getCursor().line;
-			const lineText = editor.getLine(line);
 			if (!text || text.trim() === '') return;
 			menu.addItem((item) => {
 				item.setTitle('Create folder note')

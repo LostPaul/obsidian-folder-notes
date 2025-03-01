@@ -3,7 +3,6 @@ import FolderNotesPlugin from 'src/main';
 import { createFolderNote, getFolder, getFolderNote, turnIntoFolderNote } from 'src/functions/folderNoteFunctions';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { removeCSSClassFromEL, addCSSClassToTitleEL } from 'src/functions/styleFunctions';
-import { removeExtension } from 'src/functions/utils';
 
 export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
 	if (!plugin.app.workspace.layoutReady) return;

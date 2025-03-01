@@ -1,7 +1,6 @@
-import { App, Modal, Setting, TFolder, Notice } from 'obsidian';
+import { App, Modal, Setting, Notice, SettingTab } from 'obsidian';
 import FolderNotesPlugin from '../main';
 import { ListComponent } from 'src/functions/ListComponent';
-import { SettingTab } from 'obsidian';
 
 export default class AddSupportedFileModal extends Modal {
 	plugin: FolderNotesPlugin;
