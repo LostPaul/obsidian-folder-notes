@@ -31,8 +31,6 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 		const lower_input_str = input_str.toLowerCase();
 
 		if ((!templateFolder || templateFolder.trim() === '') && !templaterPlugin) {
-			console.log('Template folder not found');
-			console.log(lower_input_str);
 			files = this.plugin.app.vault.getFiles().filter((file) =>
 				file.path.toLowerCase().includes(lower_input_str)
 			);
@@ -61,9 +59,9 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.app);
 
 		if ((!templateFolder || templateFolder.trim() === '') && !templaterPlugin) {
-			el.setText(`${file.parent?.path}/${file.name.replace('.md', '')}`);
+			el.setText(`${file.parent?.path !== '/' ? file.parent?.path + '/' : ''}${file.name}`);
 		} else {
-			el.setText(file.name.replace('.md', ''));
+			el.setText(file.name);
 		}
 	}
 

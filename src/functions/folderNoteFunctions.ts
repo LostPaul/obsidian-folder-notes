@@ -82,9 +82,13 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		});
 	}
 
+	if (!extension) {
+		extension = folderNoteType;
+	}
+
 	if (!folderNote) {
 		let content = '';
-		if (extension !== '.md') {
+		if (extension !== '.md' && extension) {
 			if (plugin.settings.templatePath && folderNoteType.split('.').pop() === plugin.settings.templatePath.split('.').pop()) {
 				const templateFile = plugin.app.vault.getAbstractFileByPath(plugin.settings.templatePath);
 				if (templateFile instanceof TFile) {
