@@ -4,7 +4,11 @@ Folder notes is a plugin for the note taking app  [Obsidian](https://obsidian.md
 This plugin has some unique features that separate it from similar "Folder note" plugins like opening folder notes through the path, creating folder notes for every existing folder, templater/template support and more.
 
 ## Documentation & download link
-The plugin can be downloaded by clicking on https://obsidian.md/plugins?id=folder-notes and then on install. If you need help with the plugin or want to know what the features are that the plugin has then you can find the documentation at https://lostpaul.github.io/obsidian-folder-notes/.
+The plugin can be downloaded by clicking on https://obsidian.md/plugins?id=folder-notes and then on install. If you need help with the plugin or want to  know what the features are that the plugin has then you can find the documentation at https://lostpaul.github.io/obsidian-folder-notes/.
+
+## How to install the beta version
+
+The easiest option is to install the [BRAT plugin](https://obsidian.md/plugins?id=obsidian42-brat) and then to follow the following guide: https://tfthacker.com/brat-quick-guide & use this link https://github.com/LostPaul/obsidian-folder-notes to install the beta version.
 
 ## Support the development of the plugin
 
