@@ -149,7 +149,7 @@ export function getEl(path: string, plugin: FolderNotesPlugin | FolderOverviewPl
 	if (!fileExplorer) { return null; }
 	if (!fileExplorer.view) { return null; }
 	if (!fileExplorer.view.fileItems) { return null; }
-	const fileExplorerItem = fileExplorer.view.fileItems[path];
+	const fileExplorerItem = fileExplorer.view.fileItems?.[path];
 	if (!fileExplorerItem) { return null; }
 	if (fileExplorerItem.selfEl) return fileExplorerItem.selfEl;
 	return fileExplorerItem.titleEl;
