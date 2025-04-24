@@ -328,9 +328,22 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 		setting3.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 	}
 
+	const desc1 = document.createDocumentFragment();
+
+	const link = document.createElement('a');
+	link.href = 'https://github.com/snezhig/obsidian-front-matter-title';
+	link.textContent = 'front matter title plugin';
+	link.target = '_blank';
+
+	desc1.append(
+		'Allows you to use the ',
+		link,
+		' with folder notes. It allows you to set the folder name to some name you set in the front matter.',
+	);
+
 	new Setting(containerEl)
 		.setName('Enable front matter title plugin integration')
-		.setDesc('Automatically rename a folder name when the folder note is renamed')
+		.setDesc(desc1)
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.frontMatterTitle.enabled)
