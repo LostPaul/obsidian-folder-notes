@@ -1,0 +1,4 @@
+contact_links:
+  - name: Request a new feature
+    url: https://github.com/LostPaul/obsidian-folder-notes/discussions/new/choose
+    about: Instead of creating a new issue for feature requests use the discussions feature instead
