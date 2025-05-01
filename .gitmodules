@@ -1,0 +1,6 @@
+[submodule "obsidian-folder-overview"]
+	path = obsidian-folder-overview
+	url = https://github.com/LostPaul/obsidian-folder-overview
+[submodule "src/obsidian-folder-overview"]
+	path = src/obsidian-folder-overview
+	url = https://github.com/LostPaul/obsidian-folder-overview

@@ -38,8 +38,8 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 			await createFolderNote(plugin, folderPath, true, undefined, true);
-			addCSSClassToTitleEL(plugin, folderPath, 'has-folder-note');
-			removeCSSClassFromEL(folderPath, 'has-not-folder-note');
+			addCSSClassToTitleEL(folderPath, 'has-folder-note', plugin);
+			removeCSSClassFromEL(folderPath, 'has-not-folder-note', plugin);
 			return;
 		}
 	}
@@ -48,8 +48,10 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 }
 
 export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPlugin) {
+
 	if (!(event.target instanceof HTMLElement)) return;
 	if (!event || !event.target) return;
+
 	if (!event.shiftKey) {
 		event.stopImmediatePropagation();
 	} else {
@@ -80,14 +82,14 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 			return openFolderNote(plugin, folderNote, event);
 		} else {
 			if (plugin.settings.enableCollapsing) return;
-			event.target.parentElement?.click()
+			event.target.parentElement?.click();
 			return;
 		}
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
 			await createFolderNote(plugin, folderPath, true, undefined, true);
-			addCSSClassToTitleEL(plugin, folderPath, 'has-folder-note');
-			removeCSSClassFromEL(folderPath, 'has-not-folder-note');
+			addCSSClassToTitleEL(folderPath, 'has-folder-note', plugin);
+			removeCSSClassFromEL(folderPath, 'has-not-folder-note', plugin);
 			return;
 		}
 	} else if (!folderNote) {

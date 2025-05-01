@@ -10,18 +10,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.x
-      - uses: actions/cache@v2
+          python-version: '3.x'
+      
+      - uses: actions/cache@v4  
         with:
-          key: ${{ github.ref }}
           path: .cache
-      - run: pip install mkdocs-material
-      - run: pip install mkdocs-video
-      - run: pip install pillow cairosvg
+          key: mkdocs-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            mkdocs-${{ runner.os }}-
+      
+      - run: pip install mkdocs-material mkdocs-video pillow cairosvg
+      
       - working-directory: ./docs
         run: mkdocs gh-deploy --force
-
 

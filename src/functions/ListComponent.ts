@@ -1,4 +1,4 @@
-import { CustomEventEmitter } from "src/events/EventEmitter";
+import { CustomEventEmitter } from 'src/events/EventEmitter';
 
 export class ListComponent {
 	emitter: CustomEventEmitter;
@@ -76,14 +76,14 @@ export class ListComponent {
 		const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-rotate-ccw"><path d="M3 2v6h6"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 8"></path></svg>';
 		resetButton.innerHTML = svg;
 		resetButton.onClickEvent((e) => {
-				this.setValues(this.defaultValues);
+			this.setValues(this.defaultValues);
 		});
 		return this;
 	}
 
 	removeValue(value: string) {
 		this.values = this.values.filter((v) => v !== value);
-		this.listEl.find(`[extension="${value}"]`).remove();
+		this.listEl.find(`[extension='${value}']`).remove();
 		this.emit('remove', value);
 		this.emit('update', this.values);
 	}

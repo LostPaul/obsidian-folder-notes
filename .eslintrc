@@ -23,6 +23,7 @@
         "args": "none"
       }
     ],
+    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "no-prototype-builtins": "off",
     "@typescript-eslint/no-empty-function": "off",
@@ -39,6 +40,15 @@
       "single",
       {
         "avoidEscape": true
+      }
+    ],
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "types": {
+          "Function": false
+        },
+        "extendDefaults": true
       }
     ],
     "no-mixed-spaces-and-tabs": "error",

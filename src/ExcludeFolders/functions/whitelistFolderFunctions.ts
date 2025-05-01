@@ -2,12 +2,12 @@ import FolderNotesPlugin from '../../main';
 import { getFolderNameFromPathString, getFolderPathFromString } from '../../functions/utils';
 import { WhitelistedFolder } from '../WhitelistFolder';
 import { WhitelistedPattern } from '../WhitelistPattern';
-import { Setting } from 'obsidian';
+import { Setting, Platform, ButtonComponent } from 'obsidian';
 import { FolderSuggest } from '../../suggesters/FolderSuggester';
 import { SettingsTab } from '../../settings/SettingsTab';
-import WhitelistededFoldersSettings from '../modals/WhitelistedFoldersSettings';
 import WhitelistFolderSettings from '../modals/WhitelistFolderSettings';
 import { updateWhitelistedPattern, getWhitelistedFoldersByPattern, addWhitelistedPatternListItem } from './whitelistPatternFunctions';
+Platform.isMobileApp;
 
 export function getWhitelistedFolder(plugin: FolderNotesPlugin, path: string) {
 	let whitelistedFolder = {} as WhitelistedFolder | WhitelistedPattern | undefined;
@@ -19,12 +19,12 @@ export function getWhitelistedFolder(plugin: FolderNotesPlugin, path: string) {
 		'enableAutoCreate',
 		'enableFolderNote',
 		'enableSync',
-		'showInFolderOverview'
+		'showInFolderOverview',
 	];
 
 	if (combinedWhitelistedFolders.length > 0) {
 		for (const matchedFolder of combinedWhitelistedFolders) {
-			propertiesToCopy.forEach(property => {
+			propertiesToCopy.forEach((property) => {
 				if (matchedFolder[property] === true) {
 					(whitelistedFolder as any)[property] = true;
 				} else if (!matchedFolder[property]) {
@@ -34,7 +34,7 @@ export function getWhitelistedFolder(plugin: FolderNotesPlugin, path: string) {
 		}
 	}
 
-	if ((whitelistedFolder instanceof Object) && Object.keys(whitelistedFolder).length === 0) { whitelistedFolder = undefined;}
+	if ((whitelistedFolder instanceof Object) && Object.keys(whitelistedFolder).length === 0) { whitelistedFolder = undefined; }
 
 	return whitelistedFolder;
 }
@@ -84,7 +84,10 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 	const plugin: FolderNotesPlugin = settings.plugin;
 	const setting = new Setting(containerEl);
 	setting.setClass('fn-exclude-folder-list');
-	setting.addSearch((cb) => {
+
+	const inputContainer = setting.settingEl.createDiv({ cls: 'fn-whitelist-folder-input-container' });
+	const SearchComponent = new Setting(inputContainer);
+	SearchComponent.addSearch((cb) => {
 		new FolderSuggest(
 			cb.inputEl,
 			plugin,
@@ -108,19 +111,19 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 			updateWhitelistedFolder(plugin, whitelistedFolder, whitelistedFolder);
 		});
 	});
+	const buttonContainer = setting.settingEl.createDiv({ cls: 'fn-whitelist-folder-buttons' });
 
-	setting.addButton((cb) => {
-		cb.setIcon('edit');
-		cb.setTooltip('Edit folder note');
-		cb.onClick(() => {
+	new ButtonComponent(buttonContainer)
+		.setIcon('edit')
+		.setTooltip('Edit folder note')
+		.onClick(() => {
 			new WhitelistFolderSettings(plugin.app, plugin, whitelistedFolder).open();
 		});
-	});
 
-	setting.addButton((cb) => {
-		cb.setIcon('up-chevron-glyph');
-		cb.setTooltip('Move up');
-		cb.onClick(() => {
+	new ButtonComponent(buttonContainer)
+		.setIcon('up-chevron-glyph')
+		.setTooltip('Move up')
+		.onClick(() => {
 			if (whitelistedFolder.position === 0) { return; }
 			whitelistedFolder.position -= 1;
 			updateWhitelistedFolder(plugin, whitelistedFolder, whitelistedFolder);
@@ -135,12 +138,11 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 			}
 			settings.display();
 		});
-	});
 
-	setting.addButton((cb) => {
-		cb.setIcon('down-chevron-glyph');
-		cb.setTooltip('Move down');
-		cb.onClick(() => {
+	new ButtonComponent(buttonContainer)
+		.setIcon('down-chevron-glyph')
+		.setTooltip('Move down')
+		.onClick(() => {
 			if (whitelistedFolder.position === plugin.settings.whitelistFolders.length - 1) {
 				return;
 			}
@@ -159,15 +161,13 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 
 			settings.display();
 		});
-	});
 
-	setting.addButton((cb) => {
-		cb.setIcon('trash-2');
-		cb.setTooltip('Delete excluded folder');
-		cb.onClick(() => {
+	new ButtonComponent(buttonContainer)
+		.setIcon('trash-2')
+		.setTooltip('Delete excluded folder')
+		.onClick(() => {
 			deleteWhitelistedFolder(plugin, whitelistedFolder);
 			setting.clear();
 			setting.settingEl.remove();
 		});
-	});
 }

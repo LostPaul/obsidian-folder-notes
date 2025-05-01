@@ -1,73 +1,73 @@
-import { App, Modal, Setting, TFolder } from 'obsidian';
+import { App, Modal, TFolder } from 'obsidian';
 import FolderNotesPlugin from '../main';
 export default class NewFolderNameModal extends Modal {
-    plugin: FolderNotesPlugin;
-    app: App;
-    folder: TFolder;
-    constructor(app: App, plugin: FolderNotesPlugin, folder: TFolder) {
-        super(app);
-        this.plugin = plugin;
-        this.app = app;
-        this.folder = folder;
-    }
-    onOpen() {
-        const { contentEl } = this;
+	plugin: FolderNotesPlugin;
+	app: App;
+	folder: TFolder;
+	constructor(app: App, plugin: FolderNotesPlugin, folder: TFolder) {
+		super(app);
+		this.plugin = plugin;
+		this.app = app;
+		this.folder = folder;
+	}
+	onOpen() {
+		const { contentEl } = this;
 
-        contentEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                this.saveFolderName()
-                this.close();
-            }
-        });
+		contentEl.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter') {
+				this.saveFolderName();
+				this.close();
+			}
+		});
 
-        this.modalEl.classList.add('mod-file-rename')
-        const modalTitle = this.modalEl.querySelector('div.modal-title')
-        if (modalTitle) {
-            modalTitle.textContent = 'Folder title'
-        }
+		this.modalEl.classList.add('mod-file-rename');
+		const modalTitle = this.modalEl.querySelector('div.modal-title');
+		if (modalTitle) {
+			modalTitle.textContent = 'Folder title';
+		}
 
-        const textarea = contentEl.createEl('textarea', {
-            text: this.folder.name.replace(this.plugin.settings.folderNoteType, ''),
-            attr: {
-                placeholder: 'Enter the name of the folder',
-                rows: '1',
-                spellcheck: 'false',
-                class: 'rename-textarea'
-            }
-        })
+		const textarea = contentEl.createEl('textarea', {
+			text: this.folder.name.replace(this.plugin.settings.folderNoteType, ''),
+			attr: {
+				placeholder: 'Enter the name of the folder',
+				rows: '1',
+				spellcheck: 'false',
+				class: 'rename-textarea',
+			},
+		});
 
-        textarea.addEventListener('focus', function() {
-            this.select();
-        });
-        
-        textarea.focus()
+		textarea.addEventListener('focus', function() {
+			this.select();
+		});
 
-        const buttonContainer = this.modalEl.createDiv({ cls: 'modal-button-container' });
-        const saveButton = buttonContainer.createEl('button', { text: 'Save', cls: 'mod-cta' });
-        saveButton.addEventListener('click', async () => {
-            this.saveFolderName()
-            this.close()
-        })
+		textarea.focus();
 
-        const cancelButton = buttonContainer.createEl('button', { text: 'Cancel', cls: 'mod-cancel' });
-        cancelButton.addEventListener('click', () => {
-            this.close()
-        })
-    }
-    onClose() {
-        const { contentEl } = this;
-        contentEl.empty();
-    }
+		const buttonContainer = this.modalEl.createDiv({ cls: 'modal-button-container' });
+		const saveButton = buttonContainer.createEl('button', { text: 'Save', cls: 'mod-cta' });
+		saveButton.addEventListener('click', async () => {
+			this.saveFolderName();
+			this.close();
+		});
 
-    saveFolderName() {
-        const textarea = this.contentEl.querySelector('textarea')
-        if (textarea) {
-            const newName = textarea.value.trim()
-            if (newName.trim() !== '') {
-                if (!this.app.vault.getAbstractFileByPath(this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + newName.trim())) {
-                    this.plugin.app.fileManager.renameFile(this.folder, this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + newName.trim());
-                }
-            }
-        }
-    }
+		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel', cls: 'mod-cancel' });
+		cancelButton.addEventListener('click', () => {
+			this.close();
+		});
+	}
+	onClose() {
+		const { contentEl } = this;
+		contentEl.empty();
+	}
+
+	saveFolderName() {
+		const textarea = this.contentEl.querySelector('textarea');
+		if (textarea) {
+			const newName = textarea.value.trim();
+			if (newName.trim() !== '') {
+				if (!this.app.vault.getAbstractFileByPath(this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + newName.trim())) {
+					this.plugin.app.fileManager.renameFile(this.folder, this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + newName.trim());
+				}
+			}
+		}
+	}
 }

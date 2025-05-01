@@ -22,7 +22,7 @@ tags: [excalidraw]
 %%
 # Drawing
 \`\`\`json
-{"type":"excalidraw","version":2,"source":"https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/1.9.20","elements":[],"appState":{"gridSize":null,"viewBackgroundColor":"#ffffff"}}
+{'type":"excalidraw","version":2,"source":"https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/1.9.20","elements":[],"appState":{"gridSize":null,"viewBackgroundColor":"#ffffff'}}
 \`\`\`
 %%`;
 
@@ -30,12 +30,12 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 	const leaf = plugin.app.workspace.getLeaf(false);
 	const folderName = getFolderNameFromPathString(folderPath);
 	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
-	let folderNote = getFolderNote(plugin, folderPath)
+	let folderNote = getFolderNote(plugin, folderPath);
 	if (preexistingNote) {
 		folderNote = preexistingNote;
 	}
 	let folderNoteType = extension ?? plugin.settings.folderNoteType;
-	const detachedFolder = getDetachedFolder(plugin, folderPath)
+	const detachedFolder = getDetachedFolder(plugin, folderPath);
 	let path = '';
 
 	if (folderNoteType === '.excalidraw') {
@@ -60,7 +60,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 
 	if (detachedFolder && folderNote?.extension !== extension && folderNote) {
 		deleteExcludedFolder(plugin, detachedFolder);
-		await removeCSSClassFromEL(folderNote?.path, 'is-folder-note');
+		removeCSSClassFromEL(folderNote?.path, 'is-folder-note', plugin);
 		const folder = plugin.app.vault.getAbstractFileByPath(folderPath) as TFolder;
 		if (!folderNote || folderNote.basename !== fileName) return;
 		let count = 1;
@@ -69,7 +69,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 			count++;
 			newName = removeExtension(folderNote.path) + ` (${count}).${folderNote.path.split('.').pop()}`;
 		}
-		const [excludedFolder, excludedFolderExisted, disabledSync] = await tempDisableSync(plugin, folder)
+		const [excludedFolder, excludedFolderExisted, disabledSync] = await tempDisableSync(plugin, folder);
 
 		await plugin.app.fileManager.renameFile(folderNote, newName).then(() => {
 			if (!excludedFolder) return;
@@ -82,10 +82,14 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		});
 	}
 
+	if (!extension) {
+		extension = folderNoteType;
+	}
+
 	if (!folderNote) {
 		let content = '';
-		if (extension !== '.md') {
-			if (plugin.settings.templatePath && folderNoteType.split('.').pop() == plugin.settings.templatePath.split('.').pop()) {
+		if (extension !== '.md' && extension) {
+			if (plugin.settings.templatePath && folderNoteType.split('.').pop() === plugin.settings.templatePath.split('.').pop()) {
 				const templateFile = plugin.app.vault.getAbstractFileByPath(plugin.settings.templatePath);
 				if (templateFile instanceof TFile) {
 					if (['md', 'canvas', 'txt'].includes(templateFile.extension)) {
@@ -105,13 +109,13 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 			} else if (plugin.settings.folderNoteType === '.excalidraw' || extension === '.excalidraw') {
 				content = defaultExcalidrawTemplate;
 			} else if (plugin.settings.folderNoteType === '.canvas') {
-				content = '{}'
+				content = '{}';
 			}
 		}
 
 		folderNote = await plugin.app.vault.create(path, content);
 	} else {
-		await plugin.app.fileManager.renameFile(folderNote, path)
+		await plugin.app.fileManager.renameFile(folderNote, path);
 	}
 
 	if (openFile) {
@@ -124,7 +128,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 			const folder = getFolder(plugin, folderNote);
 			if (!folder) { return; }
 
-			plugin.activeFolderDom = getEl(folder.path);
+			plugin.activeFolderDom = getEl(folder.path, plugin);
 			if (plugin.activeFolderDom) plugin.activeFolderDom.addClass('fn-is-active');
 		}
 		await leaf.openFile(folderNote);
@@ -133,28 +137,28 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		}
 	}
 
-	const matchingExtension = extension?.split('.').pop() == plugin.settings.templatePath.split('.').pop();
+	const matchingExtension = extension?.split('.').pop() === plugin.settings.templatePath.split('.').pop();
 	if (folderNote && matchingExtension && plugin.settings.folderNoteType !== '.excalidraw') {
 		applyTemplate(plugin, folderNote, leaf, plugin.settings.templatePath);
 	}
 
 	const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
 	if (!(folder instanceof TFolder)) return;
-	addCSSClassToTitleEL(plugin, path, 'is-folder-note', true);
-	addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
+	addCSSClassToTitleEL(path, 'is-folder-note', plugin, true);
+	addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
 }
 
 export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile, skipConfirmation?: boolean) {
-	const extension = file.extension
+	const extension = file.extension;
 	const detachedExcludedFolder = getDetachedFolder(plugin, folder.path);
 
 	if (folderNote) {
 		if (plugin.settings.showRenameConfirmation && !skipConfirmation && !detachedExcludedFolder) {
 			return new ExistingFolderNoteModal(plugin.app, plugin, file, folder, folderNote).open();
 		}
-		removeCSSClassFromEL(folderNote.path, 'is-folder-note');
+		removeCSSClassFromEL(folderNote.path, 'is-folder-note', plugin);
 
-		const [excludedFolder, excludedFolderExisted, disabledSync] = await tempDisableSync(plugin, folder)
+		const [excludedFolder, excludedFolderExisted, disabledSync] = await tempDisableSync(plugin, folder);
 
 		const newPath = `${folder.path}/${folder.name} (${file.stat.ctime.toString().slice(10) + Math.floor(Math.random() * 1000)}).${extension}`;
 		plugin.app.fileManager.renameFile(folderNote, newPath).then(() => {
@@ -182,23 +186,23 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 	}
 
 	if (detachedExcludedFolder) {
-		deleteExcludedFolder(plugin, detachedExcludedFolder)
+		deleteExcludedFolder(plugin, detachedExcludedFolder);
 	}
 
 	await plugin.app.fileManager.renameFile(file, path);
-	addCSSClassToTitleEL(plugin, path, 'is-folder-note', true);
-	addCSSClassToTitleEL(plugin, folder.path, 'has-folder-note');
+	addCSSClassToTitleEL(path, 'is-folder-note', plugin, true);
+	addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
 
 	if (plugin.activeFolderDom) {
 		plugin.activeFolderDom.removeClass('fn-is-active');
 		plugin.activeFolderDom = null;
 	}
 
-	plugin.activeFolderDom = getEl(folder.path);
+	plugin.activeFolderDom = getEl(folder.path, plugin);
 	if (plugin.activeFolderDom) plugin.activeFolderDom.addClass('fn-is-active');
 }
 
-export async function tempDisableSync(plugin: FolderNotesPlugin, folder: TFolder): Promise<[excludedFolder: ExcludedFolder | undefined,excludedFolderExisted: boolean, disabledSync: boolean]> {
+export async function tempDisableSync(plugin: FolderNotesPlugin, folder: TFolder): Promise<[excludedFolder: ExcludedFolder | undefined, excludedFolderExisted: boolean, disabledSync: boolean]> {
 	let excludedFolder = await getExcludedFolder(plugin, folder.path, false);
 	let excludedFolderExisted = true;
 	let disabledSync = false;
@@ -214,12 +218,12 @@ export async function tempDisableSync(plugin: FolderNotesPlugin, folder: TFolder
 		updateExcludedFolder(plugin, excludedFolder, excludedFolder);
 	}
 
-	return [excludedFolder, excludedFolderExisted, disabledSync]
+	return [excludedFolder, excludedFolderExisted, disabledSync];
 }
 
 export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractFile, evt?: MouseEvent) {
 	const path = file.path;
-	if (plugin.app.workspace.getActiveFile()?.path === path && !(Keymap.isModEvent(evt) == 'tab')) { return; }
+	if (plugin.app.workspace.getActiveFile()?.path === path && !(Keymap.isModEvent(evt) === 'tab')) { return; }
 	const leaf = plugin.app.workspace.getLeaf(Keymap.isModEvent(evt) || plugin.settings.openInNewTab);
 	if (file instanceof TFile) {
 		await leaf.openFile(file);
@@ -232,7 +236,7 @@ export async function deleteFolderNote(plugin: FolderNotesPlugin, file: TFile, d
 	}
 	const folder = getFolder(plugin, file);
 	if (!folder) return;
-	removeCSSClassFromEL(folder.path, 'has-folder-note');
+	removeCSSClassFromEL(folder.path, 'has-folder-note', plugin);
 	switch (plugin.settings.deleteFilesAction) {
 		case 'trash':
 			await plugin.app.vault.trash(file, true);
@@ -262,16 +266,17 @@ export function extractFolderName(template: string, changedFileName: string) {
 	return null;
 }
 
-export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, storageLocation?: string, file?: TFile) {
+export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, storageLocation?: string, file?: TFile, oldFolderNoteName?: string) {
 	if (!folderPath) return null;
 	const folder = {
 		path: folderPath,
 		name: getFolderNameFromPathString(folderPath),
 	};
+	const folderNoteName = oldFolderNoteName ?? plugin.settings.folderNoteName;
 
-	let fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', folder.name);
+	let fileName = folderNoteName.replace('{{folder_name}}', folder.name);
 	if (file) {
-		fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', file.basename);
+		fileName = folderNoteName.replace('{{folder_name}}', file.basename);
 	}
 	if (!fileName) return null;
 
@@ -279,11 +284,10 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, sto
 		folder.path = getFolderPathFromString(folderPath);
 	}
 
+
 	let path = `${folder.path}/${fileName}`;
-	if (folder.path.trim() === '') {
-		folder.path = fileName;
-		path = `${fileName}`;
-	}
+	folder.path === '/' ? path = fileName : path = `${folder.path}/${fileName}`;
+
 
 	let folderNoteType = plugin.settings.folderNoteType;
 	if (folderNoteType === '.excalidraw') {
@@ -335,7 +339,7 @@ export function getFolder(plugin: FolderNotesPlugin, file: TFile, storageLocatio
 	let folderPath = getFolderPathFromString(file.path);
 	let folder: TFolder | TAbstractFile | null = null;
 	if ((plugin.settings.storageLocation === 'parentFolder' || storageLocation === 'parentFolder') && storageLocation !== 'insideFolder') {
-		if (folderPath.trim() === '') {
+		if (folderPath.trim() === '' || folderPath === '/') {
 			folderPath = folderName;
 		} else {
 			folderPath = `${folderPath}/${folderName}`;

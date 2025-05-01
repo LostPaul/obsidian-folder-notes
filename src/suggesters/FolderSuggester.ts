@@ -41,7 +41,7 @@ export class FolderSuggest extends TextInputSuggest<TFolder> {
 			if (
 				folder instanceof TFolder &&
                 folder.path.toLowerCase().contains(lower_input_str) &&
-                (!this.plugin.settings.excludeFolders.find((f) => f.path === folder.path) || this.whitelistSuggester) 
+                (!this.plugin.settings.excludeFolders.find((f) => f.path === folder.path) || this.whitelistSuggester)
 			) {
 				folders.push(folder);
 			}

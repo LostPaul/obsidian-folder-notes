@@ -1,0 +1,7 @@
+contact_links:
+  - name: Request a new feature
+    url: https://github.com/LostPaul/obsidian-folder-notes/discussions/
+    about: Instead of creating a new issue for feature requests, use the discussions feature instead
+  - name: Anything regarding the folder overview feature
+    url: https://github.com/LostPaul/obsidian-folder-overview
+    about: The folder overview feature is a separate plugin, but it is bundled with this plugin. If you have any issues or feature requests regarding the folder overview feature, please create an issue in the folder overview repository.

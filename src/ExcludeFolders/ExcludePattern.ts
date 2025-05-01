@@ -11,7 +11,7 @@ export class ExcludePattern {
 	disableFolderNote: boolean;
 	enableCollapsing: boolean;
 	excludeFromFolderOverview: boolean;
-    hideInSettings: boolean;
+	hideInSettings: boolean;
 	detached: boolean;
 	detachedFilePath?: string;
 	hideNote: boolean;
@@ -27,6 +27,6 @@ export class ExcludePattern {
 		this.enableCollapsing = plugin.settings.excludePatternDefaultSettings.enableCollapsing;
 		this.excludeFromFolderOverview = plugin.settings.excludePatternDefaultSettings.excludeFromFolderOverview;
 		this.path = '';
-        this.hideInSettings = false;
+		this.hideInSettings = false;
 	}
 }

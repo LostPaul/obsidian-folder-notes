@@ -1,7 +1,6 @@
-import { App, Modal, Setting, TFile, Platform } from 'obsidian';
+import { App, Modal, TFile, Platform } from 'obsidian';
 import FolderNotesPlugin from '../main';
-import { deleteFolderNote, getFolder } from 'src/functions/folderNoteFunctions';
-import { removeCSSClassFromEL } from 'src/functions/styleFunctions';
+import { deleteFolderNote } from 'src/functions/folderNoteFunctions';
 export default class DeleteConfirmationModal extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -17,7 +16,7 @@ export default class DeleteConfirmationModal extends Modal {
 		const modalTitle = contentEl.createDiv({ cls: 'fn-modal-title' });
 		const modalContent = contentEl.createDiv({ cls: 'fn-modal-content' });
 		modalTitle.createEl('h2', { text: 'Delete folder note' });
-		modalContent.createEl('p', { text: `Are you sure you want to delete the folder note "${this.file.name}" ?` });
+		modalContent.createEl('p', { text: `Are you sure you want to delete the folder note '${this.file.name}' ?` });
 		switch (plugin.settings.deleteFilesAction) {
 			case 'trash':
 				modalContent.createEl('p', { text: 'It will be moved to your system trash.' });
@@ -33,10 +32,10 @@ export default class DeleteConfirmationModal extends Modal {
 		const buttonContainer = contentEl.createEl('div', { cls: 'modal-button-container' });
 
 		if (!Platform.isMobile) {
-			const checkbox = buttonContainer.createEl('label', { cls: 'mod-checkbox'  })
-			checkbox.tabIndex = -1
+			const checkbox = buttonContainer.createEl('label', { cls: 'mod-checkbox' });
+			checkbox.tabIndex = -1;
 			const input = checkbox.createEl('input', { type: 'checkbox' });
-			checkbox.appendText('Don\'t ask again')
+			checkbox.appendText('Don\'t ask again');
 			input.addEventListener('change', (e) => {
 				const target = e.target as HTMLInputElement;
 				if (target.checked) {

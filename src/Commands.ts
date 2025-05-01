@@ -5,11 +5,12 @@ import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString, getFileExplorerActiveFolder } from './functions/utils';
 import { getExcludedFolderByPattern } from './ExcludeFolders/functions/patternFunctions';
 import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder, getExcludedFoldersByPath, updateExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSettings'
+import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSettings';
 import { ExcludePattern } from './ExcludeFolders/ExcludePattern';
 import PatternSettings from './ExcludeFolders/modals/PatternSettings';
 import { applyCSSClassesToFolder } from './functions/styleFunctions';
 import { FileExplorerView } from './globals';
+
 
 
 export class Commands {
@@ -35,7 +36,7 @@ export class Commands {
 				if (!(folder instanceof TFolder)) return;
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				turnIntoFolderNote(this.plugin, file, folder, folderNote);
-			}
+			},
 		});
 
 		this.plugin.addCommand({
@@ -60,8 +61,8 @@ export class Commands {
 				createFolderNote(this.plugin, folder.path, true, '.' + file.extension, false, file);
 				this.plugin.settings.autoCreate = automaticallyCreateFolderNote;
 				this.plugin.saveSettings();
-			}
-		})
+			},
+		});
 
 		this.plugin.addCommand({
 			id: 'create-folder-note-for-current-folder',
@@ -72,7 +73,7 @@ export class Commands {
 				const folder = file.parent;
 				if (!(folder instanceof TFolder)) return;
 				createFolderNote(this.plugin, folder.path, true, '.md', false);
-			}
+			},
 		});
 
 		this.plugin.settings.supportedFileTypes.forEach((fileType) => {
@@ -86,7 +87,7 @@ export class Commands {
 					const folder = file.parent;
 					if (!(folder instanceof TFolder)) return;
 					createFolderNote(this.plugin, folder.path, true, '.' + fileType, false);
-				}
+				},
 			});
 		});
 		this.plugin.settings.supportedFileTypes.forEach((fileType) => {
@@ -121,8 +122,9 @@ export class Commands {
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				if (!(folderNote instanceof TFile)) return;
 				deleteFolderNote(this.plugin, folderNote, true);
-			}
+			},
 		});
+
 		this.plugin.addCommand({
 			id: 'delete-folder-note-of-active-file-explorer-folder',
 			name: 'Delete folder note of current active folder in file explorer',
@@ -192,13 +194,13 @@ export class Commands {
 				}
 				return false;
 			},
-		})
+		});
+
 		this.plugin.addCommand({
 			id: 'create-folder-note-from-selected-text',
 			name: 'Create folder note from selected text',
 			editorCheckCallback: (checking: boolean, editor: Editor, view: MarkdownView) => {
 				const text = editor.getSelection().trim();
-				const line = editor.getCursor().line;
 				const file = view.file;
 				if (!(file instanceof TFile)) return false;
 				if (text && text.trim() !== '') {
@@ -250,7 +252,7 @@ export class Commands {
 				}
 				return false;
 			},
-		})
+		});
 	}
 
 	fileCommands() {
@@ -272,7 +274,7 @@ export class Commands {
 
 				if (folder instanceof TFolder) {
 					const folderNote = getFolderNote(this.plugin, folder.path);
-					const excludedFolder = await getExcludedFolder(this.plugin, folder.path, true)
+					const excludedFolder = await getExcludedFolder(this.plugin, folder.path, true);
 					if (folderNote?.path === file.path && !excludedFolder?.detached) { return; }
 				} else if (file.parent instanceof TFolder) {
 					folder = file.parent;
@@ -331,8 +333,8 @@ export class Commands {
 					});
 				}
 				if (!(file instanceof TFolder)) return;
-				const excludedFolder = await getExcludedFolder(this.plugin, file.path, false)
-				const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path)
+				const excludedFolder = await getExcludedFolder(this.plugin, file.path, false);
+				const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path);
 				if (excludedFolder && !excludedFolder.hideNote) {
 					// I'm not sure if I'm ever going to add this because of the possibility that a folder got more than one excluded
 					// subMenu.addItem((item) => {
@@ -476,29 +478,6 @@ export class Commands {
 	editorCommands() {
 		this.plugin.registerEvent(this.plugin.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
 			const text = editor.getSelection().trim();
-			const line = editor.getCursor().line;
-			const lineText = editor.getLine(line);
-			if (lineText.trim() === '' || lineText.trim() === '>') {
-				menu.addItem((item) => {
-					item.setTitle('Create folder overview')
-						.setIcon('edit')
-						.onClick(() => {
-							let json = Object.assign({}, this.plugin.settings.defaultOverview);
-							json.id = crypto.randomUUID();
-							const yaml = stringifyYaml(json)
-							if (lineText.trim() === '') {
-								editor.replaceSelection(`\`\`\`folder-overview\n${yaml}\`\`\`\n`);
-							} else if (lineText.trim() === '>') {
-								// add > to the beginning of each line
-								const lines = yaml.split('\n');
-								const newLines = lines.map((line) => {
-									return `> ${line}`;
-								});
-								editor.replaceSelection(`\`\`\`folder-overview\n${newLines.join('\n')}\`\`\`\n`);
-							}
-						});
-				});
-			}
 			if (!text || text.trim() === '') return;
 			menu.addItem((item) => {
 				item.setTitle('Create folder note')

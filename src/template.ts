@@ -1,9 +1,6 @@
-// Thanks to @mgmeyers for the creating the obsidian kanban plugin https://github.com/mgmeyers/obsidian-kanban
-// from where I got the template code for this plugin
-// https://github.com/mgmeyers/obsidian-kanban/blob/48e6c278ce9140b7e034b181432321f697d6e45e/src/components/helpers.ts
-
 import { TFile, App, WorkspaceLeaf } from 'obsidian';
 import FolderNotesPlugin from './main';
+
 export async function applyTemplate(
 	plugin: FolderNotesPlugin,
 	file: TFile,
@@ -16,7 +13,6 @@ export async function applyTemplate(
 
 	if (templateFile && templateFile instanceof TFile) {
 		try {
-
 			const {
 				templatesEnabled,
 				templaterEnabled,
@@ -24,37 +20,20 @@ export async function applyTemplate(
 				templaterPlugin,
 			} = getTemplatePlugins(plugin.app);
 			const templateContent = await plugin.app.vault.read(templateFile);
-			if (templateContent.includes('==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==')) { return; }
-
-			// If both plugins are enabled, attempt to detect templater first
-
-			if (templatesEnabled && templaterEnabled) {
-				if (/<%/.test(templateContent)) {
-					return await templaterPlugin.write_template_to_file(
-						templateFile,
-						file
-					);
-				} else {
-					if (leaf instanceof WorkspaceLeaf) {
-						leaf.openFile(file).then(async () => {
-							return await templatesPlugin.instance.insertTemplate(templateFile, file);
-						});
-					}
-				}
+			if (templateContent.includes('==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==')) {
+				return;
 			}
 
-			if (templatesEnabled) {
+			// Prioritize Templater if both plugins are enabled
+			if (templaterEnabled) {
+				return await templaterPlugin.write_template_to_file(templateFile, file);
+			} else if (templatesEnabled) {
 				if (leaf instanceof WorkspaceLeaf) {
-					leaf.openFile(file)
+					await leaf.openFile(file);
 				}
 				return await templatesPlugin.instance.insertTemplate(templateFile);
-			}
-
-			if (templaterEnabled) {
-				return await templaterPlugin.write_template_to_file(
-					templateFile,
-					file
-				);
+			} else {
+				await plugin.app.vault.modify(file, templateContent);
 			}
 
 		} catch (e) {
@@ -67,19 +46,14 @@ export function getTemplatePlugins(app: App) {
 	const templatesPlugin = (app as any).internalPlugins.plugins.templates;
 	const templatesEnabled = templatesPlugin.enabled;
 	const templaterPlugin = (app as any).plugins.plugins['templater-obsidian'];
-	const templaterEnabled = (app as any).plugins.enabledPlugins.has(
-		'templater-obsidian'
-	);
+	const templaterEnabled = (app as any).plugins.enabledPlugins.has('templater-obsidian');
+
 	const templaterEmptyFileTemplate =
-		templaterPlugin &&
-		(this.app as any).plugins.plugins['templater-obsidian'].settings
-			?.empty_file_template;
+		templaterPlugin && templaterPlugin.settings?.empty_file_template;
 
 	const templateFolder = templatesEnabled
 		? templatesPlugin.instance.options.folder
-		: templaterPlugin
-			? templaterPlugin.settings.template_folder
-			: undefined;
+		: templaterPlugin?.settings.template_folder;
 
 	return {
 		templatesPlugin,

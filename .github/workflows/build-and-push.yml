@@ -1,0 +1,66 @@
+name: Build and Push to Folder Overview
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build"
+        required: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout folder-notes
+        uses: actions/checkout@v3
+        with:
+          submodules: false
+          fetch-depth: 0
+
+      - name: Update submodules manually
+        run: |
+            git submodule sync
+            git submodule update --init --recursive --remote
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build folder-overview
+        run: npm run fv-build
+
+      - name: Verify build output
+        run: |
+          ls -la src/obsidian-folder-overview/
+
+      - name: Checkout folder-overview
+        uses: actions/checkout@v3
+        with:
+          repository: LostPaul/obsidian-folder-overview
+          token: ${{ secrets.PAT }}
+          ref: main
+          path: folder-overview
+
+      - name: Copy built files to folder-overview
+        run: |
+          cp src/obsidian-folder-overview/main.js \
+             src/obsidian-folder-overview/styles.css folder-overview/
+
+      - name: Commit and push built files
+        run: |
+          cd folder-overview
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add -f main.js styles.css
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Add built files for release"
+            git push origin main
+          fi
+
+      - name: Trigger release on folder-overview
+        run: |
+          curl -X POST -H "Authorization: token ${{ secrets.PAT }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/LostPaul/obsidian-folder-overview/actions/workflows/release.yml/dispatches \
+          -d '{"ref": "main", "inputs": {"tag": "${{ github.event.inputs.tag }}"}}'

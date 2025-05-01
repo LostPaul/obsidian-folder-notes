@@ -1,4 +1,4 @@
-import { App, ButtonComponent, Modal, Setting, TFolder, Notice } from 'obsidian';
+import { App, Modal, Setting } from 'obsidian';
 import { SettingsTab } from 'src/settings/SettingsTab';
 import FolderNotesPlugin from '../../main';
 import { WhitelistedFolder } from '../WhitelistFolder';
@@ -10,7 +10,7 @@ export default class WhitelistedFoldersSettings extends Modal {
 	app: App;
 	settingsTab: SettingsTab;
 	constructor(settingsTab: SettingsTab) {
-		super(app);
+		super(settingsTab.app);
 		this.plugin = settingsTab.plugin;
 		this.settingsTab = settingsTab;
 		this.app = settingsTab.app;

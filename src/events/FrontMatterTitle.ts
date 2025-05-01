@@ -1,7 +1,7 @@
 import FolderNotesPlugin from 'src/main';
 import { getDefer, Listener, Events, ApiInterface, DeferInterface, ListenerRef, EventDispatcherInterface } from 'front-matter-plugin-api-provider';
 import { App, TFile, TFolder } from 'obsidian';
-import { extractFolderName, getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
+import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 export class FrontMatterTitlePluginHandler {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -9,7 +9,7 @@ export class FrontMatterTitlePluginHandler {
 	deffer: DeferInterface | null = null;
 	modifiedFolders: Map<string, TFolder> = new Map();
 	eventRef: ListenerRef<'manager:update'>;
-	dispatcher: EventDispatcherInterface<Events>
+	dispatcher: EventDispatcherInterface<Events>;
 	constructor(plugin: FolderNotesPlugin) {
 		this.plugin = plugin;
 		this.app = plugin.app;
@@ -57,18 +57,18 @@ export class FrontMatterTitlePluginHandler {
 		result: boolean;
 		path: string;
 	}, isEvent: boolean) {
-		if ((data as any).data) data = (data as any).data
+		if ((data as any).data) data = (data as any).data;
 		const file = this.app.vault.getAbstractFileByPath(data.path);
 		if (!(file instanceof TFile)) { return; }
 
 		const resolver = this.api?.getResolverFactory()?.createResolver('#feature-id#');
-		const newName = resolver?.resolve(file?.path ?? '')
+		const newName = resolver?.resolve(file?.path ?? '');
 		const folder = getFolder(this.plugin, file);
 		if (!(folder instanceof TFolder)) { return; }
-		
+
 		const folderNote = getFolderNote(this.plugin, folder.path);
-		if (!folderNote) { return }
-		if (folderNote !== file) { return }
+		if (!folderNote) { return; }
+		if (folderNote !== file) { return; }
 
 		if (isEvent) {
 			this.plugin.changeName(folder, newName, true);

@@ -1,9 +1,9 @@
-import { App, Notice, PluginSettingTab, TFile, TFolder } from 'obsidian';
+import { App, Notice, PluginSettingTab, TFile, TFolder, MarkdownPostProcessorContext } from 'obsidian';
 import FolderNotesPlugin from '../main';
 import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
-import { getFolderNote } from '../functions/folderNoteFunctions';
-import { yamlSettings } from '../folderOverview/FolderOverview';
+import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctions';
+import { overviewSettings } from '../obsidian-folder-overview/src/FolderOverview';
 import { renderGeneral } from './GeneralSettings';
 import { renderFileExplorer } from './FileExplorerSettings';
 import { renderPath } from './PathSettings';
@@ -22,6 +22,7 @@ export interface FolderNotesSettings {
 	autoCreate: boolean;
 	autoCreateForAttachmentFolder: boolean;
 	autoCreateFocusFiles: boolean;
+	autoCreateForFiles: boolean;
 	enableCollapsing: boolean;
 	excludeFolders: (ExcludePattern | ExcludedFolder)[];
 	whitelistFolders: (WhitelistedFolder | WhitelistedPattern)[];
@@ -32,13 +33,14 @@ export interface FolderNotesSettings {
 	underlineFolderInPath: boolean;
 	openFolderNoteOnClickInPath: boolean;
 	openInNewTab: boolean;
+	oldFolderNoteName: string | undefined;
 	folderNoteName: string;
 	newFolderNoteName: string;
 	folderNoteType: string;
 	disableFolderHighlighting: boolean;
 	storageLocation: 'insideFolder' | 'parentFolder' | 'vaultFolder';
 	syncDelete: boolean;
-	defaultOverview: yamlSettings;
+	defaultOverview: overviewSettings;
 	useSubmenus: boolean;
 	syncMove: boolean;
 	frontMatterTitle: {
@@ -68,6 +70,10 @@ export interface FolderNotesSettings {
 		desktop: boolean;
 	}
 	highlightFolder: boolean;
+	persistentSettingsTab: {
+		afterRestart: boolean;
+		afterChangingTab: boolean;
+	}
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -79,6 +85,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	autoCreate: false,
 	autoCreateFocusFiles: true,
 	autoCreateForAttachmentFolder: false,
+	autoCreateForFiles: false,
 	enableCollapsing: false,
 	excludeFolders: [],
 	whitelistFolders: [],
@@ -88,6 +95,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	underlineFolderInPath: true,
 	openFolderNoteOnClickInPath: true,
 	openInNewTab: false,
+	oldFolderNoteName: undefined,
 	folderNoteName: '{{folder_name}}',
 	folderNoteType: '.md',
 	disableFolderHighlighting: false,
@@ -111,6 +119,9 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		storeFolderCondition: true,
 		showFolderNotes: false,
 		disableCollapseIcon: true,
+		alwaysCollapse: false,
+		autoSync: true,
+		allowDragAndDrop: true,
 	},
 	useSubmenus: true,
 	syncMove: true,
@@ -171,6 +182,10 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		desktop: true,
 	},
 	highlightFolder: true,
+	persistentSettingsTab: {
+		afterRestart: true,
+		afterChangingTab: true,
+	},
 };
 
 export class SettingsTab extends PluginSettingTab {
@@ -184,15 +199,15 @@ export class SettingsTab extends PluginSettingTab {
 	TABS = {
 		GENERAL: {
 			name: 'General',
-			id: 'general'
+			id: 'general',
 		},
 		FOLDER_OVERVIEW: {
 			name: 'Folder overview',
-			id: 'folder_overview'
+			id: 'folder_overview',
 		},
 		EXCLUDE_FOLDERS: {
 			name: 'Exclude folders',
-			id: 'exclude_folders'
+			id: 'exclude_folders',
 		},
 		FILE_EXPLORER: {
 			name: 'File explorer',
@@ -200,9 +215,9 @@ export class SettingsTab extends PluginSettingTab {
 		},
 		PATH: {
 			name: 'Path',
-			id: 'path'
-		}
-	}
+			id: 'path',
+		},
+	};
 	renderSettingsPage(tabId: string) {
 		this.settingsPage.empty();
 		switch (tabId.toLocaleLowerCase()) {
@@ -225,47 +240,77 @@ export class SettingsTab extends PluginSettingTab {
 
 	}
 
-	display(): void {
-		this.plugin.settingsOpened = true;
-		const { containerEl } = this;
+	display(contentEl?: HTMLElement, yaml?: overviewSettings, plugin?: FolderNotesPlugin, defaultSettings?: boolean, display?: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: this) {
+		plugin = this?.plugin ?? plugin;
+		if (plugin) {
+			plugin.settingsOpened = true;
+		}
+		settingsTab = this ?? settingsTab;
+		const { containerEl } = settingsTab;
+		if (!plugin.settings.persistentSettingsTab.afterChangingTab) {
+			plugin.settings.settingsTab = this.TABS.GENERAL.id;
+		}
 
 		containerEl.empty();
 
 		const tabBar = containerEl.createEl('nav', { cls: 'fn-settings-tab-bar' });
-		for (const [tabId, tabInfo] of Object.entries(this.TABS)) {
+		for (const [tabId, tabInfo] of Object.entries(settingsTab.TABS)) {
 			const tabEl = tabBar.createEl('div', { cls: 'fn-settings-tab' });
-			const tabName = tabEl.createEl('div', { cls: 'fn-settings-tab-name', text: tabInfo.name });
-			if (this.plugin.settings.settingsTab.toLocaleLowerCase() === tabId.toLocaleLowerCase()) {
+			tabEl.createEl('div', { cls: 'fn-settings-tab-name', text: tabInfo.name });
+			if (plugin && plugin.settings.settingsTab.toLocaleLowerCase() === tabId.toLocaleLowerCase()) {
 				tabEl.addClass('fn-settings-tab-active');
 			}
 			tabEl.addEventListener('click', () => {
 				// @ts-ignore
 				for (const tabEl of tabBar.children) {
 					tabEl.removeClass('fn-settings-tab-active');
-					this.plugin.settings.settingsTab = tabId.toLocaleLowerCase();
-					this.plugin.saveSettings();
+					if (!plugin) { return; }
+					plugin.settings.settingsTab = tabId.toLocaleLowerCase();
+					plugin.saveSettings();
 				}
 				tabEl.addClass('fn-settings-tab-active');
-				this.renderSettingsPage(tabId);
+				if (!settingsTab) { return; }
+				settingsTab.renderSettingsPage(tabId);
 			});
 		}
-		this.settingsPage = containerEl.createDiv({ cls: 'fn-settings-page' });
-		this.renderSettingsPage(this.plugin.settings.settingsTab);
-	}
-
-	updateFolderNotes(newTemplate: string) {
-		new Notice('Starting to update folder notes...');
-		for (const folder of this.app.vault.getAllLoadedFiles()) {
-			if (folder instanceof TFolder) {
-				const folderNote = getFolderNote(this.plugin, folder.path);
-				if (!(folderNote instanceof TFile)) { continue }
-				const folderNoteName = newTemplate.replace('{{folder_name}}', folder.name)
-				const newPath = `${folder.path}/${folderNoteName}.${folderNote.extension}`;
-				if (this.plugin.app.vault.getAbstractFileByPath(newPath)) { continue }
-				this.plugin.app.fileManager.renameFile(folderNote, newPath);
+		settingsTab.settingsPage = containerEl.createDiv({ cls: 'fn-settings-page' });
+		if (plugin) {
+			if (plugin.settings.persistentSettingsTab) {
+				settingsTab.renderSettingsPage(plugin.settings.settingsTab);
+			} else {
+				settingsTab.renderSettingsPage(this.TABS.GENERAL.id);
 			}
 		}
-		this.plugin.settings.folderNoteName = newTemplate;
+	}
+
+	renameFolderNotes() {
+		new Notice('Starting to update folder notes...');
+		const oldTemplate = this.plugin.settings.oldFolderNoteName ?? '{{folder_name}}';
+
+		for (const folder of this.app.vault.getAllLoadedFiles()) {
+			if (folder instanceof TFolder) {
+				const folderNote = getFolderNote(this.plugin, folder.path, undefined, undefined, oldTemplate);
+				if (!(folderNote instanceof TFile)) { continue; }
+
+				const folderName = extractFolderName(oldTemplate, folderNote.basename) ?? '';
+				const newFolderNoteName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
+				let newPath = '';
+
+				if (this.plugin.settings.storageLocation === 'parentFolder') {
+					if (getFolderPathFromString(folder.path).trim() === '/') {
+						newPath = `${newFolderNoteName}.${folderNote.extension}`;
+					} else {
+						newPath = `${folderNote.parent?.path}/${newFolderNoteName}.${folderNote.extension}`;
+					}
+				} else if (this.plugin.settings.storageLocation === 'insideFolder') {
+					newPath = `${folder.path}/${newFolderNoteName}.${folderNote.extension}`;
+				}
+
+				this.app.fileManager.renameFile(folderNote, newPath);
+			}
+		}
+
+		this.plugin.settings.oldFolderNoteName = this.plugin.settings.folderNoteName;
 		this.plugin.saveSettings();
 		new Notice('Finished updating folder notes');
 	}

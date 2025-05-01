@@ -1,5 +1,5 @@
 import { App, ButtonComponent, Modal, Setting, TFolder, Notice } from 'obsidian';
-import FolderNotesPlugin from '../main';
+import FolderNotesPlugin from '../../main';
 import { createFolderNote, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getTemplatePlugins } from 'src/template';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
@@ -40,7 +40,7 @@ export default class ConfirmationModal extends Modal {
 				.setDesc('Choose the file extension for the folder notes.')
 				.addDropdown((cb) => {
 					this.plugin.settings.supportedFileTypes.forEach((extension) => {
-						cb.addOption("." + extension, extension);
+						cb.addOption('.' + extension, extension);
 					});
 					cb.setValue(this.extension);
 					cb.onChange(async (value) => {

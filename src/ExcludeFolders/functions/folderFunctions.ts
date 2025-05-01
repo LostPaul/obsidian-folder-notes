@@ -15,13 +15,13 @@ export async function getExcludedFolder(plugin: FolderNotesPlugin, path: string,
 	let excludedFolder = {} as ExcludedFolder | ExcludePattern | undefined;
 	const whitelistedFolder = getWhitelistedFolder(plugin, path) as WhitelistedFolder | WhitelistedPattern | undefined;
 	const folderName = getFolderNameFromPathString(path);
-	let matchedPatterns = await getExcludedFoldersByPattern(plugin, folderName);
-	const excludedFolders = await getExcludedFoldersByPath(plugin, path);
+	let matchedPatterns = getExcludedFoldersByPattern(plugin, folderName);
+	const excludedFolders = getExcludedFoldersByPath(plugin, path);
 	if (pathOnly) { matchedPatterns = []; }
 	let combinedExcludedFolders = [...matchedPatterns, ...excludedFolders];
 
 	if (!includeDetached) {
-		combinedExcludedFolders = combinedExcludedFolders.filter(f => !f.detached)
+		combinedExcludedFolders = combinedExcludedFolders.filter((f) => !f.detached);
 	}
 
 	const propertiesToCopy: (keyof ExcludedFolder)[] = [
@@ -33,12 +33,12 @@ export async function getExcludedFolder(plugin: FolderNotesPlugin, path: string,
 		'detached',
 		'hideInSettings',
 		'hideNote',
-		'id'
+		'id',
 	];
 
 	if (combinedExcludedFolders.length > 0) {
 		for (const matchedFolder of combinedExcludedFolders) {
-			propertiesToCopy.forEach(property => {
+			propertiesToCopy.forEach((property) => {
 				if (matchedFolder[property] === true) {
 					(excludedFolder as any)[property] = true;
 				} else if (!matchedFolder[property]) {
@@ -74,14 +74,14 @@ export async function getExcludedFolder(plugin: FolderNotesPlugin, path: string,
 			hideInSettings: false,
 			detached: false,
 			hideNote: false,
-		}
+		};
 	}
 
 	return excludedFolder;
 }
 
 export function getDetachedFolder(plugin: FolderNotesPlugin, path: string) {
-	return plugin.settings.excludeFolders.find(f => f.path == path && f.detached);
+	return plugin.settings.excludeFolders.find((f) => f.path === path && f.detached);
 }
 
 
