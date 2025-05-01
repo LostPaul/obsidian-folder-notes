@@ -74,6 +74,10 @@ export default class FolderNotesPlugin extends Plugin {
 			subtree: true,
 		});
 
+		if (!this.settings.persistentSettingsTab.afterRestart) {
+			this.settings.settingsTab = 'general';
+		}
+
 		this.registerDomEvent(window, 'keydown', (event: KeyboardEvent) => {
 			if (event.key === 'Enter') {
 				const folderNote = getFolderNote(this, getFocusedItem(this)?.file?.path || '');

@@ -430,4 +430,30 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.display();
 				})
 		);
+
+	new Setting(containerEl)
+		.setName('Persist tab after restart')
+		.setDesc('Reopen the same settings tab after restarting Obsidian')
+		.addToggle((toggle) =>
+			toggle
+				.setValue(settingsTab.plugin.settings.persistentSettingsTab.afterRestart)
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.persistentSettingsTab.afterRestart = value;
+					await settingsTab.plugin.saveSettings();
+					settingsTab.display();
+				})
+		);
+
+	new Setting(containerEl)
+		.setName('Persist tab during session only')
+		.setDesc('Keep the same settings tab while Obsidian is open, but reset after restart or tab reload')
+		.addToggle((toggle) =>
+			toggle
+				.setValue(settingsTab.plugin.settings.persistentSettingsTab.afterChangingTab)
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.persistentSettingsTab.afterChangingTab = value;
+					await settingsTab.plugin.saveSettings();
+					settingsTab.display();
+				})
+		);
 }

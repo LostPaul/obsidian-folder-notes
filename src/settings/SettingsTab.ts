@@ -70,6 +70,10 @@ export interface FolderNotesSettings {
 		desktop: boolean;
 	}
 	highlightFolder: boolean;
+	persistentSettingsTab: {
+		afterRestart: boolean;
+		afterChangingTab: boolean;
+	}
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -178,6 +182,10 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		desktop: true,
 	},
 	highlightFolder: true,
+	persistentSettingsTab: {
+		afterRestart: true,
+		afterChangingTab: true,
+	},
 };
 
 export class SettingsTab extends PluginSettingTab {
@@ -239,6 +247,9 @@ export class SettingsTab extends PluginSettingTab {
 		}
 		settingsTab = this ?? settingsTab;
 		const { containerEl } = settingsTab;
+		if (!plugin.settings.persistentSettingsTab.afterChangingTab) {
+			plugin.settings.settingsTab = this.TABS.GENERAL.id;
+		}
 
 		containerEl.empty();
 
@@ -264,7 +275,11 @@ export class SettingsTab extends PluginSettingTab {
 		}
 		settingsTab.settingsPage = containerEl.createDiv({ cls: 'fn-settings-page' });
 		if (plugin) {
-			settingsTab.renderSettingsPage(plugin.settings.settingsTab);
+			if (plugin.settings.persistentSettingsTab) {
+				settingsTab.renderSettingsPage(plugin.settings.settingsTab);
+			} else {
+				settingsTab.renderSettingsPage(this.TABS.GENERAL.id);
+			}
 		}
 	}
 
