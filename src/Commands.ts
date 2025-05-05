@@ -1,15 +1,10 @@
-import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform, stringifyYaml, View } from 'obsidian';
+import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform, stringifyYaml } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName, detachFolderNote } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString, getFileExplorerActiveFolder } from './functions/utils';
-import { getExcludedFolderByPattern } from './ExcludeFolders/functions/patternFunctions';
-import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder, getExcludedFoldersByPath, updateExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import ExcludedFolderSettings from './ExcludeFolders/modals/ExcludeFolderSettings';
-import { ExcludePattern } from './ExcludeFolders/ExcludePattern';
-import PatternSettings from './ExcludeFolders/modals/PatternSettings';
+import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { applyCSSClassesToFolder } from './functions/styleFunctions';
-import { FileExplorerView } from './globals';
 
 
 
@@ -91,23 +86,23 @@ export class Commands {
 			});
 		});
 		this.plugin.settings.supportedFileTypes.forEach((fileType) => {
-            const type = fileType === 'md' ? 'markdown' : fileType;
+			const type = fileType === 'md' ? 'markdown' : fileType;
 			this.plugin.addCommand({
 				id: `create-${type}-folder-note-for-active-file-explorer-folder`,
 				name: `Create ${type} folder note for current active folder in file explorer`,
 				checkCallback: (checking: boolean) => {
-                    const folder = getFileExplorerActiveFolder();
-                    if (!folder) return false;
-                    // Is there already a folder note for the active folder?
-                    const folderNote = getFolderNote(this.plugin, folder.path);
-                    if (folderNote instanceof TFile) return false;
-                    if (checking) return true;
+					const folder = getFileExplorerActiveFolder();
+					if (!folder) return false;
+					// Is there already a folder note for the active folder?
+					const folderNote = getFolderNote(this.plugin, folder.path);
+					if (folderNote instanceof TFile) return false;
+					if (checking) return true;
 
-                    // Everything is fine and not checking, let's create the folder note.
-                    const ext = '.' + fileType;
-                    const path = folder.path;
-                    createFolderNote(this.plugin, path, true, ext, false);
-				}
+					// Everything is fine and not checking, let's create the folder note.
+					const ext = '.' + fileType;
+					const path = folder.path;
+					createFolderNote(this.plugin, path, true, ext, false);
+				},
 			});
 		});
 
@@ -129,16 +124,16 @@ export class Commands {
 			id: 'delete-folder-note-of-active-file-explorer-folder',
 			name: 'Delete folder note of current active folder in file explorer',
 			checkCallback: (checking: boolean) => {
-                const folder = getFileExplorerActiveFolder();
-                if (!folder) return false;
-                // Is there any folder note for the active folder?
+				const folder = getFileExplorerActiveFolder();
+				if (!folder) return false;
+				// Is there any folder note for the active folder?
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				if (!(folderNote instanceof TFile)) return false;
-                if (checking) return true;
+				if (checking) return true;
 
-                // Everything is fine and not checking, let's delete the folder note.
+				// Everything is fine and not checking, let's delete the folder note.
 				deleteFolderNote(this.plugin, folderNote, true);
-			}
+			},
 		});
 		this.plugin.addCommand({
 			id: 'open-folder-note-for-current-folder',
@@ -151,22 +146,22 @@ export class Commands {
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				if (!(folderNote instanceof TFile)) return;
 				openFolderNote(this.plugin, folderNote);
-			}
+			},
 		});
 		this.plugin.addCommand({
 			id: 'open-folder-note-of-active-file-explorer-folder',
 			name: 'Open folder note of current active folder in file explorer',
 			checkCallback: (checking: boolean) => {
-                const folder = getFileExplorerActiveFolder();
-                if (!folder) return false;
-                // Is there any folder note for the active folder?
+				const folder = getFileExplorerActiveFolder();
+				if (!folder) return false;
+				// Is there any folder note for the active folder?
 				const folderNote = getFolderNote(this.plugin, folder.path);
 				if (!(folderNote instanceof TFile)) return false;
-                if (checking) return true;
+				if (checking) return true;
 
-                // Everything is fine and not checking, let's open the folder note.
+				// Everything is fine and not checking, let's open the folder note.
 				openFolderNote(this.plugin, folderNote);
-			}
+			},
 		});
 		this.plugin.addCommand({
 			id: 'insert-folder-overview-fn',
@@ -176,9 +171,9 @@ export class Commands {
 				const lineText = editor.getLine(line);
 				if (lineText.trim() === '' || lineText.trim() === '>') {
 					if (!checking) {
-						let json = Object.assign({}, this.plugin.settings.defaultOverview);
+						const json = Object.assign({}, this.plugin.settings.defaultOverview);
 						json.id = crypto.randomUUID();
-						const yaml = stringifyYaml(json)
+						const yaml = stringifyYaml(json);
 						if (lineText.trim() === '') {
 							editor.replaceSelection(`\`\`\`folder-overview\n${yaml}\`\`\`\n`);
 						} else if (lineText.trim() === '>') {

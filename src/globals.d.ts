@@ -1,4 +1,4 @@
-import { Plugin, TAbstractFile, TFile, TFolder, View, WorkspaceLeaf } from 'obsidian';
+import { TAbstractFile, TFile, TFolder, View, WorkspaceLeaf } from 'obsidian';
 
 declare module 'obsidian' {
 	interface Setting {
@@ -59,7 +59,7 @@ interface FolderItem {
     setCollapsed: (collapsed: boolean) => void;
     pusherEl: HTMLDivElement;
 }
-    
+
 interface TreeItem {
     focusedItem: FileOrFolderItem;
     setFocusedItem: (item: FileOrFolderItem, moveViewport: boolean) => void;
