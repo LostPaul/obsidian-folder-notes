@@ -1,4 +1,4 @@
-import { TAbstractFile, View, WorkspaceLeaf } from 'obsidian';
+import { TAbstractFile, TFile, TFolder, View, WorkspaceLeaf } from 'obsidian';
 
 declare module 'obsidian' {
 	interface Setting {
@@ -34,8 +34,41 @@ interface FileExplorerViewFileItem extends TAbstractFile {
 	selfEl: HTMLElement
 }
 
+type FileOrFolderItem = FolderItem | FileItem;
+
+interface FileItem {
+    el: HTMLDivElement;
+    file: TFile;
+    fileExplorer: FileExplorerView;
+    info: any;
+    selfEl: HTMLDivElement;
+    innerEl: HTMLDivElement;
+}
+
+interface FolderItem {
+    el: HTMLDivElement;
+    fileExplorer: FileExplorerView;
+    info: any;
+    selfEl: HTMLDivElement;
+    innerEl: HTMLDivElement;
+    file: TFolder;
+    children: FileOrFolderItem[];
+    childrenEl: HTMLDivElement;
+    collapseIndicatorEl: HTMLDivElement;
+    collapsed: boolean;
+    setCollapsed: (collapsed: boolean) => void;
+    pusherEl: HTMLDivElement;
+}
+
+interface TreeItem {
+    focusedItem: FileOrFolderItem;
+    setFocusedItem: (item: FileOrFolderItem, moveViewport: boolean) => void;
+    selectedDoms: Set<FileOrFolderItem>;
+}
 interface FileExplorerView extends View {
 	fileItems: { [path: string]: FileExplorerViewFileItem };
+    activeDom: FileOrFolderItem;
+    tree: TreeItem;
 }
 
 declare global {
