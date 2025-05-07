@@ -247,7 +247,7 @@ export class SettingsTab extends PluginSettingTab {
 		}
 		settingsTab = this ?? settingsTab;
 		const { containerEl } = settingsTab;
-		if (!plugin.settings.persistentSettingsTab.afterChangingTab) {
+		if (plugin && !plugin.settings.persistentSettingsTab.afterChangingTab) {
 			plugin.settings.settingsTab = this.TABS.GENERAL.id;
 		}
 
