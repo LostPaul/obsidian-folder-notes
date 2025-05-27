@@ -11,7 +11,7 @@ import { getWhitelistedFolder } from './whitelistFolderFunctions';
 import { WhitelistedFolder } from '../WhitelistFolder';
 import { WhitelistedPattern } from '../WhitelistPattern';
 
-export async function getExcludedFolder(plugin: FolderNotesPlugin, path: string, includeDetached: boolean, pathOnly?: boolean, ignoreWhitelist?: boolean) {
+export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, includeDetached: boolean, pathOnly?: boolean, ignoreWhitelist?: boolean) {
 	let excludedFolder = {} as ExcludedFolder | ExcludePattern | undefined;
 	const whitelistedFolder = getWhitelistedFolder(plugin, path) as WhitelistedFolder | WhitelistedPattern | undefined;
 	const folderName = getFolderNameFromPathString(path);
