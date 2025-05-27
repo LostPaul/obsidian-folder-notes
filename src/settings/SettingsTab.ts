@@ -193,6 +193,7 @@ export class SettingsTab extends PluginSettingTab {
 	app: App;
 	excludeFolders: ExcludedFolder[];
 	settingsPage!: HTMLElement;
+	showFolderNameInTabTitleSetting: boolean;
 	constructor(app: App, plugin: FolderNotesPlugin) {
 		super(app, plugin);
 	}
