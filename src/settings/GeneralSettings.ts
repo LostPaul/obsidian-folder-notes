@@ -238,6 +238,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 			);
 	}
 	if (Platform.isDesktopApp) {
+		settingsTab.settingsPage.createEl('h3', { text: 'Keyboard Shortcuts' });
+
 		new Setting(containerEl)
 			.setName('Key for creating folder note')
 			.setDesc('The key combination to create a folder note')
@@ -285,6 +287,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 			});
 	}
 
+	settingsTab.settingsPage.createEl('h3', { text: 'Folder note behavior' });
+
 	new Setting(containerEl)
 		.setName('Confirm folder note deletion')
 		.setDesc('Ask for confirmation before deleting a folder note')
@@ -330,6 +334,88 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 		setting3.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 	}
 
+	new Setting(containerEl)
+		.setName('Sync folder name')
+		.setDesc('Automatically rename the folder note when the folder name is changed')
+		.addToggle((toggle) =>
+			toggle
+				.setValue(settingsTab.plugin.settings.syncFolderName)
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.syncFolderName = value;
+					await settingsTab.plugin.saveSettings();
+					settingsTab.display();
+				})
+		);
+
+	settingsTab.settingsPage.createEl('h4', { text: 'Automation settings' });
+
+	new Setting(containerEl)
+		.setName('Create folder notes for all folders')
+		.setDesc('Generate folder notes for every folder in the vault.')
+		.addButton((cb) => {
+			cb.setIcon('plus');
+			cb.setTooltip('Create folder notes');
+			cb.onClick(async () => {
+				new ConfirmationModal(settingsTab.app, settingsTab.plugin).open();
+			});
+		});
+
+	new Setting(containerEl)
+		.setName('Auto-create on folder creation')
+		.setDesc('Automatically create a folder note whenever a new folder is added.')
+		.addToggle((toggle) =>
+			toggle
+				.setValue(settingsTab.plugin.settings.autoCreate)
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.autoCreate = value;
+					await settingsTab.plugin.saveSettings();
+					settingsTab.display();
+				})
+		);
+
+	if (settingsTab.plugin.settings.autoCreate) {
+		new Setting(containerEl)
+			.setName('Auto-open after creation')
+			.setDesc('Open the folder note immediately after it’s created automatically.')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(settingsTab.plugin.settings.autoCreateFocusFiles)
+					.onChange(async (value) => {
+						settingsTab.plugin.settings.autoCreateFocusFiles = value;
+						await settingsTab.plugin.saveSettings();
+						settingsTab.display();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('Auto-create for attachment folders')
+			.setDesc('Also automatically create folder notes for attachment folders (e.g., "Attachments", "Media", etc.).')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(settingsTab.plugin.settings.autoCreateForAttachmentFolder)
+					.onChange(async (value) => {
+						settingsTab.plugin.settings.autoCreateForAttachmentFolder = value;
+						await settingsTab.plugin.saveSettings();
+						settingsTab.display();
+					})
+			);
+	}
+
+	new Setting(containerEl)
+		.setName('Auto-create when creating notes')
+		.setDesc('Automatically create a folder note when a regular note is created inside a folder. Works for supported file types only.')
+		.addToggle((toggle) =>
+			toggle
+				.setValue(settingsTab.plugin.settings.autoCreateForFiles)
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.autoCreateForFiles = value;
+					await settingsTab.plugin.saveSettings();
+					settingsTab.display();
+				})
+		);
+
+	settingsTab.settingsPage.createEl('h3', { text: 'Integration & Compatibility' });
+
 	const desc1 = document.createDocumentFragment();
 
 	const link = document.createElement('a');
@@ -368,91 +454,11 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 				})
 		);
 
-	new Setting(containerEl)
-		.setName('Create folder note for every folder')
-		.setDesc('Create a folder note for every folder in the vault')
-		.addButton((cb) => {
-			cb.setIcon('plus');
-			cb.setTooltip('Create folder notes');
-			cb.onClick(async () => {
-				new ConfirmationModal(settingsTab.app, settingsTab.plugin).open();
-			});
-		});
-
-	settingsTab.settingsPage.createEl('h3', { text: 'Automation settings' });
-
-	new Setting(containerEl)
-		.setName('Sync folder name')
-		.setDesc('Automatically rename the folder note when the folder name is changed')
-		.addToggle((toggle) =>
-			toggle
-				.setValue(settingsTab.plugin.settings.syncFolderName)
-				.onChange(async (value) => {
-					settingsTab.plugin.settings.syncFolderName = value;
-					await settingsTab.plugin.saveSettings();
-					settingsTab.display();
-				})
-		);
-
-	new Setting(containerEl)
-		.setName('Automatically create folder notes')
-		.setDesc('Automatically create a folder note when a new folder is created')
-		.addToggle((toggle) =>
-			toggle
-				.setValue(settingsTab.plugin.settings.autoCreate)
-				.onChange(async (value) => {
-					settingsTab.plugin.settings.autoCreate = value;
-					await settingsTab.plugin.saveSettings();
-					settingsTab.display();
-				})
-		);
-
-	if (settingsTab.plugin.settings.autoCreate) {
-		new Setting(containerEl)
-			.setName('Open folder note after creating')
-			.setDesc('Automatically open the folder note after automatically creating it')
-			.addToggle((toggle) =>
-				toggle
-					.setValue(settingsTab.plugin.settings.autoCreateFocusFiles)
-					.onChange(async (value) => {
-						settingsTab.plugin.settings.autoCreateFocusFiles = value;
-						await settingsTab.plugin.saveSettings();
-						settingsTab.display();
-					})
-			);
-
-		new Setting(containerEl)
-			.setName('Auto create folder note for attachment folder')
-			.setDesc('Automatically create a folder note for the attachment folder when you attach a file to a note and the attachment folder gets created')
-			.addToggle((toggle) =>
-				toggle
-					.setValue(settingsTab.plugin.settings.autoCreateForAttachmentFolder)
-					.onChange(async (value) => {
-						settingsTab.plugin.settings.autoCreateForAttachmentFolder = value;
-						await settingsTab.plugin.saveSettings();
-						settingsTab.display();
-					})
-			);
-	}
-
-	new Setting(containerEl)
-		.setName('Automatically create folder note when you create a note')
-		.setDesc('Automatically create a folder note when a note is created. It has to be a file type that you selected in the supported file types')
-		.addToggle((toggle) =>
-			toggle
-				.setValue(settingsTab.plugin.settings.autoCreateForFiles)
-				.onChange(async (value) => {
-					settingsTab.plugin.settings.autoCreateForFiles = value;
-					await settingsTab.plugin.saveSettings();
-					settingsTab.display();
-				})
-		);
-
-	settingsTab.settingsPage.createEl('h3', { text: 'Settings tab' });
+	settingsTab.settingsPage.createEl('h3', { text: 'Session & Persistence' });
 
 	new Setting(containerEl)
 		.setName('Persist tab after restart')
-		.setDesc('Reopen the same settings tab after restarting Obsidian')
+		.setDesc('Restore the same settings tab after restarting Obsidian.')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.persistentSettingsTab.afterRestart)
@@ -465,7 +471,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Persist tab during session only')
-		.setDesc('Keep the same settings tab while Obsidian is open, but reset after restart or tab reload')
+		.setDesc('Keep the current settings tab open during the session, but reset it after a restart or reload.')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.persistentSettingsTab.afterChangingTab)
