@@ -251,7 +251,7 @@ export class Commands {
 	}
 
 	fileCommands() {
-		this.plugin.registerEvent(this.app.workspace.on('file-menu', async (menu: Menu, file: TAbstractFile) => {
+		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
 			let folder: TAbstractFile | TFolder | null = file.parent;
 			if (file instanceof TFile) {
 				if (this.plugin.settings.storageLocation === 'insideFolder') {
@@ -269,7 +269,7 @@ export class Commands {
 
 				if (folder instanceof TFolder) {
 					const folderNote = getFolderNote(this.plugin, folder.path);
-					const excludedFolder = await getExcludedFolder(this.plugin, folder.path, true);
+					const excludedFolder = getExcludedFolder(this.plugin, folder.path, true);
 					if (folderNote?.path === file.path && !excludedFolder?.detached) { return; }
 				} else if (file.parent instanceof TFolder) {
 					folder = file.parent;

@@ -9,11 +9,13 @@ import { loadFileClasses } from '../functions/styleFunctions';
 import BackupWarningModal from './modals/BackupWarning';
 import RenameFolderNotesModal from './modals/RenameFns';
 
+let debounceTimer: NodeJS.Timeout;
+
 export async function renderGeneral(settingsTab: SettingsTab) {
 	const containerEl = settingsTab.settingsPage;
 	const nameSetting = new Setting(containerEl)
-		.setName('Folder note name')
-		.setDesc('{{folder_name}} will be replaced with the name of the folder')
+		.setName('Folder note name template')
+		.setDesc('All folder notes will use this name. Use {{folder_name}} to insert the folder’s name. Existing notes won’t update automatically; click on the button to apply the new name.')
 		.addText((text) =>
 			text
 				.setValue(settingsTab.plugin.settings.folderNoteName)
@@ -21,6 +23,21 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					if (value.trim() === '') { return; }
 					settingsTab.plugin.settings.folderNoteName = value;
 					await settingsTab.plugin.saveSettings();
+
+					clearTimeout(debounceTimer);
+					debounceTimer = setTimeout(() => {
+						if (!value.includes('{{folder_name}}')) {
+							if (!settingsTab.showFolderNameInTabTitleSetting) {
+								settingsTab.display();
+								settingsTab.showFolderNameInTabTitleSetting = true;
+							}
+						} else {
+							if (settingsTab.showFolderNameInTabTitleSetting) {
+								settingsTab.display();
+								settingsTab.showFolderNameInTabTitleSetting = false;
+							}
+						}
+					}, 2000);
 				})
 		)
 		.addButton((button) =>
@@ -40,10 +57,10 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 	nameSetting.infoEl.appendText('Requires a restart to take effect');
 	nameSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
-	if (settingsTab.plugin.settings.folderNoteName !== '{{folder_name}}') {
+	if (!settingsTab.plugin.settings.folderNoteName.includes('{{folder_name}}')) {
 		new Setting(containerEl)
-			.setName('Use folder name instead of folder note name in the tab title')
-			.setDesc('When you\'re using a folder note name like "folder note" and have multiple folder notes open you can\'t separate them anymore by their name. This setting uses the folder name instead and allows you to indentify the different files.')
+			.setName('Display Folder Name in Tab Title')
+			.setDesc('Use the actual folder name in the tab title instead of the custom folder note name (e.g., "Folder Note").')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.tabManagerEnabled)
@@ -62,8 +79,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 	}
 
 	new Setting(containerEl)
-		.setName('Default folder note type for new folder notes')
-		.setDesc('Choose the default file type for new folder notes. (canvas, markdown, ...)')
+		.setName('Default file type for new folder notes')
+		.setDesc('Choose the default file type (canvas, markdown, ...) used when creating new folder notes.')
 		.addDropdown((dropdown) => {
 			dropdown.addOption('.ask', 'ask for file type');
 			settingsTab.plugin.settings.supportedFileTypes.forEach((type) => {
@@ -89,12 +106,10 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 		});
 
 	const setting0 = new Setting(containerEl);
-	setting0.setName('Supported file types for folder notes');
+	setting0.setName('Supported file types');
 	const desc0 = document.createDocumentFragment();
 	desc0.append(
-		'Choose the file types that should be supported for folder notes. (e.g. if you click on a folder name it searches for all file extensions that are supported)',
-		desc0.createEl('br'),
-		'Adding more file types may cause performance issues becareful when adding more file types and don\'t add too many.',
+		'Specify which file types are allowed as folder notes. Applies to both new and existing folders. Adding many types may affect performance.'
 	);
 	setting0.setDesc(desc0);
 	const list = new ListComponent(setting0.settingEl, settingsTab.plugin.settings.supportedFileTypes || [], ['md', 'canvas']);
@@ -141,7 +156,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 
 
 	const templateSetting = new Setting(containerEl)
-		.setDesc('Requires templates/templater plugin to be enabled')
+		.setDesc('Can be used with templater/templates plugin. If you add the location of the templates there.')
 		.setName('Template path')
 		.addSearch((cb) => {
 			new TemplateSuggest(cb.inputEl, settingsTab.plugin);
@@ -271,19 +286,6 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 	}
 
 	new Setting(containerEl)
-		.setName('Sync folder name')
-		.setDesc('Automatically rename the folder note when the folder name is changed')
-		.addToggle((toggle) =>
-			toggle
-				.setValue(settingsTab.plugin.settings.syncFolderName)
-				.onChange(async (value) => {
-					settingsTab.plugin.settings.syncFolderName = value;
-					await settingsTab.plugin.saveSettings();
-					settingsTab.display();
-				})
-		);
-
-	new Setting(containerEl)
 		.setName('Confirm folder note deletion')
 		.setDesc('Ask for confirmation before deleting a folder note')
 		.addToggle((toggle) =>
@@ -314,7 +316,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 	if (Platform.isDesktop) {
 		const setting3 = new Setting(containerEl);
 		setting3.setName('Open folder note in a new tab by default');
-		setting3.setDesc('Always open folder notes in a new tab (except when you try to open the same note) instead of having to use ctrl/cmd + click to open in a new tab');
+		setting3.setDesc('Always open folder notes in a new tab unless the note is already open in the current tab.');
 		setting3.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.openInNewTab)
@@ -377,6 +379,21 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 			});
 		});
 
+	settingsTab.settingsPage.createEl('h3', { text: 'Automation settings' });
+
+	new Setting(containerEl)
+		.setName('Sync folder name')
+		.setDesc('Automatically rename the folder note when the folder name is changed')
+		.addToggle((toggle) =>
+			toggle
+				.setValue(settingsTab.plugin.settings.syncFolderName)
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.syncFolderName = value;
+					await settingsTab.plugin.saveSettings();
+					settingsTab.display();
+				})
+		);
+
 	new Setting(containerEl)
 		.setName('Automatically create folder notes')
 		.setDesc('Automatically create a folder note when a new folder is created')
@@ -430,6 +447,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.display();
 				})
 		);
+
+	settingsTab.settingsPage.createEl('h3', { text: 'Settings tab' });
 
 	new Setting(containerEl)
 		.setName('Persist tab after restart')
