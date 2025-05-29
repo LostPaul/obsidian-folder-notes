@@ -16,6 +16,7 @@ jobs:
         with:
           # This checks out the branch that triggered the workflow
           submodules: recursive
+          fetch-depth: 0
           ref: ${{ github.ref }}
       
       - name: Initialize and update submodules
