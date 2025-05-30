@@ -13,7 +13,6 @@ export async function addObserver(plugin: FolderNotesPlugin) {
 					.forEach(async (element: HTMLElement) => {
 						let folderTitle = element.querySelector('div.nav-folder-title-content') as HTMLElement;
 						const filePath = folderTitle.parentElement?.getAttribute('data-path') || '';
-						applyFMTPStyles(plugin, filePath, folderTitle);
 
 						applyCSSClassesToFolder(filePath, plugin);
 
@@ -23,9 +22,6 @@ export async function addObserver(plugin: FolderNotesPlugin) {
 
 							const observer = new MutationObserver(async (mutations, obs) => {
 								folderTitle = element.querySelector('div.nav-folder-title-content') as HTMLElement;
-
-								const filePath = folderTitle.parentElement?.getAttribute('data-path') || '';
-								applyFMTPStyles(plugin, filePath, folderTitle);
 
 								if (folderTitle) {
 									await initializeFolderTitle(folderTitle, plugin);
@@ -80,19 +76,6 @@ export async function addObserver(plugin: FolderNotesPlugin) {
 			}
 		});
 	});
-}
-
-function applyFMTPStyles(plugin: FolderNotesPlugin, filePath: string, folderTitle: HTMLElement) {
-	if (!plugin.settings.frontMatterTitle.enabled) { return; }
-
-	const folder = plugin.fmtpHandler?.modifiedFolders.get(filePath);
-	if (folder && plugin.settings.frontMatterTitle.path) {
-		folderTitle.setAttribute('old-name', folder.name || '');
-		folderTitle.innerText = folder.newName || '';
-	} else {
-		folderTitle.removeAttribute('old-name');
-		folderTitle.innerText = folderTitle.innerText.trim();
-	}
 }
 
 async function initializeFolderTitle(folderTitle: HTMLElement, plugin: any) {
