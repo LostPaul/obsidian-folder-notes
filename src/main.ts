@@ -4,7 +4,7 @@ import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/S
 import { Commands } from './Commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
 import { handleFolderClick } from './events/handleClick';
-import { addObserver } from './events/MutationObserver';
+import { registerFileExplorerObserver, unregisterFileExplorerObserver } from './events/MutationObserver';
 import { handleRename } from './events/handleRename';
 import { getFolderNote, getFolder, openFolderNote } from './functions/folderNoteFunctions';
 import { handleCreate } from './events/handleCreate';
@@ -67,12 +67,10 @@ export default class FolderNotesPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
 
-		await addObserver(this);
-
-		this.observer.observe(document.body, {
-			childList: true,
-			subtree: true,
-		});
+		// this.observer.observe(document.body, {
+		// 	childList: true,
+		// 	subtree: true,
+		// });
 
 		if (!this.settings.persistentSettingsTab.afterRestart) {
 			this.settings.settingsTab = 'general';
@@ -144,6 +142,7 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	onLayoutReady() {
+		registerFileExplorerObserver(this);
 		this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
 			return new FolderOverviewView(leaf, this);
 		});
@@ -332,7 +331,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 	onunload() {
 		console.log('unloading folder notes plugin');
-		this.observer.disconnect();
+		unregisterFileExplorerObserver();
 		document.body.classList.remove('folder-notes-plugin');
 		document.body.classList.remove('folder-note-underline');
 		document.body.classList.remove('hide-folder-note');
