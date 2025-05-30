@@ -55,7 +55,7 @@ export async function handleFileMove(file: TFile, oldPath: string, plugin: Folde
 	const oldFileName = removeExtension(getFileNameFromPathString(oldPath));
 	const newFolder = getFolderNoteFolder(plugin, file, file.basename);
 	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
-	let excludedFolder = await getExcludedFolder(plugin, newFolder?.path || '', true);
+	let excludedFolder = getExcludedFolder(plugin, newFolder?.path || '', true);
 	const oldFolder = getFolderNoteFolder(plugin, oldPath, oldFileName);
 
 	// file has been moved into position where it can be a folder note!
@@ -101,7 +101,7 @@ export async function handleFolderRename(file: TFolder, oldPath: string, plugin:
 	if (!(folderNote instanceof TFile)) return;
 
 
-	const excludedFolder = await getExcludedFolder(plugin, file.path, true);
+	const excludedFolder = getExcludedFolder(plugin, file.path, true);
 	if (excludedFolder?.disableSync && !folderNote) {
 		return removeCSSClassFromEL(file.path, 'has-folder-note', plugin);
 	}
@@ -138,7 +138,7 @@ export async function handleFileRename(file: TFile, oldPath: string, plugin: Fol
 	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename) || file.basename;
 	const oldFolderName = extractFolderName(plugin.settings.folderNoteName, oldFileName) || oldFileName;
 	const newFolder = getFolderNoteFolder(plugin, file, file.basename);
-	const excludedFolder = await getExcludedFolder(plugin, newFolder?.path || '', true);
+	const excludedFolder = getExcludedFolder(plugin, newFolder?.path || '', true);
 	const detachedExcludedFolder = getDetachedFolder(plugin, newFolder?.path || '');
 	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
 

@@ -154,7 +154,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		string: '',
 		hideInSettings: false,
 		detached: false,
-		hideNote: false,
+		showFolderNote: false,
 	},
 	excludePatternDefaultSettings: {
 		type: 'pattern',
@@ -170,7 +170,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		string: '',
 		hideInSettings: false,
 		detached: false,
-		hideNote: false,
+		showFolderNote: false,
 	},
 	hideCollapsingIcon: false,
 	hideCollapsingIconForEmptyFolders: false,

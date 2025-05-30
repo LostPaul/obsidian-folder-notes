@@ -57,6 +57,19 @@ export default class PatternSettings extends Modal {
 			);
 
 		new Setting(contentEl)
+			.setName('Show folder note in the file explorer')
+			.setDesc('Choose if the folder note should be shown in the file explorer')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.pattern.showFolderNote ? this.pattern.showFolderNote : false)
+					.onChange(async (value) => {
+						this.pattern.showFolderNote = value;
+						await this.plugin.saveSettings();
+						this.display();
+					})
+			);
+
+		new Setting(contentEl)
 			.setName('Disable open folder note')
 			.setDesc('Choose if the folder note should be opened when the folder is opened')
 			.addToggle((toggle) =>

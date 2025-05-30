@@ -31,7 +31,7 @@ async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin) {
 		const newFolder = await plugin.app.fileManager.createNewFolder(file.parent);
 		turnIntoFolderNote(plugin, file, newFolder);
 	} else if (folder instanceof TFolder) {
-		const detachedFolder = await getExcludedFolder(plugin, folder.path, true);
+		const detachedFolder = getExcludedFolder(plugin, folder.path, true);
 		if (detachedFolder) { return; }
 		const folderNote = getFolderNote(plugin, folder.path);
 
@@ -59,7 +59,7 @@ async function handleFolderCreation(folder: TFolder, plugin: FolderNotesPlugin) 
 		openFile = false;
 	}
 
-	const excludedFolder = await getExcludedFolder(plugin, folder.path, true);
+	const excludedFolder = getExcludedFolder(plugin, folder.path, true);
 	if (excludedFolder?.disableAutoCreate) return;
 
 	const folderNote = getFolderNote(plugin, folder.path);

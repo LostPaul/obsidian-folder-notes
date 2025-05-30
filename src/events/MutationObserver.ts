@@ -56,7 +56,7 @@ export async function addObserver(plugin: FolderNotesPlugin) {
 								breadcrumb.setAttribute('old-name', folder.name || '');
 								breadcrumb.innerText = folder.newName || '';
 							}
-							const excludedFolder = await getExcludedFolder(plugin, folderPath, true);
+							const excludedFolder = getExcludedFolder(plugin, folderPath, true);
 							if (excludedFolder?.disableFolderNote) return;
 							const folderNote = getFolderNote(plugin, folderPath);
 							if (folderNote) {

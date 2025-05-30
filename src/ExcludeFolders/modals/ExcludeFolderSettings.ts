@@ -55,6 +55,19 @@ export default class ExcludedFolderSettings extends Modal {
 			);
 
 		new Setting(contentEl)
+			.setName('Show folder note in the file explorer')
+			.setDesc('Choose if the folder note should be shown in the file explorer')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.excludedFolder.showFolderNote ? this.excludedFolder.showFolderNote : false)
+					.onChange(async (value) => {
+						this.excludedFolder.showFolderNote = value;
+						await this.plugin.saveSettings();
+						this.display();
+					})
+			);
+
+		new Setting(contentEl)
 			.setName('Disable auto creation of folder notes in this folder')
 			.setDesc('Choose if a folder note should be created when a new folder is created')
 			.addToggle((toggle) =>

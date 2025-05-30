@@ -121,7 +121,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 			const folder = getFolder(this, openFile);
 			if (!folder) { return; }
-			const excludedFolder = await getExcludedFolder(this, folder.path, true);
+			const excludedFolder = getExcludedFolder(this, folder.path, true);
 			if (excludedFolder?.disableFolderNote) return;
 			const folderNote = getFolderNote(this, folder.path);
 			if (!folderNote) { return; }
