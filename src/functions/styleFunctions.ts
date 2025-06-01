@@ -18,7 +18,7 @@ export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) 
 			return;
 		}
 
-		const excludedFolder = await getExcludedFolder(plugin, file.path, true);
+		const excludedFolder = getExcludedFolder(plugin, file.path, true);
 		// cleanup after ourselves
 		// Incase settings have changed
 		if (excludedFolder?.disableFolderNote) {
@@ -48,7 +48,7 @@ export async function applyCSSClassesToFolder(folderPath: string, plugin: Folder
 		return;
 	}
 
-	const excludedFolder = await getExcludedFolder(plugin, folder.path, true);
+	const excludedFolder = getExcludedFolder(plugin, folder.path, true);
 
 	if (excludedFolder?.disableFolderNote) {
 		removeCSSClassFromEL(folderNote.path, 'is-folder-note', plugin);

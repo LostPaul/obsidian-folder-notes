@@ -328,7 +328,7 @@ export class Commands {
 					});
 				}
 				if (!(file instanceof TFolder)) return;
-				const excludedFolder = await getExcludedFolder(this.plugin, file.path, false);
+				const excludedFolder = getExcludedFolder(this.plugin, file.path, false);
 				const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path);
 				if (excludedFolder && !excludedFolder.hideNote) {
 					// I'm not sure if I'm ever going to add this because of the possibility that a folder got more than one excluded

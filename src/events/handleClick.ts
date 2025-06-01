@@ -13,7 +13,7 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 
 	const folderPath = event.target.getAttribute('data-path');
 	if (!folderPath) { return; }
-	const excludedFolder = await getExcludedFolder(plugin, folderPath, true);
+	const excludedFolder = getExcludedFolder(plugin, folderPath, true);
 	if (excludedFolder?.disableFolderNote) {
 		event.target.onclick = null;
 		event.target.click();
@@ -61,7 +61,7 @@ export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPl
 	const folderPath = event.target.parentElement?.getAttribute('data-path');
 	if (!folderPath) { return; }
 
-	const excludedFolder = await getExcludedFolder(plugin, folderPath, true);
+	const excludedFolder = getExcludedFolder(plugin, folderPath, true);
 	if (excludedFolder?.disableFolderNote) {
 		event.target.onclick = null;
 		event.target.click();

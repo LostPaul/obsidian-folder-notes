@@ -24,7 +24,7 @@ export function registerFileExplorerObserver(plugin: FolderNotesPlugin) {
 	plugin.registerEvent(
 		plugin.app.workspace.on('file-open', (file) => {
 			if (file instanceof TFile) {
-				scheduleIdle(() => updateBreadcrumbs(file, plugin), { timeout: 1000 });
+				scheduleIdle(() => updateBreadcrumbs(plugin), { timeout: 1000 });
 			}
 		})
 	);
@@ -44,7 +44,6 @@ function initializeFolderNoteFeatures(plugin: FolderNotesPlugin) {
 	initializeAllFolderTitles(explorer, plugin);
 	observeFolderTitleMutations(explorer, plugin);
 
-	// Add breadcrumb click listener
 	explorer.addEventListener('click', (e) => handleBreadcrumbClick((e as MouseEvent), plugin), true);
 }
 
@@ -148,7 +147,7 @@ async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlu
 	});
 }
 
-async function updateBreadcrumbs(file: TFile, plugin: FolderNotesPlugin) {
+async function updateBreadcrumbs(plugin: FolderNotesPlugin) {
 	const headers = document.querySelectorAll('span.view-header-breadcrumb');
 	headers.forEach(async (breadcrumb: HTMLElement) => {
 		let path = '';
@@ -164,7 +163,7 @@ async function updateBreadcrumbs(file: TFile, plugin: FolderNotesPlugin) {
 				crumb.setAttribute('old-name', folder.name || '');
 				(crumb as HTMLElement).innerText = folder.newName || '';
 			}
-			const excludedFolder = await getExcludedFolder(plugin, folderPath, true);
+			const excludedFolder = getExcludedFolder(plugin, folderPath, true);
 			if (excludedFolder?.disableFolderNote) return;
 			const folderNote = getFolderNote(plugin, folderPath);
 			if (folderNote) crumb.classList.add('has-folder-note');
@@ -184,6 +183,9 @@ function handleBreadcrumbClick(event: MouseEvent, plugin: FolderNotesPlugin) {
 	}, { capture: true });
 }
 
+// Schedules a callback to run when the browser is idle, or after a timeout as a fallback.
+// - callback: The function to execute when idle or after the timeout.
+// - options: Optional object with a 'timeout' property (in milliseconds).
 function scheduleIdle(callback: () => void, options?: { timeout: number }) {
 	if ('requestIdleCallback' in window) {
 		(window as any).requestIdleCallback(callback, options);

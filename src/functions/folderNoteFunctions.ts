@@ -203,7 +203,7 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 }
 
 export async function tempDisableSync(plugin: FolderNotesPlugin, folder: TFolder): Promise<[excludedFolder: ExcludedFolder | undefined, excludedFolderExisted: boolean, disabledSync: boolean]> {
-	let excludedFolder = await getExcludedFolder(plugin, folder.path, false);
+	let excludedFolder = getExcludedFolder(plugin, folder.path, false);
 	let excludedFolderExisted = true;
 	let disabledSync = false;
 
