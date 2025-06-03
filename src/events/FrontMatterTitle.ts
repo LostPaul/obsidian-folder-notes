@@ -41,9 +41,9 @@ export class FrontMatterTitlePluginHandler {
 			if (ref) {
 				this.eventRef = ref;
 			}
-			this.plugin.app.vault.getFiles().forEach((file) => {
-				this.handleRename({ id: '', result: false, path: file.path }, false);
-			});
+			// this.plugin.app.vault.getFiles().forEach((file) => {
+			// 	this.handleRename({ id: '', result: false, path: file.path }, false);
+			// });
 			this.plugin.updateBreadcrumbs();
 		})();
 	}
@@ -83,5 +83,29 @@ export class FrontMatterTitlePluginHandler {
 			this.modifiedFolders.delete(folder.path);
 		}
 
+	}
+
+	async handleRenameFolder(data: {
+		id: string;
+		result: boolean;
+		path: string;
+	}, isEvent: boolean) {
+		if ((data as any).data) data = (data as any).data;
+		const folder = this.app.vault.getAbstractFileByPath(data.path);
+		if (!(folder instanceof TFolder)) { return; }
+		const folderNote = getFolderNote(this.plugin, folder.path);
+		if (!folderNote) { return; }
+
+		const resolver = this.api?.getResolverFactory()?.createResolver('#feature-id#');
+		const newName = resolver?.resolve(folderNote?.path ?? '');
+		if (!newName) return;
+
+		if (isEvent) {
+			this.plugin.changeName(folder, newName, true);
+		} else {
+			this.plugin.changeName(folder, newName, false);
+		}
+		folder.newName = newName;
+		this.modifiedFolders.set(folder.path, folder);
 	}
 }

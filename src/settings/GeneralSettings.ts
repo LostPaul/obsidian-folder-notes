@@ -429,7 +429,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 		' with folder notes. It allows you to set the folder name to some name you set in the front matter.',
 	);
 
-	new Setting(containerEl)
+	const fmtpSetting = new Setting(containerEl)
 		.setName('Enable front matter title plugin integration')
 		.setDesc(desc1)
 		.addToggle((toggle) =>
@@ -453,6 +453,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.display();
 				})
 		);
+	fmtpSetting.infoEl.appendText('Requires a restart to take effect');
+	fmtpSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
 	settingsTab.settingsPage.createEl('h3', { text: 'Session & Persistence' });
 

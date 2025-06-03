@@ -1,4 +1,4 @@
-import { TFile, Keymap, Platform } from 'obsidian';
+import { Keymap, Platform } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { getFolderNote } from 'src/functions/folderNoteFunctions';
 import { handleFolderClick, handleViewHeaderClick } from './handleClick';
@@ -11,21 +11,21 @@ export function registerFileExplorerObserver(plugin: FolderNotesPlugin) {
 	// Run once on initial layout
 	plugin.app.workspace.onLayoutReady(() => {
 		initializeFolderNoteFeatures(plugin);
+		initializeBreadcrumbs(plugin);
 	});
 
 	// Re-run when layout changes (e.g. File Explorer is reopened)
 	plugin.registerEvent(
 		plugin.app.workspace.on('layout-change', () => {
 			initializeFolderNoteFeatures(plugin);
-		})
-	);
 
-	// Also listen for file-open events (once)
-	plugin.registerEvent(
-		plugin.app.workspace.on('file-open', (file) => {
-			if (file instanceof TFile) {
-				scheduleIdle(() => updateBreadcrumbs(plugin), { timeout: 1000 });
-			}
+			const activeLeaf = plugin.app.workspace.getActiveFileView()?.containerEl;
+			if (!activeLeaf) return;
+
+			const titleContainer = activeLeaf.querySelector('.view-header-title-container');
+			if (!(titleContainer instanceof HTMLElement)) return;
+
+			updateBreadcrumbs(plugin, titleContainer);
 		})
 	);
 }
@@ -43,8 +43,15 @@ function initializeFolderNoteFeatures(plugin: FolderNotesPlugin) {
 
 	initializeAllFolderTitles(explorer, plugin);
 	observeFolderTitleMutations(explorer, plugin);
+}
 
-	explorer.addEventListener('click', (e) => handleBreadcrumbClick((e as MouseEvent), plugin), true);
+function initializeBreadcrumbs(plugin: FolderNotesPlugin) {
+	const titleContainers = document.querySelectorAll('.view-header-title-container');
+	if (!titleContainers.length) return;
+	titleContainers.forEach((container) => {
+		if (!(container instanceof HTMLElement)) return;
+		scheduleIdle(() => updateBreadcrumbs(plugin, container), { timeout: 1000 });
+	});
 }
 
 /**
@@ -75,7 +82,9 @@ function initializeAllFolderTitles(container: Element, plugin: FolderNotesPlugin
 		if (!folderEl) continue;
 
 		const folderPath = folderEl.getAttribute('data-path') || '';
-		setupFolderTitle(folderTitle, plugin, folderPath);
+		setTimeout(() => {
+			setupFolderTitle(folderTitle, plugin, folderPath);
+		}, 1000);
 	}
 }
 
@@ -113,6 +122,10 @@ async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlu
 	folderTitle.dataset.initialized = 'true';
 	await applyCSSClassesToFolder(folderPath, plugin);
 
+	if (plugin.settings.frontMatterTitle.enabled) {
+		plugin.fmtpHandler?.handleRenameFolder({ id: '', result: false, path: folderPath }, false);
+	}
+
 	folderTitle.addEventListener('auxclick', (event: MouseEvent) => {
 		if (event.button === 1) handleFolderClick(event, plugin);
 	}, { capture: true });
@@ -147,40 +160,30 @@ async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlu
 	});
 }
 
-async function updateBreadcrumbs(plugin: FolderNotesPlugin) {
-	const headers = document.querySelectorAll('span.view-header-breadcrumb');
+async function updateBreadcrumbs(plugin: FolderNotesPlugin, titleContainer: HTMLElement) {
+	const headers = titleContainer.querySelectorAll('span.view-header-breadcrumb');
+	let path = '';
 	headers.forEach(async (breadcrumb: HTMLElement) => {
-		let path = '';
-		const allCrumbs = breadcrumb.parentElement?.querySelectorAll('span.view-header-breadcrumb');
-		if (!allCrumbs) return;
-
-		for (const crumb of Array.from(allCrumbs)) {
-			path += crumb.getAttribute('old-name') ?? (crumb as HTMLElement).innerText.trim();
-			path += '/';
-			const folderPath = path.slice(0, -1);
-			const folder = plugin.fmtpHandler?.modifiedFolders.get(folderPath);
-			if (folder && plugin.settings.frontMatterTitle.path && plugin.settings.frontMatterTitle.enabled) {
-				crumb.setAttribute('old-name', folder.name || '');
-				(crumb as HTMLElement).innerText = folder.newName || '';
-			}
-			const excludedFolder = getExcludedFolder(plugin, folderPath, true);
-			if (excludedFolder?.disableFolderNote) return;
-			const folderNote = getFolderNote(plugin, folderPath);
-			if (folderNote) crumb.classList.add('has-folder-note');
+		path += breadcrumb.getAttribute('old-name') ?? (breadcrumb as HTMLElement).innerText.trim();
+		path += '/';
+		const folderPath = path.slice(0, -1);
+		if (plugin.settings.frontMatterTitle.enabled) {
+			plugin.fmtpHandler?.handleRenameFolder({ id: '', result: false, path: folderPath }, false);
 		}
 
-		breadcrumb.parentElement?.setAttribute('data-path', path.slice(0, -1));
+		const excludedFolder = getExcludedFolder(plugin, folderPath, true);
+		if (excludedFolder?.disableFolderNote) return;
+		const folderNote = getFolderNote(plugin, folderPath);
+		if (folderNote) breadcrumb.classList.add('has-folder-note');
+
+
+		breadcrumb?.setAttribute('data-path', path.slice(0, -1));
+		if (!breadcrumb.onclick) {
+			breadcrumb.addEventListener('click', (e) => {
+				handleViewHeaderClick(e as MouseEvent, plugin);
+			}, { capture: true });
+		}
 	});
-}
-
-function handleBreadcrumbClick(event: MouseEvent, plugin: FolderNotesPlugin) {
-	const target = event.target as HTMLElement;
-	const breadcrumb = target.closest('span.view-header-breadcrumb') as HTMLElement;
-	if (!breadcrumb || breadcrumb.onclick) return;
-
-	breadcrumb.addEventListener('click', (e) => {
-		handleViewHeaderClick(e, plugin);
-	}, { capture: true });
 }
 
 // Schedules a callback to run when the browser is idle, or after a timeout as a fallback.
