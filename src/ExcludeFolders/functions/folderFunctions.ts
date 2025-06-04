@@ -32,8 +32,8 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, inclu
 		'excludeFromFolderOverview',
 		'detached',
 		'hideInSettings',
-		'hideNote',
 		'id',
+		'showFolderNote',
 	];
 
 	if (combinedExcludedFolders.length > 0) {
@@ -73,7 +73,6 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, inclu
 			excludeFromFolderOverview: false,
 			hideInSettings: false,
 			detached: false,
-			hideNote: false,
 		};
 	}
 

@@ -330,7 +330,7 @@ export class Commands {
 				if (!(file instanceof TFolder)) return;
 				const excludedFolder = getExcludedFolder(this.plugin, file.path, false);
 				const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path);
-				if (excludedFolder && !excludedFolder.hideNote) {
+				if (excludedFolder && !excludedFolder.hideInSettings) {
 					// I'm not sure if I'm ever going to add this because of the possibility that a folder got more than one excluded
 					// subMenu.addItem((item) => {
 					// 	item.setTitle('Manage excluded folder')
@@ -414,13 +414,13 @@ export class Commands {
 					});
 
 					if (this.plugin.settings.hideFolderNote) {
-						if (excludedFolder?.hideNote) {
+						if (excludedFolder?.showFolderNote) {
 							subMenu.addItem((item) => {
 								item.setTitle('Hide folder note in explorer')
 									.setIcon('eye-off')
 									.onClick(() => {
 										this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter(
-											(folder) => (folder.path !== file.path) && folder.hideNote);
+											(folder) => (folder.path !== file.path) && folder.showFolderNote);
 										this.plugin.saveSettings(false);
 										applyCSSClassesToFolder(file.path, this.plugin);
 									});
@@ -431,7 +431,6 @@ export class Commands {
 									.setIcon('eye')
 									.onClick(() => {
 										const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length, undefined, this.plugin);
-										excludedFolder.hideNote = true;
 										excludedFolder.subFolders = false;
 										excludedFolder.disableSync = false;
 										excludedFolder.disableAutoCreate = false;
@@ -439,6 +438,7 @@ export class Commands {
 										excludedFolder.enableCollapsing = false;
 										excludedFolder.excludeFromFolderOverview = false;
 										excludedFolder.hideInSettings = true;
+										excludedFolder.showFolderNote = true;
 										addExcludedFolder(this.plugin, excludedFolder, false);
 										applyCSSClassesToFolder(file.path, this.plugin);
 									});

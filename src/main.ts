@@ -159,33 +159,42 @@ export default class FolderNotesPlugin extends Plugin {
 
 		// @ts-ignore
 		const editMode = view.editMode ?? view.sourceMode ?? this.app.workspace.activeEditor?.editMode;
+		const plugin = this;
 		if (!editMode) { return; }
 
 		// @ts-ignore
-		const originalHandleDragOver = editMode.clipboardManager.constructor.prototype.handleDragOver;
+		const clipboardProto = editMode.clipboardManager.constructor.prototype;
 
-		// @ts-ignore
-		editMode.clipboardManager.constructor.prototype.handleDragOver = function (evt, ...args) {
-			const { draggable } = this.app.dragManager;
-			if (draggable && draggable.file instanceof TFolder && getFolderNote(this, draggable.file.path)) {
-				this.app.dragManager.setAction(window.i18next.t('interface.drag-and-drop.insert-link-here'));
-			} else {
-				originalHandleDragOver.call(this, evt, ...args);
+		const originalHandleDragOver = clipboardProto.handleDragOver;
+		const originalHandleDrop = clipboardProto.handleDrop;
+
+		clipboardProto.handleDragOver = function (evt: DragEvent, ...args: any[]) {
+			const dragManager = this.app.dragManager;
+			const draggable = dragManager?.draggable;
+
+			if (draggable?.file instanceof TFolder) {
+				const folderNote = getFolderNote(plugin, draggable.file.path);
+				if (folderNote) {
+					dragManager.setAction(window.i18next.t('interface.drag-and-drop.insert-link-here'));
+					return;
+				}
 			}
+
+			return originalHandleDragOver.call(this, evt, ...args);
 		};
 
-		// @ts-ignore
-		const originalHandleDrop = editMode.clipboardManager.constructor.prototype.handleDrop;
-		// @ts-ignore
-		editMode.clipboardManager.constructor.prototype.handleDrop = function (evt, ...args) {
-			const { draggable } = this.app.dragManager;
-			if (draggable && draggable.file instanceof TFolder && getFolderNote(this, draggable.file.path)) {
-				const folderNote = getFolderNote(this, draggable.file.path);
-				if (draggable?.type === 'folder' && draggable.file instanceof TFolder && folderNote) {
+		clipboardProto.handleDrop = function (evt: DragEvent, ...args: any[]) {
+			const dragManager = this.app.dragManager;
+			const draggable = dragManager?.draggable;
+
+			if (draggable?.file instanceof TFolder) {
+				const folderNote = getFolderNote(plugin, draggable.file.path);
+				if (folderNote) {
 					draggable.file = folderNote;
 					draggable.type = 'file';
 				}
 			}
+
 			return originalHandleDrop.call(this, evt, ...args);
 		};
 	}

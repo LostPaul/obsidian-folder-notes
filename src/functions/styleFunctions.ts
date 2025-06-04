@@ -26,7 +26,7 @@ export function updateAllFileStyles(forceReload = false, plugin: FolderNotesPlug
 			removeCSSClassFromEL(file.path, 'has-folder-note', plugin);
 			removeCSSClassFromEL(file?.path, 'only-has-folder-note', plugin);
 		} else {
-			if (!excludedFolder?.hideNote) {
+			if (!excludedFolder?.showFolderNote) {
 				addCSSClassToTitleEL(folderNote.path, 'is-folder-note', plugin);
 			}
 			addCSSClassesToFolder(file, plugin);
@@ -49,16 +49,16 @@ export async function applyCSSClassesToFolder(folderPath: string, plugin: Folder
 	}
 
 	const excludedFolder = getExcludedFolder(plugin, folder.path, true);
-
 	if (excludedFolder?.disableFolderNote) {
 		removeCSSClassFromEL(folderNote.path, 'is-folder-note', plugin);
 		removeCSSClassFromEL(folder.path, 'has-folder-note', plugin);
 		removeCSSClassFromEL(folder?.path, 'only-has-folder-note', plugin);
 	} else {
-		if (!excludedFolder?.hideNote) {
-			addCSSClassToFolderNote(folderNote, plugin);
-		}
 		addCSSClassesToFolder(folder, plugin);
+		if (excludedFolder?.showFolderNote) {
+			removeCSSClassFromFolderNote(folderNote, plugin);
+			return;
+		}
 		if (plugin.isEmptyFolderNoteFolder(folder)) {
 			addCSSClassToTitleEL(folder.path, 'only-has-folder-note', plugin);
 		} else {
