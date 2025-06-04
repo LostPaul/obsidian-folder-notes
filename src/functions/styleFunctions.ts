@@ -5,7 +5,7 @@ import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getFileExplorer } from './utils';
 import FolderOverviewPlugin from 'src/obsidian-folder-overview/src/main';
 
-export function loadFileClasses(forceReload = false, plugin: FolderNotesPlugin) {
+export function updateAllFileStyles(forceReload = false, plugin: FolderNotesPlugin) {
 	if (plugin.activeFileExplorer === getFileExplorer(plugin) && !forceReload) { return; }
 	plugin.activeFileExplorer = getFileExplorer(plugin);
 	plugin.app.vault.getAllLoadedFiles().forEach(async (file) => {

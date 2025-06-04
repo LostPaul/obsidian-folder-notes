@@ -5,7 +5,7 @@ import AddSupportedFileModal from '../modals/AddSupportedFileType';
 import { FrontMatterTitlePluginHandler } from '../events/FrontMatterTitle';
 import ConfirmationModal from './modals/CreateFnForEveryFolder';
 import { TemplateSuggest } from '../suggesters/TemplateSuggester';
-import { loadFileClasses } from '../functions/styleFunctions';
+import { updateAllFileStyles } from '../functions/styleFunctions';
 import BackupWarningModal from './modals/BackupWarning';
 import RenameFolderNotesModal from './modals/RenameFns';
 
@@ -186,7 +186,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.storageLocation = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-					loadFileClasses(undefined, settingsTab.plugin);
+					updateAllFileStyles(undefined, settingsTab.plugin);
 				})
 		)
 		.addButton((button) =>
@@ -429,7 +429,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 		' with folder notes. It allows you to set the folder name to some name you set in the front matter.',
 	);
 
-	new Setting(containerEl)
+	const fmtpSetting = new Setting(containerEl)
 		.setName('Enable front matter title plugin integration')
 		.setDesc(desc1)
 		.addToggle((toggle) =>
@@ -442,10 +442,10 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 						settingsTab.plugin.fmtpHandler = new FrontMatterTitlePluginHandler(settingsTab.plugin);
 					} else {
 						if (settingsTab.plugin.fmtpHandler) {
-							settingsTab.plugin.updateBreadcrumbs(true);
+							settingsTab.plugin.updateAllBreadcrumbs(true);
 						}
 						settingsTab.plugin.app.vault.getFiles().forEach((file) => {
-							settingsTab.plugin.fmtpHandler?.handleRename({ id: '', result: false, path: file.path }, false);
+							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName({ id: '', result: false, path: file.path, pathOnly: false }, false);
 						});
 						settingsTab.plugin.fmtpHandler?.deleteEvent();
 						settingsTab.plugin.fmtpHandler = null;
@@ -453,6 +453,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.display();
 				})
 		);
+	fmtpSetting.infoEl.appendText('Requires a restart to take effect');
+	fmtpSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
 	settingsTab.settingsPage.createEl('h3', { text: 'Session & Persistence' });
 

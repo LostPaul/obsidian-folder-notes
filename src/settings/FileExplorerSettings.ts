@@ -91,7 +91,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						settingsTab.plugin.settings.frontMatterTitle.explorer = value;
 						await settingsTab.plugin.saveSettings();
 						settingsTab.plugin.app.vault.getFiles().forEach((file) => {
-							settingsTab.plugin.fmtpHandler?.handleRename({ id: '', result: false, path: file.path }, false);
+							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName({ id: '', result: false, path: file.path, pathOnly: false }, false);
 						});
 					})
 			);
