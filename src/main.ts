@@ -159,6 +159,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 		// @ts-ignore
 		const editMode = view.editMode ?? view.sourceMode ?? this.app.workspace.activeEditor?.editMode;
+		// eslint-disable-next-line
 		const plugin = this;
 		if (!editMode) { return; }
 
