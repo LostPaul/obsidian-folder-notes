@@ -25,7 +25,7 @@ export function registerFileExplorerObserver(plugin: FolderNotesPlugin) {
 			const titleContainer = activeLeaf.querySelector('.view-header-title-container');
 			if (!(titleContainer instanceof HTMLElement)) return;
 
-			updateBreadcrumbs(plugin, titleContainer);
+			updateFolderNamesInPath(plugin, titleContainer);
 		})
 	);
 }
@@ -50,7 +50,7 @@ function initializeBreadcrumbs(plugin: FolderNotesPlugin) {
 	if (!titleContainers.length) return;
 	titleContainers.forEach((container) => {
 		if (!(container instanceof HTMLElement)) return;
-		scheduleIdle(() => updateBreadcrumbs(plugin, container), { timeout: 1000 });
+		scheduleIdle(() => updateFolderNamesInPath(plugin, container), { timeout: 1000 });
 	});
 }
 
@@ -66,7 +66,7 @@ function observeFolderTitleMutations(container: Element, plugin: FolderNotesPlug
 		for (const mutation of mutations) {
 			for (const node of Array.from(mutation.addedNodes)) {
 				if (!(node instanceof HTMLElement)) continue;
-				processAddedFolderNodes(node, plugin);
+				processAddedFolders(node, plugin);
 			}
 		}
 	});
@@ -88,7 +88,7 @@ function initializeAllFolderTitles(container: Element, plugin: FolderNotesPlugin
 	}
 }
 
-function processAddedFolderNodes(node: HTMLElement, plugin: FolderNotesPlugin) {
+function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin) {
 	const titles: HTMLElement[] = [];
 	if (node.matches('.nav-folder-title-content')) {
 		titles.push(node);
@@ -123,7 +123,7 @@ async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlu
 	await applyCSSClassesToFolder(folderPath, plugin);
 
 	if (plugin.settings.frontMatterTitle.enabled) {
-		plugin.fmtpHandler?.handleRenameFolder({ id: '', result: false, path: folderPath }, false);
+		plugin.fmtpHandler?.fmptUpdateFolderName({ id: '', result: false, path: folderPath, pathOnly: false }, false);
 	}
 
 	folderTitle.addEventListener('auxclick', (event: MouseEvent) => {
@@ -160,28 +160,28 @@ async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlu
 	});
 }
 
-async function updateBreadcrumbs(plugin: FolderNotesPlugin, titleContainer: HTMLElement) {
+async function updateFolderNamesInPath(plugin: FolderNotesPlugin, titleContainer: HTMLElement) {
 	const headers = titleContainer.querySelectorAll('span.view-header-breadcrumb');
 	let path = '';
 	headers.forEach(async (breadcrumb: HTMLElement) => {
 		path += breadcrumb.getAttribute('old-name') ?? (breadcrumb as HTMLElement).innerText.trim();
 		path += '/';
 		const folderPath = path.slice(0, -1);
-		if (plugin.settings.frontMatterTitle.enabled) {
-			plugin.fmtpHandler?.handleRenameFolder({ id: '', result: false, path: folderPath }, false);
-		}
 
 		const excludedFolder = getExcludedFolder(plugin, folderPath, true);
 		if (excludedFolder?.disableFolderNote) return;
 		const folderNote = getFolderNote(plugin, folderPath);
 		if (folderNote) breadcrumb.classList.add('has-folder-note');
 
-
 		breadcrumb?.setAttribute('data-path', path.slice(0, -1));
 		if (!breadcrumb.onclick) {
 			breadcrumb.addEventListener('click', (e) => {
 				handleViewHeaderClick(e as MouseEvent, plugin);
 			}, { capture: true });
+		}
+
+		if (plugin.settings.frontMatterTitle.enabled) {
+			plugin.fmtpHandler?.fmptUpdateFolderName({ id: '', result: false, path: folderPath, pathOnly: true, breadcrumb: breadcrumb }, true);
 		}
 	});
 }

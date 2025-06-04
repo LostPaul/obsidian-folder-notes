@@ -33,7 +33,7 @@ export class FrontMatterTitlePluginHandler {
 			const event: Listener<Events, 'manager:update'> = {
 				name: 'manager:update',
 				cb: (data) => {
-					this.handleRename(data as any, true);
+					this.fmptUpdateFileName(data as any, true);
 				},
 			};
 			// Keep ref to remove listener
@@ -44,7 +44,7 @@ export class FrontMatterTitlePluginHandler {
 			// this.plugin.app.vault.getFiles().forEach((file) => {
 			// 	this.handleRename({ id: '', result: false, path: file.path }, false);
 			// });
-			this.plugin.updateBreadcrumbs();
+			this.plugin.updateAllBreadcrumbs();
 		})();
 	}
 	deleteEvent() {
@@ -52,10 +52,12 @@ export class FrontMatterTitlePluginHandler {
 			this.dispatcher.removeListener(this.eventRef);
 		}
 	}
-	async handleRename(data: {
+	async fmptUpdateFileName(data: {
 		id: string;
 		result: boolean;
 		path: string;
+		pathOnly: boolean;
+		breadcrumb?: HTMLElement;
 	}, isEvent: boolean) {
 		if ((data as any).data) data = (data as any).data;
 		const file = this.app.vault.getAbstractFileByPath(data.path);
@@ -69,12 +71,19 @@ export class FrontMatterTitlePluginHandler {
 		const folderNote = getFolderNote(this.plugin, folder.path);
 		if (!folderNote) { return; }
 		if (folderNote !== file) { return; }
+		if (!data.pathOnly) {
+			this.plugin.changeFolderNameInExplorer(folder, newName);
+		}
+
+		const breadcrumb = data.breadcrumb;
+		if (breadcrumb) {
+			this.plugin.changeFolderNameInPath(folder, newName, breadcrumb);
+		}
 
 		if (isEvent) {
-			this.plugin.changeName(folder, newName, true);
-		} else {
-			this.plugin.changeName(folder, newName, false);
+			this.plugin.updateAllBreadcrumbs();
 		}
+
 		if (newName) {
 			folder.newName = newName;
 			this.modifiedFolders.set(folder.path, folder);
@@ -85,11 +94,13 @@ export class FrontMatterTitlePluginHandler {
 
 	}
 
-	async handleRenameFolder(data: {
+	async fmptUpdateFolderName(data: {
 		id: string;
 		result: boolean;
 		path: string;
-	}, isEvent: boolean) {
+		pathOnly: boolean;
+		breadcrumb?: HTMLElement;
+	}, replacePath: boolean) {
 		if ((data as any).data) data = (data as any).data;
 		const folder = this.app.vault.getAbstractFileByPath(data.path);
 		if (!(folder instanceof TFolder)) { return; }
@@ -100,11 +111,15 @@ export class FrontMatterTitlePluginHandler {
 		const newName = resolver?.resolve(folderNote?.path ?? '');
 		if (!newName) return;
 
-		if (isEvent) {
-			this.plugin.changeName(folder, newName, true);
-		} else {
-			this.plugin.changeName(folder, newName, false);
+		if (!data.pathOnly) {
+			this.plugin.changeFolderNameInExplorer(folder, newName);
 		}
+
+		const breadcrumb = data.breadcrumb;
+		if (breadcrumb) {
+			this.plugin.changeFolderNameInPath(folder, newName, breadcrumb);
+		}
+
 		folder.newName = newName;
 		this.modifiedFolders.set(folder.path, folder);
 	}

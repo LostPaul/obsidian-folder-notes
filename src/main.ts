@@ -14,7 +14,7 @@ import { FolderOverview } from './obsidian-folder-overview/src/FolderOverview';
 import { TabManager } from './events/TabManager';
 import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
-import { addCSSClassToTitleEL, getEl, loadFileClasses } from './functions/styleFunctions';
+import { addCSSClassToTitleEL, getEl, updateAllFileStyles } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { FileExplorerView, InternalPlugin } from 'obsidian-typings';
 import { getFocusedItem } from './functions/utils';
@@ -275,13 +275,13 @@ export default class FolderNotesPlugin extends Plugin {
 		return true;
 	}
 
-	async changeName(folder: TFolder, name: string | null | undefined, replacePath: boolean, waitForCreate = false, count = 0) {
-		if (!name) name = folder.name;
+	async changeFolderNameInExplorer(folder: TFolder, newName: string | null | undefined, waitForCreate = false, count = 0) {
+		if (!newName) newName = folder.name;
 		let fileExplorerItem = getEl(folder.path, this);
 		if (!fileExplorerItem) {
 			if (waitForCreate && count < 5) {
 				await new Promise((r) => setTimeout(r, 500));
-				this.changeName(folder, name, replacePath, waitForCreate, count + 1);
+				this.changeFolderNameInExplorer(folder, newName, waitForCreate, count + 1);
 				return;
 			}
 			return;
@@ -290,18 +290,26 @@ export default class FolderNotesPlugin extends Plugin {
 		fileExplorerItem = fileExplorerItem?.querySelector('div.nav-folder-title-content');
 		if (!fileExplorerItem) { return; }
 		if (this.settings.frontMatterTitle.explorer && this.settings.frontMatterTitle.enabled) {
-			fileExplorerItem.innerText = name;
+			fileExplorerItem.innerText = newName;
 			fileExplorerItem.setAttribute('old-name', folder.name);
 		} else {
 			fileExplorerItem.innerText = folder.name;
 			fileExplorerItem.removeAttribute('old-name');
 		}
-		if (replacePath) {
-			this.updateBreadcrumbs();
-		}
 	}
 
-	updateBreadcrumbs(remove?: boolean) {
+	async changeFolderNameInPath(folder: TFolder, newName: string | null | undefined, breadcrumb: HTMLElement) {
+		if (!newName) newName = folder.name;
+
+		breadcrumb.textContent = folder.newName || folder.name;
+		breadcrumb.setAttribute('old-name', folder.name);
+		breadcrumb.setAttribute('data-path', folder.path);
+	}
+
+	/**
+	 * Updates all folder names in the path above the note editor
+	*/
+	updateAllBreadcrumbs(remove?: boolean) {
 		if (!this.settings.frontMatterTitle.path && !remove) { return; }
 		const viewHeaderItems = document.querySelectorAll('span.view-header-breadcrumb');
 		const files = this.app.vault.getAllLoadedFiles().filter((file) => file instanceof TFolder);
@@ -330,7 +338,6 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	onunload() {
-		console.log('unloading folder notes plugin');
 		unregisterFileExplorerObserver();
 		document.body.classList.remove('folder-notes-plugin');
 		document.body.classList.remove('folder-note-underline');
@@ -369,7 +376,7 @@ export default class FolderNotesPlugin extends Plugin {
 		await this.saveData(this.settings);
 		// cleanup any css if we need too
 		if ((!this.settingsOpened || reloadStyles === true) && reloadStyles !== false) {
-			loadFileClasses(true, this);
+			updateAllFileStyles(true, this);
 		}
 	}
 

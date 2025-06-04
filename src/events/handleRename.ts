@@ -36,7 +36,7 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 		}
 	} else if (file instanceof TFile) {
 		if (isRename) {
-			return handleFileRename(file, oldPath, plugin);
+			return fmptUpdateFileName(file, oldPath, plugin);
 		} else {
 			return handleFileMove(file, oldPath, plugin);
 		}
@@ -129,7 +129,7 @@ export async function handleFolderRename(file: TFolder, oldPath: string, plugin:
 	plugin.app.fileManager.renameFile(folderNote, newPath);
 }
 
-export async function handleFileRename(file: TFile, oldPath: string, plugin: FolderNotesPlugin) {
+export async function fmptUpdateFileName(file: TFile, oldPath: string, plugin: FolderNotesPlugin) {
 	const oldFileName = removeExtension(getFileNameFromPathString(oldPath));
 	const newFileName = file.basename;
 	if (oldFileName === newFileName) { return; }

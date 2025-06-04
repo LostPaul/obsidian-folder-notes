@@ -49,9 +49,9 @@ export async function renderPath(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.frontMatterTitle.path = value;
 					await settingsTab.plugin.saveSettings();
 					if (value) {
-						settingsTab.plugin.updateBreadcrumbs();
+						settingsTab.plugin.updateAllBreadcrumbs();
 					} else {
-						settingsTab.plugin.updateBreadcrumbs(true);
+						settingsTab.plugin.updateAllBreadcrumbs(true);
 					}
 				})
 		);
