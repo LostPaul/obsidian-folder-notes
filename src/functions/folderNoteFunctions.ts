@@ -236,6 +236,11 @@ export async function deleteFolderNote(plugin: FolderNotesPlugin, file: TFile, d
 	}
 	const folder = getFolder(plugin, file);
 	if (!folder) return;
+
+	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter(
+		(excludedFolder) => (excludedFolder.path !== folder.path) && excludedFolder.showFolderNote);
+	plugin.saveSettings(false);
+
 	removeCSSClassFromEL(folder.path, 'has-folder-note', plugin);
 	switch (plugin.settings.deleteFilesAction) {
 		case 'trash':
