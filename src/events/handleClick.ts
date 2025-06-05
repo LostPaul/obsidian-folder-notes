@@ -48,8 +48,8 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 }
 
 export async function handleFolderClick(event: MouseEvent, plugin: FolderNotesPlugin) {
-
 	if (!(event.target instanceof HTMLElement)) return;
+	event.target.setAttribute('data-initialized', 'false');
 	if (!event || !event.target) return;
 
 	if (!event.shiftKey) {

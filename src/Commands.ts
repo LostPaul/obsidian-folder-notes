@@ -367,6 +367,7 @@ export class Commands {
 					});
 					// return;
 				}
+				if (detachedExcludedFolder) { return; }
 				subMenu.addItem((item) => {
 					item.setTitle('Exclude folder from folder notes')
 						.setIcon('x-circle')

@@ -82,9 +82,7 @@ function initializeAllFolderTitles(container: Element, plugin: FolderNotesPlugin
 		if (!folderEl) continue;
 
 		const folderPath = folderEl.getAttribute('data-path') || '';
-		setTimeout(() => {
-			setupFolderTitle(folderTitle, plugin, folderPath);
-		}, 1000);
+		setupFolderTitle(folderTitle, plugin, folderPath);
 	}
 }
 
