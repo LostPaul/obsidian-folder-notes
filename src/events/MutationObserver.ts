@@ -69,6 +69,7 @@ function observeFolderTitleMutations(plugin: FolderNotesPlugin) {
 	});
 
 	fileExplorerMutationObserver.observe(document, { childList: true, subtree: true });
+	
 }
 
 function initializeAllFolderTitles(plugin: FolderNotesPlugin) {
