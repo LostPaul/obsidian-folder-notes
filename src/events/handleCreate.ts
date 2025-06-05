@@ -31,6 +31,10 @@ async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin) {
 		const newFolder = await plugin.app.fileManager.createNewFolder(file.parent);
 		turnIntoFolderNote(plugin, file, newFolder);
 	} else if (folder instanceof TFolder) {
+		if (folder.children.length >= 1) {
+			removeCSSClassFromEL(folder.path, 'fn-empty-folder', plugin);
+		}
+
 		const detachedFolder = getExcludedFolder(plugin, folder.path, true);
 		if (detachedFolder) { return; }
 		const folderNote = getFolderNote(plugin, folder.path);
@@ -52,6 +56,7 @@ async function handleFolderCreation(folder: TFolder, plugin: FolderNotesPlugin) 
 	const attachmentFolderPath = plugin.app.vault.getConfig('attachmentFolderPath') as string;
 	const cleanAttachmentFolderPath = attachmentFolderPath?.replace('./', '') || '';
 	const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
+	addCSSClassToTitleEL(folder.path, 'fn-empty-folder', plugin);
 
 	if (!plugin.settings.autoCreateForAttachmentFolder) {
 		if (!attachmentsAreInRootFolder && cleanAttachmentFolderPath === folder.name) return;

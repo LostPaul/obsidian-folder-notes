@@ -38,11 +38,8 @@ export function unregisterFileExplorerObserver() {
 }
 
 function initializeFolderNoteFeatures(plugin: FolderNotesPlugin) {
-	const explorer = document.querySelector('.workspace-leaf-content[data-type="file-explorer"] .nav-files-container');
-	if (!explorer) return;
-
-	initializeAllFolderTitles(explorer, plugin);
-	observeFolderTitleMutations(explorer, plugin);
+	initializeAllFolderTitles(plugin);
+	observeFolderTitleMutations(plugin);
 }
 
 function initializeBreadcrumbs(plugin: FolderNotesPlugin) {
@@ -58,7 +55,7 @@ function initializeBreadcrumbs(plugin: FolderNotesPlugin) {
  * Observes the File Explorer for newly added folder elements and applies plugin logic (e.g., styles, event listeners)
  * automatically when folders are created, expanded, or when the File Explorer view is reopened.
  */
-function observeFolderTitleMutations(container: Element, plugin: FolderNotesPlugin) {
+function observeFolderTitleMutations(plugin: FolderNotesPlugin) {
 	if (fileExplorerMutationObserver) {
 		fileExplorerMutationObserver.disconnect();
 	}
@@ -71,11 +68,11 @@ function observeFolderTitleMutations(container: Element, plugin: FolderNotesPlug
 		}
 	});
 
-	fileExplorerMutationObserver.observe(container, { childList: true, subtree: true });
+	fileExplorerMutationObserver.observe(document, { childList: true, subtree: true });
 }
 
-function initializeAllFolderTitles(container: Element, plugin: FolderNotesPlugin) {
-	const allTitles = container.querySelectorAll('.nav-folder-title-content');
+function initializeAllFolderTitles(plugin: FolderNotesPlugin) {
+	const allTitles = document.querySelectorAll('.nav-folder-title-content');
 	for (const title of Array.from(allTitles)) {
 		const folderTitle = title as HTMLElement;
 		const folderEl = folderTitle.closest('.nav-folder-title');
@@ -115,7 +112,6 @@ function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin) {
 async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlugin, folderPath: string) {
 	if (folderTitle.dataset.initialized === 'true') return;
 	if (!folderPath) return;
-	if (Platform.isMobile && plugin.settings.disableOpenFolderNoteOnClick) return;
 
 	folderTitle.dataset.initialized = 'true';
 	await applyCSSClassesToFolder(folderPath, plugin);
@@ -123,6 +119,8 @@ async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlu
 	if (plugin.settings.frontMatterTitle.enabled) {
 		plugin.fmtpHandler?.fmptUpdateFolderName({ id: '', result: false, path: folderPath, pathOnly: false }, false);
 	}
+
+	if (Platform.isMobile && plugin.settings.disableOpenFolderNoteOnClick) return;
 
 	folderTitle.addEventListener('auxclick', (event: MouseEvent) => {
 		if (event.button === 1) handleFolderClick(event, plugin);

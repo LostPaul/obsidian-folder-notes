@@ -365,7 +365,6 @@ export class Commands {
 								deleteExcludedFolder(this.plugin, detachedExcludedFolder);
 							});
 					});
-					// return;
 				}
 				if (detachedExcludedFolder) { return; }
 				subMenu.addItem((item) => {

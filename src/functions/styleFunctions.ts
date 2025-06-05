@@ -42,6 +42,10 @@ export async function applyCSSClassesToFolder(folderPath: string, plugin: Folder
 	const folderNote = getFolderNote(plugin, folder.path);
 	const detachedFolderNote = getDetachedFolder(plugin, folder.path);
 
+	if (folder.children.length === 0) {
+		addCSSClassToTitleEL(folder.path, 'fn-empty-folder', plugin);
+	}
+
 	if (!folderNote || detachedFolderNote) {
 		removeCSSClassFromEL(folder?.path, 'has-folder-note', plugin);
 		removeCSSClassFromEL(folder?.path, 'only-has-folder-note', plugin);
