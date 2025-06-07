@@ -40,8 +40,8 @@ export async function renderPath(settingsTab: SettingsTab) {
 		);
 
 	new Setting(containerEl)
-		.setName('Change folder name in the path')
-		.setDesc('Automatically rename a folder name in the path above a note when the folder note is renamed')
+		.setName('Auto update folder name in the path (front matter title plugin only)')
+		.setDesc('Automatically update the folder name in the path when the front matter title plugin is enabled and the title for a folder note is changed in the front matter. This will not change the file name, only the displayed name in the path.')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.frontMatterTitle.path)
@@ -77,7 +77,7 @@ export async function renderPath(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Bold folders in the path')
-		.setDesc('Make the folder name bold in the path above a note')
+		.setDesc('Make the folder name bold in the path above a note when it has a folder note')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.boldNameInPath)
@@ -94,7 +94,7 @@ export async function renderPath(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Cursive the name of folder notes in the path')
-		.setDesc('Make the folder name cursive in the path above a note')
+		.setDesc('Make the folder name cursive in the path above a note when it has a folder note')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.cursiveNameInPath)

@@ -154,7 +154,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 
 	if (settingsTab.plugin.settings.hideCollapsingIcon) {
 		new Setting(containerEl)
-			.setName('Hide collapse icon also when the attachment folder is in the same folder')
+			.setName('Hide collapse icon also when only the attachment folder is in the same folder')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.ignoreAttachmentFolder)
@@ -184,7 +184,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Bold the name of folder notes')
-		.setDesc('Make the folder name bold in the file explorer')
+		.setDesc('Make the folder name bold in the file explorer when it has a folder note')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.boldName)
@@ -201,7 +201,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Cursive the name of folder notes')
-		.setDesc('Make the folder name cursive in the file explorer')
+		.setDesc('Make the folder name cursive in the file explorer when it has a folder note')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.cursiveName)
