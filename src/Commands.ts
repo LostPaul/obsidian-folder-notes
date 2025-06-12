@@ -36,7 +36,7 @@ export class Commands {
 
 		this.plugin.addCommand({
 			id: 'create-folder-note',
-			name: 'Turn this note into a folder note',
+			name: 'Make a folder with this file as its folder note',
 			callback: async () => {
 				const file = this.app.workspace.getActiveFile();
 				if (!(file instanceof TFile)) return;
@@ -161,33 +161,6 @@ export class Commands {
 
 				// Everything is fine and not checking, let's open the folder note.
 				openFolderNote(this.plugin, folderNote);
-			},
-		});
-		this.plugin.addCommand({
-			id: 'insert-folder-overview-fn',
-			name: 'Insert folder overview',
-			editorCheckCallback: (checking: boolean, editor: Editor) => {
-				const line = editor.getCursor().line;
-				const lineText = editor.getLine(line);
-				if (lineText.trim() === '' || lineText.trim() === '>') {
-					if (!checking) {
-						const json = Object.assign({}, this.plugin.settings.defaultOverview);
-						json.id = crypto.randomUUID();
-						const yaml = stringifyYaml(json);
-						if (lineText.trim() === '') {
-							editor.replaceSelection(`\`\`\`folder-overview\n${yaml}\`\`\`\n`);
-						} else if (lineText.trim() === '>') {
-							// add > to the beginning of each line
-							const lines = yaml.split('\n');
-							const newLines = lines.map((line) => {
-								return `> ${line}`;
-							});
-							editor.replaceSelection(`\`\`\`folder-overview\n${newLines.join('\n')}\`\`\`\n`);
-						}
-					}
-					return true;
-				}
-				return false;
 			},
 		});
 
