@@ -152,6 +152,25 @@ export default class FolderNotesPlugin extends Plugin {
 		this.tabManager = new TabManager(this);
 		this.tabManager.updateTabs();
 
+		const fileExplorerPlugin = this.app.internalPlugins.getEnabledPluginById('file-explorer');
+		if (fileExplorerPlugin) {
+			const originalRevealInFolder = fileExplorerPlugin.revealInFolder.bind(fileExplorerPlugin);
+			fileExplorerPlugin.revealInFolder = (file: TAbstractFile) => {
+				if (file instanceof TFile) {
+					const folder = getFolder(this, file);
+					if (folder instanceof TFolder) {
+						document.body.classList.remove('hide-folder-note');
+						originalRevealInFolder.call(fileExplorerPlugin, folder);
+						setTimeout(() => {
+							document.body.classList.add('hide-folder-note');
+						}, 100);
+						return;
+					}
+				}
+				return originalRevealInFolder.call(fileExplorerPlugin, file);
+			};
+		}
+
 		const leaf = this.app.workspace.getLeavesOfType('markdown').first();
 		const view = leaf?.view;
 

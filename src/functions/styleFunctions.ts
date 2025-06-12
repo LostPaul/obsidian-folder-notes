@@ -1,8 +1,9 @@
 import { TFile, TFolder } from 'obsidian';
 import FolderNotesPlugin from '../main';
-import { getDetachedFolder, getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
+import { getDetachedFolder, getExcludedFolder, addExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getFileExplorer } from './utils';
+import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 import FolderOverviewPlugin from 'src/obsidian-folder-overview/src/main';
 
 export function updateAllFileStyles(forceReload = false, plugin: FolderNotesPlugin) {
@@ -157,4 +158,26 @@ export function getEl(path: string, plugin: FolderNotesPlugin | FolderOverviewPl
 	if (!fileExplorerItem) { return null; }
 	if (fileExplorerItem.selfEl) return fileExplorerItem.selfEl;
 	return fileExplorerItem.titleEl;
+}
+
+
+export function showFolderNoteInFileExplorer(path: string, plugin: FolderNotesPlugin) {
+	const excludedFolder = new ExcludedFolder(path, plugin.settings.excludeFolders.length, undefined, plugin);
+	excludedFolder.subFolders = false;
+	excludedFolder.disableSync = false;
+	excludedFolder.disableAutoCreate = false;
+	excludedFolder.disableFolderNote = false;
+	excludedFolder.enableCollapsing = false;
+	excludedFolder.excludeFromFolderOverview = false;
+	excludedFolder.hideInSettings = true;
+	excludedFolder.showFolderNote = true;
+	addExcludedFolder(plugin, excludedFolder, false);
+	applyCSSClassesToFolder(path, plugin);
+}
+
+export function hideFolderNoteInFileExplorer(path: string, plugin: FolderNotesPlugin) {
+	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter(
+		(folder) => (folder.path !== path) && folder.showFolderNote);
+	plugin.saveSettings(false);
+	applyCSSClassesToFolder(path, plugin);
 }
