@@ -23,7 +23,7 @@ export class Commands {
 	regularCommands() {
 		this.plugin.addCommand({
 			id: 'turn-into-folder-note',
-			name: 'Make current active note a folder note for the folder of the active note',
+			name: 'Use this file as the folder note for its parent folder',
 			callback: () => {
 				const file = this.app.workspace.getActiveFile();
 				if (!(file instanceof TFile)) return;
@@ -36,7 +36,7 @@ export class Commands {
 
 		this.plugin.addCommand({
 			id: 'create-folder-note',
-			name: 'Create folder note with a new folder for the active note in the current folder',
+			name: 'Turn this note into a folder note',
 			callback: async () => {
 				const file = this.app.workspace.getActiveFile();
 				if (!(file instanceof TFile)) return;
@@ -61,7 +61,7 @@ export class Commands {
 
 		this.plugin.addCommand({
 			id: 'create-folder-note-for-current-folder',
-			name: 'Create markdown folder note for current folder of active note',
+			name: 'Create markdown folder note for this folder',
 			callback: () => {
 				const file = this.app.workspace.getActiveFile();
 				if (!(file instanceof TFile)) return;
@@ -75,7 +75,7 @@ export class Commands {
 			if (fileType === 'md') return;
 			this.plugin.addCommand({
 				id: `create-${fileType}-folder-note-for-current-folder`,
-				name: `Create ${fileType} folder note for current folder of active note`,
+				name: `Create ${fileType} folder note for this folder`,
 				callback: () => {
 					const file = this.app.workspace.getActiveFile();
 					if (!(file instanceof TFile)) return;
@@ -108,7 +108,7 @@ export class Commands {
 
 		this.plugin.addCommand({
 			id: 'delete-folder-note-for-current-folder',
-			name: 'Delete folder note of current folder of active note',
+			name: 'Delete this folder\'s linked note',
 			callback: () => {
 				const file = this.app.workspace.getActiveFile();
 				if (!(file instanceof TFile)) return;
@@ -137,7 +137,7 @@ export class Commands {
 		});
 		this.plugin.addCommand({
 			id: 'open-folder-note-for-current-folder',
-			name: 'Open folder note of current folder of active note',
+			name: 'Open this folder\'s linked note',
 			callback: () => {
 				const file = this.app.workspace.getActiveFile();
 				if (!(file instanceof TFile)) return;
@@ -193,7 +193,7 @@ export class Commands {
 
 		this.plugin.addCommand({
 			id: 'create-folder-note-from-selected-text',
-			name: 'Create folder note from selected text',
+			name: 'Create folder note from selection',
 			editorCheckCallback: (checking: boolean, editor: Editor, view: MarkdownView) => {
 				const text = editor.getSelection().trim();
 				const file = view.file;
