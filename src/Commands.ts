@@ -1,4 +1,4 @@
-import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform, stringifyYaml } from 'obsidian';
+import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform } from 'obsidian';
 import FolderNotesPlugin from './main';
 import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName, detachFolderNote } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
@@ -24,12 +24,16 @@ export class Commands {
 		this.plugin.addCommand({
 			id: 'turn-into-folder-note',
 			name: 'Use this file as the folder note for its parent folder',
-			callback: () => {
+			checkCallback: (checking: boolean) => {
 				const file = this.app.workspace.getActiveFile();
-				if (!(file instanceof TFile)) return;
+				if (!(file instanceof TFile)) return false;
 				const folder = file.parent;
-				if (!(folder instanceof TFolder)) return;
+				if (!folder || !(folder instanceof TFolder)) return false;
+				// Only show if file is NOT in the root folder
+				if (folder.path === '' || folder.path === '/') return false;
 				const folderNote = getFolderNote(this.plugin, folder.path);
+				if (folderNote instanceof TFile && folderNote === file) return false;
+				if (checking) return true;
 				turnIntoFolderNote(this.plugin, file, folder, folderNote);
 			},
 		});
@@ -62,11 +66,13 @@ export class Commands {
 		this.plugin.addCommand({
 			id: 'create-folder-note-for-current-folder',
 			name: 'Create markdown folder note for this folder',
-			callback: () => {
+			checkCallback: (checking) => {
 				const file = this.app.workspace.getActiveFile();
-				if (!(file instanceof TFile)) return;
+				if (!(file instanceof TFile)) return false;
 				const folder = file.parent;
-				if (!(folder instanceof TFolder)) return;
+				if (!(folder instanceof TFolder)) return false;
+				if (folder.path === '' || folder.path === '/') return false;
+				if (checking) return true;
 				createFolderNote(this.plugin, folder.path, true, '.md', false);
 			},
 		});
@@ -76,11 +82,13 @@ export class Commands {
 			this.plugin.addCommand({
 				id: `create-${fileType}-folder-note-for-current-folder`,
 				name: `Create ${fileType} folder note for this folder`,
-				callback: () => {
+				checkCallback: (checking) => {
 					const file = this.app.workspace.getActiveFile();
-					if (!(file instanceof TFile)) return;
+					if (!(file instanceof TFile)) return false;
 					const folder = file.parent;
-					if (!(folder instanceof TFolder)) return;
+					if (!(folder instanceof TFolder)) return false;
+					if (folder.path === '' || folder.path === '/') return false;
+					if (checking) return true;
 					createFolderNote(this.plugin, folder.path, true, '.' + fileType, false);
 				},
 			});
@@ -109,13 +117,14 @@ export class Commands {
 		this.plugin.addCommand({
 			id: 'delete-folder-note-for-current-folder',
 			name: 'Delete this folder\'s linked note',
-			callback: () => {
+			checkCallback: (checking) => {
 				const file = this.app.workspace.getActiveFile();
-				if (!(file instanceof TFile)) return;
+				if (!(file instanceof TFile)) return false;
 				const folder = file.parent;
-				if (!(folder instanceof TFolder)) return;
+				if (!(folder instanceof TFolder)) return false;
 				const folderNote = getFolderNote(this.plugin, folder.path);
-				if (!(folderNote instanceof TFile)) return;
+				if (!(folderNote instanceof TFile)) return false;
+				if (checking) return true;
 				deleteFolderNote(this.plugin, folderNote, true);
 			},
 		});
@@ -138,13 +147,14 @@ export class Commands {
 		this.plugin.addCommand({
 			id: 'open-folder-note-for-current-folder',
 			name: 'Open this folder\'s linked note',
-			callback: () => {
+			checkCallback: (checking) => {
 				const file = this.app.workspace.getActiveFile();
-				if (!(file instanceof TFile)) return;
+				if (!(file instanceof TFile)) return false;
 				const folder = file.parent;
-				if (!(folder instanceof TFolder)) return;
+				if (!(folder instanceof TFolder)) return false;
 				const folderNote = getFolderNote(this.plugin, folder.path);
-				if (!(folderNote instanceof TFile)) return;
+				if (!(folderNote instanceof TFile)) return false;
+				if (checking) return true;
 				openFolderNote(this.plugin, folderNote);
 			},
 		});
@@ -290,6 +300,7 @@ export class Commands {
 					});
 					if (getFolderPathFromString(file.path) === '') return;
 					if (!(folder instanceof TFolder)) return;
+					if (folder.path === '' || folder.path === '/') return;
 					subMenu.addItem((item) => {
 						item.setTitle(`Turn into folder note for ${folder?.name}`)
 							.setIcon('edit')
