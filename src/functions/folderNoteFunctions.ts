@@ -223,10 +223,34 @@ export async function tempDisableSync(plugin: FolderNotesPlugin, folder: TFolder
 
 export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractFile, evt?: MouseEvent) {
 	const path = file.path;
-	if (plugin.app.workspace.getActiveFile()?.path === path && !(Keymap.isModEvent(evt) === 'tab')) { return; }
-	const leaf = plugin.app.workspace.getLeaf(Keymap.isModEvent(evt) || plugin.settings.openInNewTab);
-	if (file instanceof TFile) {
-		await leaf.openFile(file);
+	const focusExistingTab = plugin.settings.focusExistingTab;
+	const activeFilePath = plugin.app.workspace.getActiveFile()?.path;
+
+	// If already active and not opening in new tab, do nothing
+	if (activeFilePath === path && !(Keymap.isModEvent(evt) === 'tab')) {
+		return;
+	}
+
+	// Try to find an existing tab with this file open
+	let foundLeaf = null;
+	if (focusExistingTab && file instanceof TFile) {
+		plugin.app.workspace.iterateAllLeaves((leaf) => {
+			if (
+				leaf.getViewState().type === 'markdown' &&
+				(leaf.view as import('obsidian').MarkdownView).file?.path === path
+			) {
+				foundLeaf = leaf;
+			}
+		});
+	}
+
+	if (foundLeaf) {
+		plugin.app.workspace.setActiveLeaf(foundLeaf, { focus: true });
+	} else {
+		const leaf = plugin.app.workspace.getLeaf(Keymap.isModEvent(evt) || plugin.settings.openInNewTab);
+		if (file instanceof TFile) {
+			await leaf.openFile(file);
+		}
 	}
 }
 

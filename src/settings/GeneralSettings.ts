@@ -334,6 +334,21 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 		setting3.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 	}
 
+	if (settingsTab.plugin.settings.openInNewTab) {
+		new Setting(containerEl)
+			.setName('Focus existing tab instead of creating a new one')
+			.setDesc('If a folder note is already open in a tab, focus that tab instead of creating a new one.')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(settingsTab.plugin.settings.focusExistingTab)
+					.onChange(async (value) => {
+						settingsTab.plugin.settings.focusExistingTab = value;
+						await settingsTab.plugin.saveSettings();
+						settingsTab.display();
+					})
+			);
+	}
+
 	new Setting(containerEl)
 		.setName('Sync folder name')
 		.setDesc('Automatically rename the folder note when the folder name is changed')

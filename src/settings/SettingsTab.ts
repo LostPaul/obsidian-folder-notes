@@ -33,6 +33,7 @@ export interface FolderNotesSettings {
 	underlineFolderInPath: boolean;
 	openFolderNoteOnClickInPath: boolean;
 	openInNewTab: boolean;
+	focusExistingTab: boolean;
 	oldFolderNoteName: string | undefined;
 	folderNoteName: string;
 	newFolderNoteName: string;
@@ -95,6 +96,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	underlineFolderInPath: true,
 	openFolderNoteOnClickInPath: true,
 	openInNewTab: false,
+	focusExistingTab: false,
 	oldFolderNoteName: undefined,
 	folderNoteName: '{{folder_name}}',
 	folderNoteType: '.md',
