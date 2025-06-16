@@ -1,3 +1,27 @@
+/* ==========================================================================
+   General States & Utilities
+   ========================================================================== */
+
+.hide,
+.hide-folder .folder-name,
+.hide-folder-note .is-folder-note {
+    display: none;
+}
+
+.pointer-cursor,
+.has-folder-note .nav-folder-title-content:hover,
+.has-folder-note.view-header-breadcrumb:hover,
+.nav-folder-collapse-indicator:hover,
+.fn-delete-confirmation-modal-buttons span:hover,
+.fn-delete-confirmation-modal-buttons input:hover {
+    cursor: pointer !important;
+}
+
+
+/* ==========================================================================
+   Tree Items
+   ========================================================================== */
+
 body:not(.is-grabbing) .tree-item-self.fn-is-active:hover,
 body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     color: var(--nav-item-color-active);
@@ -5,36 +29,17 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     font-weight: var(--nav-item-weight-active);
 }
 
-.has-folder-note .nav-folder-title-content:hover,
-.has-folder-note.view-header-breadcrumb:hover {
-    cursor: pointer;
-}
 
-.hide {
-    display: none;
-}
-
-.hide-folder-note .is-folder-note {
-    display: none;
-}
-
-.hide-folder .folder-name {
-    display: none;
-}
-
-.nav-folder-collapse-indicator:hover {
-    cursor: pointer;
-}
+/* ==========================================================================
+   Exclude Folder Settings
+   ========================================================================== */
 
 .fn-excluded-folder-heading {
     margin-top: 0 !important;
     border-top: 1px solid var(--background-modifier-border);
 }
 
-.add-exclude-folder-item {
-    padding-bottom: 0 !important;
-}
-
+.add-exclude-folder-item,
 .fn-exclude-folder-list {
     padding-bottom: 0 !important;
 }
@@ -57,7 +62,10 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     width: 100%;
 }
 
-/* Modal styles */
+
+/* ==========================================================================
+   Modal Styles
+   ========================================================================== */
 
 .fn-backup-warning-modal .fn-modal-button-container {
     display: flex;
@@ -69,20 +77,19 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     padding-bottom: 0;
 }
 
+.fn-confirmation-modal .setting-item {
+    border-top: 0 !important;
+    padding-top: 0 !important;
+}
+
 :not(.is-phone) .fn-confirmation-modal-button {
     margin-right: 0.7rem;
-
 }
 
 :not(.is-phone) .fn-delete-confirmation-modal-buttons {
     display: flex;
     align-items: center;
     margin-top: 10px;
-}
-
-.fn-delete-confirmation-modal-buttons span:hover,
-.fn-delete-confirmation-modal-buttons input:hover {
-    cursor: pointer;
 }
 
 :not(.is-phone) .fn-delete-confirmation-modal-buttons .fn-confirmation-modal-button {
@@ -103,31 +110,23 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     margin-top: 10px;
 }
 
-/* Folder overview */
+
+/* ==========================================================================
+   Folder Overview
+   ========================================================================== */
 
 .folder-overview-container.fv-remove-edit-button .folder-overview-edit-button {
     display: none;
 }
 
-.fn-folder-overview-collapse-icon {
-    display: block !important;
-}
-
-.fn-has-no-files .collapse-icon {
-    display: none !important;
-}
-
 .folder-overview-list {
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-    padding-bottom: 1.200 !important;
-    padding-top: 1.200 !important;
+    margin: 0 !important;
+    padding: 1.2em 0 !important;
 }
 
 .folder-overview-list-item {
     display: flex;
 }
-
 
 .folder-overview-list::marker {
     color: var(--text-faint);
@@ -143,12 +142,17 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     grid-template-columns: repeat(3, 1fr);
 }
 
+.folder-overview-grid-item {
+    flex: 1 1 auto;
+    margin: 0 1.2rem 1.2rem 0;
+}
+
 .folder-overview-grid-item-article article {
-    padding: 15px;
-    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    padding: 15px;
+    flex: 1;
 }
 
 .folder-overview-grid-item-article a {
@@ -170,52 +174,9 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
 }
 
 
-.folder-overview-grid-item {
-    flex: 1 1 auto;
-    margin-right: 1.200rem;
-    margin-bottom: 1.200rem;
-}
-
-.fn-confirmation-modal .setting-item {
-    border-top: 0 !important;
-    padding-top: 0 !important;
-}
-
-.pointer-cursor {
-    cursor: pointer !important;
-}
-
-
-/* Setting tab style */
-.fn-settings-tab-bar {
-    display: flex;
-    flex-direction: row;
-    padding-bottom: 1rem;
-}
-
-.fn-settings-tab {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--size-4-2);
-    padding: 10px;
-    border: 1px solid var(--background-modifier-border)
-}
-
-.fn-settings-tab-active {
-    background-color: var(--color-accent);
-    color: var(--text-on-accent);
-}
-
-.fn-settings-tab-name {
-    font-weight: bold;
-}
-
-.fn-settings-tab-icon {
-    display: flex;
-}
-
-/* File explorer & path styles */
+/* ==========================================================================
+   File Explorer & Path Styling
+   ========================================================================== */
 
 .folder-note-underline .has-folder-note .nav-folder-title-content {
     text-decoration-line: underline;
@@ -241,14 +202,56 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     font-style: italic;
 }
 
-.fn-hide-collapse-icon .has-folder-note.only-has-folder-note .tree-item-icon {
-    display: none;
+
+/* Collapse Icon Handling */
+
+.fn-folder-overview-collapse-icon {
+    display: block !important;
 }
 
+.fn-has-no-files .collapse-icon,
+.fn-hide-collapse-icon .has-folder-note.only-has-folder-note .tree-item-icon,
 .fn-hide-empty-collapse-icon .fn-empty-folder .tree-item-icon {
     display: none;
 }
 
+
+/* ==========================================================================
+   Settings Tabs
+   ========================================================================== */
+
+.fn-settings-tab-bar {
+    display: flex;
+    flex-direction: row;
+    padding-bottom: 1rem;
+}
+
+.fn-settings-tab {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--size-4-2);
+    padding: 10px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.fn-settings-tab-active {
+    background-color: var(--color-accent);
+    color: var(--text-on-accent);
+}
+
+.fn-settings-tab-name {
+    font-weight: bold;
+}
+
+.fn-settings-tab-icon {
+    display: flex;
+}
+
+
+/* ==========================================================================
+   Suggestion Container
+   ========================================================================== */
 
 .fn-suggestion-container {
     position: absolute;
@@ -265,12 +268,11 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
 }
 
 
-/* Mobile style overrides */
-.is-phone .fn-overview-folder-path .setting-item-control{
-    display: block;
-}
+/* ==========================================================================
+   Whitelist Folder Input (Desktop & Mobile)
+   ========================================================================== */
 
-/* Default desktop layout */
+/* Default Desktop Layout */
 .fn-whitelist-folder-input-container {
     display: flex;
     justify-content: space-between;
@@ -282,9 +284,9 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
 .fn-whitelist-folder-input-container input {
     flex-grow: 1;
     width: auto;
-    box-sizing: border-box;
     margin-right: 8px;
-    height: 40px; /* Ensure consistent height */
+    height: 40px;
+    box-sizing: border-box;
 }
 
 .fn-whitelist-folder-buttons {
@@ -296,12 +298,12 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     flex-shrink: 0;
 }
 
-/* Mobile-specific layout */
+/* Mobile Overrides */
 @media (max-width: 768px) {
     .fn-whitelist-folder-input-container {
         display: block;
         width: 100%;
-        text-align: center; /* Center elements vertically when stacked */
+        text-align: center;
     }
 
     .fn-whitelist-folder-input-container input {
@@ -315,5 +317,9 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
         justify-content: flex-start;
         align-items: center;
         width: 100%;
+    }
+
+    .is-phone .fn-overview-folder-path .setting-item-control {
+        display: block;
     }
 }
