@@ -223,7 +223,7 @@ export async function tempDisableSync(plugin: FolderNotesPlugin, folder: TFolder
 
 export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractFile, evt?: MouseEvent) {
 	const path = file.path;
-	const focusExistingTab = plugin.settings.focusExistingTab;
+	const focusExistingTab = plugin.settings.focusExistingTab && plugin.settings.openInNewTab;
 	const activeFilePath = plugin.app.workspace.getActiveFile()?.path;
 
 	// If already active and not opening in new tab, do nothing
