@@ -3,7 +3,7 @@ import FolderNotesPlugin from 'src/main';
 import { getFolderNote } from 'src/functions/folderNoteFunctions';
 import { handleViewHeaderClick } from './handleClick';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
-import { applyCSSClassesToFolder } from 'src/functions/styleFunctions';
+import { updateCSSClassesForFolder } from 'src/functions/styleFunctions';
 
 let fileExplorerMutationObserver: MutationObserver | null = null;
 
@@ -114,7 +114,7 @@ async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlu
 	if (!folderPath) return;
 
 	folderTitle.dataset.initialized = 'true';
-	await applyCSSClassesToFolder(folderPath, plugin);
+	await updateCSSClassesForFolder(folderPath, plugin);
 
 	if (plugin.settings.frontMatterTitle.enabled) {
 		plugin.fmtpHandler?.fmptUpdateFolderName({ id: '', result: false, path: folderPath, pathOnly: false }, false);

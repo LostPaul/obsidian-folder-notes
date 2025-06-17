@@ -13,7 +13,7 @@ import { FolderOverview } from './obsidian-folder-overview/src/FolderOverview';
 import { TabManager } from './events/TabManager';
 import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
-import { addCSSClassToTitleEL, getEl, removeCSSClassFromEL, updateAllFileStyles } from './functions/styleFunctions';
+import { addCSSClassToFileExplorerEl, getFileExplorerElement, removeCSSClassFromFileExplorerEL, refreshAllFolderStyles } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { FileExplorerView, InternalPlugin } from 'obsidian-typings';
 import { getFocusedItem } from './functions/utils';
@@ -123,7 +123,7 @@ export default class FolderNotesPlugin extends Plugin {
 			const folderNote = getFolderNote(this, folder.path);
 			if (!folderNote) { return; }
 			if (folderNote.path !== openFile.path) { return; }
-			this.activeFolderDom = getEl(folder.path, this);
+			this.activeFolderDom = getFileExplorerElement(folder.path, this);
 			if (this.activeFolderDom) this.activeFolderDom.addClass('fn-is-active');
 		}));
 
@@ -267,8 +267,8 @@ export default class FolderNotesPlugin extends Plugin {
 		if (!folderNote && (evt.altKey || Keymap.isModEvent(evt) === 'tab')) {
 			if ((this.settings.altKey && evt.altKey) || (this.settings.ctrlKey && Keymap.isModEvent(evt) === 'tab')) {
 				createFolderNote(this, folderPath, true, undefined, true);
-				addCSSClassToTitleEL(folderPath, 'has-folder-note', this);
-				removeCSSClassFromEL(folderPath, 'has-not-folder-note', this);
+				addCSSClassToFileExplorerEl(folderPath, 'has-folder-note', this);
+				removeCSSClassFromFileExplorerEL(folderPath, 'has-not-folder-note', this);
 				return;
 			}
 		}
@@ -345,7 +345,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
 		const threshold = this.settings.storageLocation === 'insideFolder' ? 1 : 0;
 		if (folder.children.length === 0) {
-			addCSSClassToTitleEL(folder.path, 'fn-empty-folder', this);
+			addCSSClassToFileExplorerEl(folder.path, 'fn-empty-folder', this);
 		}
 
 		if (folder.children.length === threshold) {
@@ -358,7 +358,7 @@ export default class FolderNotesPlugin extends Plugin {
 				const attachmentFolder = this.app.vault.getAbstractFileByPath(folderPath);
 				if (attachmentFolder instanceof TFolder && folder.children.length <= threshold + 1) {
 					if (!folder.collapsed) {
-						getEl(folder.path, this)?.click();
+						getFileExplorerElement(folder.path, this)?.click();
 					}
 				}
 				return folder.children.length <= threshold + 1;
@@ -371,7 +371,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 	async changeFolderNameInExplorer(folder: TFolder, newName: string | null | undefined, waitForCreate = false, count = 0) {
 		if (!newName) newName = folder.name;
-		let fileExplorerItem = getEl(folder.path, this);
+		let fileExplorerItem = getFileExplorerElement(folder.path, this);
 		if (!fileExplorerItem) {
 			if (waitForCreate && count < 5) {
 				await new Promise((r) => setTimeout(r, 500));
@@ -462,7 +462,7 @@ export default class FolderNotesPlugin extends Plugin {
 		await this.saveData(this.settings);
 		// cleanup any css if we need too
 		if ((!this.settingsOpened || reloadStyles === true) && reloadStyles !== false) {
-			updateAllFileStyles(true, this);
+			refreshAllFolderStyles(true, this);
 		}
 	}
 

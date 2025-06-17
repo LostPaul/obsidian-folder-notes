@@ -7,7 +7,7 @@ import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcluded
 import { ExcludedFolder } from '../ExcludeFolders/ExcludeFolder';
 import { openExcalidrawView } from './excalidraw';
 import { AskForExtensionModal } from 'src/modals/AskForExtension';
-import { getEl, addCSSClassToTitleEL, removeCSSClassFromEL } from 'src/functions/styleFunctions';
+import { getFileExplorerElement, addCSSClassToFileExplorerEl, removeCSSClassFromFileExplorerEL } from 'src/functions/styleFunctions';
 import { getFolderNameFromPathString, getFolderPathFromString, removeExtension } from 'src/functions/utils';
 
 const defaultExcalidrawTemplate = `---
@@ -60,7 +60,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 
 	if (detachedFolder && folderNote?.extension !== extension && folderNote) {
 		deleteExcludedFolder(plugin, detachedFolder);
-		removeCSSClassFromEL(folderNote?.path, 'is-folder-note', plugin);
+		removeCSSClassFromFileExplorerEL(folderNote?.path, 'is-folder-note', plugin);
 		const folder = plugin.app.vault.getAbstractFileByPath(folderPath) as TFolder;
 		if (!folderNote || folderNote.basename !== fileName) return;
 		let count = 1;
@@ -128,7 +128,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 			const folder = getFolder(plugin, folderNote);
 			if (!folder) { return; }
 
-			plugin.activeFolderDom = getEl(folder.path, plugin);
+			plugin.activeFolderDom = getFileExplorerElement(folder.path, plugin);
 			if (plugin.activeFolderDom) plugin.activeFolderDom.addClass('fn-is-active');
 		}
 		await leaf.openFile(folderNote);
@@ -144,8 +144,8 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 
 	const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
 	if (!(folder instanceof TFolder)) return;
-	addCSSClassToTitleEL(path, 'is-folder-note', plugin, true);
-	addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
+	addCSSClassToFileExplorerEl(path, 'is-folder-note', plugin, true);
+	addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', plugin);
 }
 
 export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile, skipConfirmation?: boolean) {
@@ -156,7 +156,7 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 		if (plugin.settings.showRenameConfirmation && !skipConfirmation && !detachedExcludedFolder) {
 			return new ExistingFolderNoteModal(plugin.app, plugin, file, folder, folderNote).open();
 		}
-		removeCSSClassFromEL(folderNote.path, 'is-folder-note', plugin);
+		removeCSSClassFromFileExplorerEL(folderNote.path, 'is-folder-note', plugin);
 
 		const [excludedFolder, excludedFolderExisted, disabledSync] = await tempDisableSync(plugin, folder);
 
@@ -190,15 +190,15 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 	}
 
 	await plugin.app.fileManager.renameFile(file, path);
-	addCSSClassToTitleEL(path, 'is-folder-note', plugin, true);
-	addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
+	addCSSClassToFileExplorerEl(path, 'is-folder-note', plugin, true);
+	addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', plugin);
 
 	if (plugin.activeFolderDom) {
 		plugin.activeFolderDom.removeClass('fn-is-active');
 		plugin.activeFolderDom = null;
 	}
 
-	plugin.activeFolderDom = getEl(folder.path, plugin);
+	plugin.activeFolderDom = getFileExplorerElement(folder.path, plugin);
 	if (plugin.activeFolderDom) plugin.activeFolderDom.addClass('fn-is-active');
 }
 
@@ -265,7 +265,7 @@ export async function deleteFolderNote(plugin: FolderNotesPlugin, file: TFile, d
 		(excludedFolder) => (excludedFolder.path !== folder.path) && excludedFolder.showFolderNote);
 	plugin.saveSettings(false);
 
-	removeCSSClassFromEL(folder.path, 'has-folder-note', plugin);
+	removeCSSClassFromFileExplorerEL(folder.path, 'has-folder-note', plugin);
 	switch (plugin.settings.deleteFilesAction) {
 		case 'trash':
 			await plugin.app.vault.trash(file, true);

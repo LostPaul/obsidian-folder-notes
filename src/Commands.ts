@@ -4,7 +4,7 @@ import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, 
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString, getFileExplorerActiveFolder } from './functions/utils';
 import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import { applyCSSClassesToFolder } from './functions/styleFunctions';
+import { updateCSSClassesForFolder } from './functions/styleFunctions';
 
 
 
@@ -406,7 +406,7 @@ export class Commands {
 										this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter(
 											(folder) => (folder.path !== file.path) && folder.showFolderNote);
 										this.plugin.saveSettings(false);
-										applyCSSClassesToFolder(file.path, this.plugin);
+										updateCSSClassesForFolder(file.path, this.plugin);
 									});
 							});
 						} else {
@@ -424,7 +424,7 @@ export class Commands {
 										excludedFolder.hideInSettings = true;
 										excludedFolder.showFolderNote = true;
 										addExcludedFolder(this.plugin, excludedFolder, false);
-										applyCSSClassesToFolder(file.path, this.plugin);
+										updateCSSClassesForFolder(file.path, this.plugin);
 									});
 							});
 						}
