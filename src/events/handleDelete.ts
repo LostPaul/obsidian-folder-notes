@@ -8,9 +8,9 @@ export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
 	const folder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(file.path));
 	if (folder instanceof TFolder) {
 		if (plugin.isEmptyFolderNoteFolder(folder)) {
-			addCSSClassToFileExplorerEl(folder.path, 'only-has-folder-note', plugin);
+			addCSSClassToFileExplorerEl(folder.path, 'only-has-folder-note', true, plugin);
 		} else {
-			removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', plugin);
+			removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);
 		}
 	}
 
@@ -19,14 +19,14 @@ export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
 		if (!folder) { return; }
 		const folderNote = getFolderNote(plugin, folder.path);
 		if (folderNote) { return; }
-		removeCSSClassFromFileExplorerEL(folder.path, 'has-folder-note', plugin);
-		removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', plugin);
+		removeCSSClassFromFileExplorerEL(folder.path, 'has-folder-note', false, plugin);
+		removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);
 	}
 
 	if (!(file instanceof TFolder)) { return; }
 	const folderNote = getFolderNote(plugin, file.path);
 	if (!folderNote) { return; }
-	removeCSSClassFromFileExplorerEL(folderNote.path, 'is-folder-note', plugin);
+	removeCSSClassFromFileExplorerEL(folderNote.path, 'is-folder-note', false, plugin);
 	if (!plugin.settings.syncDelete) { return; }
 	deleteFolderNote(plugin, folderNote, false);
 }

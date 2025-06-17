@@ -3,8 +3,8 @@ import FolderNotesPlugin from './main';
 import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName, detachFolderNote } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString, getFileExplorerActiveFolder } from './functions/utils';
-import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import { updateCSSClassesForFolder } from './functions/styleFunctions';
+import { deleteExcludedFolder, getDetachedFolder, getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
+import { hideFolderNoteInFileExplorer, showFolderNoteInFileExplorer } from './functions/styleFunctions';
 
 
 
@@ -403,10 +403,7 @@ export class Commands {
 								item.setTitle('Hide folder note in explorer')
 									.setIcon('eye-off')
 									.onClick(() => {
-										this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter(
-											(folder) => (folder.path !== file.path) && folder.showFolderNote);
-										this.plugin.saveSettings(false);
-										updateCSSClassesForFolder(file.path, this.plugin);
+										hideFolderNoteInFileExplorer(file.path, this.plugin);
 									});
 							});
 						} else {
@@ -414,17 +411,7 @@ export class Commands {
 								item.setTitle('Show folder note in explorer')
 									.setIcon('eye')
 									.onClick(() => {
-										const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length, undefined, this.plugin);
-										excludedFolder.subFolders = false;
-										excludedFolder.disableSync = false;
-										excludedFolder.disableAutoCreate = false;
-										excludedFolder.disableFolderNote = false;
-										excludedFolder.enableCollapsing = false;
-										excludedFolder.excludeFromFolderOverview = false;
-										excludedFolder.hideInSettings = true;
-										excludedFolder.showFolderNote = true;
-										addExcludedFolder(this.plugin, excludedFolder, false);
-										updateCSSClassesForFolder(file.path, this.plugin);
+										showFolderNoteInFileExplorer(file.path, this.plugin);
 									});
 							});
 						}

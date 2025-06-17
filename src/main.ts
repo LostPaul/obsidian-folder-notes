@@ -267,8 +267,8 @@ export default class FolderNotesPlugin extends Plugin {
 		if (!folderNote && (evt.altKey || Keymap.isModEvent(evt) === 'tab')) {
 			if ((this.settings.altKey && evt.altKey) || (this.settings.ctrlKey && Keymap.isModEvent(evt) === 'tab')) {
 				createFolderNote(this, folderPath, true, undefined, true);
-				addCSSClassToFileExplorerEl(folderPath, 'has-folder-note', this);
-				removeCSSClassFromFileExplorerEL(folderPath, 'has-not-folder-note', this);
+				addCSSClassToFileExplorerEl(folderPath, 'has-folder-note', false, this);
+				removeCSSClassFromFileExplorerEL(folderPath, 'has-not-folder-note', false, this);
 				return;
 			}
 		}
@@ -345,7 +345,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
 		const threshold = this.settings.storageLocation === 'insideFolder' ? 1 : 0;
 		if (folder.children.length === 0) {
-			addCSSClassToFileExplorerEl(folder.path, 'fn-empty-folder', this);
+			addCSSClassToFileExplorerEl(folder.path, 'fn-empty-folder', false, this);
 		}
 
 		if (folder.children.length === threshold) {
