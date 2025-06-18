@@ -7,7 +7,7 @@ import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcluded
 import { ExcludedFolder } from '../ExcludeFolders/ExcludeFolder';
 import { openExcalidrawView } from './excalidraw';
 import { AskForExtensionModal } from 'src/modals/AskForExtension';
-import { getFileExplorerElement, addCSSClassToFileExplorerEl, removeCSSClassFromFileExplorerEL } from 'src/functions/styleFunctions';
+import { addCSSClassToFileExplorerEl, removeCSSClassFromFileExplorerEL, removeActiveFolder, setActiveFolder } from 'src/functions/styleFunctions';
 import { getFolderNameFromPathString, getFolderPathFromString, removeExtension } from 'src/functions/utils';
 
 const defaultExcalidrawTemplate = `---
@@ -120,16 +120,12 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 
 	if (openFile) {
 		if (plugin.app.workspace.getActiveFile()?.path === path) {
-			if (plugin.activeFolderDom) {
-				plugin.activeFolderDom.removeClass('fn-is-active');
-				plugin.activeFolderDom = null;
-			}
+			removeActiveFolder(plugin);
 
 			const folder = getFolder(plugin, folderNote);
 			if (!folder) { return; }
 
-			plugin.activeFolderDom = getFileExplorerElement(folder.path, plugin);
-			if (plugin.activeFolderDom) plugin.activeFolderDom.addClass('fn-is-active');
+			setActiveFolder(folder.path, plugin);
 		}
 		await leaf.openFile(folderNote);
 		if (plugin.settings.folderNoteType === '.excalidraw' || extension === '.excalidraw') {
@@ -193,13 +189,8 @@ export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile,
 	addCSSClassToFileExplorerEl(path, 'is-folder-note', false, plugin, true);
 	addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
 
-	if (plugin.activeFolderDom) {
-		plugin.activeFolderDom.removeClass('fn-is-active');
-		plugin.activeFolderDom = null;
-	}
-
-	plugin.activeFolderDom = getFileExplorerElement(folder.path, plugin);
-	if (plugin.activeFolderDom) plugin.activeFolderDom.addClass('fn-is-active');
+	removeActiveFolder(plugin);
+	setActiveFolder(folder.path, plugin);
 }
 
 export async function tempDisableSync(plugin: FolderNotesPlugin, folder: TFolder): Promise<[excludedFolder: ExcludedFolder | undefined, excludedFolderExisted: boolean, disabledSync: boolean]> {

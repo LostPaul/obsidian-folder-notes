@@ -13,7 +13,7 @@ import { FolderOverview } from './obsidian-folder-overview/src/FolderOverview';
 import { TabManager } from './events/TabManager';
 import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
-import { addCSSClassToFileExplorerEl, getFileExplorerElement, removeCSSClassFromFileExplorerEL, refreshAllFolderStyles } from './functions/styleFunctions';
+import { addCSSClassToFileExplorerEl, getFileExplorerElement, removeCSSClassFromFileExplorerEL, refreshAllFolderStyles, setActiveFolder, removeActiveFolder } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { FileExplorerView, InternalPlugin } from 'obsidian-typings';
 import { getFocusedItem } from './functions/utils';
@@ -109,10 +109,7 @@ export default class FolderNotesPlugin extends Plugin {
 		}));
 
 		this.registerEvent(this.app.workspace.on('file-open', async (openFile: TFile | null) => {
-			if (this.activeFolderDom) {
-				this.activeFolderDom.removeClass('fn-is-active');
-				this.activeFolderDom = null;
-			}
+			removeActiveFolder(this);
 
 			if (!openFile || !openFile.basename) { return; }
 
@@ -123,8 +120,7 @@ export default class FolderNotesPlugin extends Plugin {
 			const folderNote = getFolderNote(this, folder.path);
 			if (!folderNote) { return; }
 			if (folderNote.path !== openFile.path) { return; }
-			this.activeFolderDom = getFileExplorerElement(folder.path, this);
-			if (this.activeFolderDom) this.activeFolderDom.addClass('fn-is-active');
+			setActiveFolder(folder.path, this);
 		}));
 
 		this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
@@ -429,7 +425,7 @@ export default class FolderNotesPlugin extends Plugin {
 		document.body.classList.remove('folder-note-underline');
 		document.body.classList.remove('hide-folder-note');
 		document.body.classList.remove('fn-whitespace-stop-collapsing');
-		if (this.activeFolderDom) { this.activeFolderDom.removeClass('is-active'); }
+		removeActiveFolder(this);
 		if (this.fmtpHandler) {
 			this.fmtpHandler.deleteEvent();
 		}

@@ -44,6 +44,7 @@ export async function updateCSSClassesForFolder(folderPath: string, plugin: Fold
 	if (!folder || !(folder instanceof TFolder)) { return; }
 
 	const folderNote = getFolderNote(plugin, folder.path);
+	// console.log('Updating CSS classes for folder:', folder.path, 'Folder Note:', folderNote);
 	const detachedFolderNote = getDetachedFolder(plugin, folder.path);
 
 	if (folder.children.length === 0) {
@@ -68,7 +69,7 @@ export async function updateCSSClassesForFolder(folderPath: string, plugin: Fold
 			unmarkFileAsFolderNote(folderNote, plugin);
 			return;
 		}
-		if (plugin.isEmptyFolderNoteFolder(folder)) {
+		if (plugin.isEmptyFolderNoteFolder(folder) && getFolderNote(plugin, folder.path)) {
 			addCSSClassToFileExplorerEl(folder.path, 'only-has-folder-note', true, plugin);
 		} else {
 			removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);
@@ -103,7 +104,7 @@ export function clearFolderAndNoteClasses(folder: TFolder, file: TFile, plugin: 
 
 export function markFolderWithFolderNoteClasses(folder: TFolder, plugin: FolderNotesPlugin) {
 	addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
-	if (plugin.isEmptyFolderNoteFolder(folder)) {
+	if (plugin.isEmptyFolderNoteFolder(folder) && getFolderNote(plugin, folder.path)) {
 		addCSSClassToFileExplorerEl(folder.path, 'only-has-folder-note', true, plugin);
 	} else {
 		removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);
@@ -116,6 +117,11 @@ export function markFileAsFolderNote(file: TFile, plugin: FolderNotesPlugin) {
 
 export function unmarkFileAsFolderNote(file: TFile, plugin: FolderNotesPlugin) {
 	removeCSSClassFromFileExplorerEL(file.path, 'is-folder-note', false, plugin);
+}
+
+export function unmarkFolderAsFolderNote(folder: TFolder, plugin: FolderNotesPlugin) {
+	removeCSSClassFromFileExplorerEL(folder.path, 'has-folder-note', false, plugin);
+	removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);
 }
 
 export function clearFolderNoteClassesFromFolder(folder: TFolder, plugin: FolderNotesPlugin) {
@@ -144,10 +150,10 @@ export async function addCSSClassToFileExplorerEl(path: string, cssClass: string
 		}
 	} else {
 		fileExplorerItem.addClass(cssClass);
+		document.querySelectorAll(`[data-path='${CSS.escape(path)}']`).forEach((item) => {
+			item.addClass(cssClass);
+		});
 	}
-	document.querySelectorAll(`[data-path='${CSS.escape(path)}']`).forEach((item) => {
-		item.addClass(cssClass);
-	});
 }
 
 /**
@@ -195,10 +201,26 @@ export function showFolderNoteInFileExplorer(path: string, plugin: FolderNotesPl
 	updateCSSClassesForFolder(path, plugin);
 }
 
-export function hideFolderNoteInFileExplorer(path: string, plugin: FolderNotesPlugin) {
+export function hideFolderNoteInFileExplorer(folderPath: string, plugin: FolderNotesPlugin) {
 	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter(
-		(folder) => (folder.path !== path) && folder.showFolderNote);
+		(folder) => (folder.path !== folderPath) && folder.showFolderNote);
 	plugin.saveSettings(false);
-	removeCSSClassFromFileExplorerEL(path, 'show-folder-note-in-explorer', true, plugin);
-	updateCSSClassesForFolder(path, plugin);
+	removeCSSClassFromFileExplorerEL(folderPath, 'show-folder-note-in-explorer', true, plugin);
+	updateCSSClassesForFolder(folderPath, plugin);
+}
+
+export function setActiveFolder(folderPath: string, plugin: FolderNotesPlugin) {
+	const fileExplorerItem = getFileExplorerElement(folderPath, plugin);
+	if (fileExplorerItem) {
+		fileExplorerItem.addClass('fn-is-active');
+		plugin.activeFolderDom = fileExplorerItem;
+	}
+}
+
+export function removeActiveFolder(plugin: FolderNotesPlugin) {
+	if (plugin.activeFolderDom) {
+		plugin.activeFolderDom.removeClass('fn-is-active');
+		plugin.activeFolderDom?.removeClass('has-focus');
+		plugin.activeFolderDom = null;
+	}
 }

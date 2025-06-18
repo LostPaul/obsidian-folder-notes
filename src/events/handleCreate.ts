@@ -9,7 +9,7 @@ export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugi
 
 	const folder = file.parent;
 	if (folder instanceof TFolder) {
-		if (plugin.isEmptyFolderNoteFolder(folder)) {
+		if (plugin.isEmptyFolderNoteFolder(folder) && getFolderNote(plugin, folder.path)) {
 			addCSSClassToFileExplorerEl(folder.path, 'only-has-folder-note', true, plugin);
 		} else {
 			removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);

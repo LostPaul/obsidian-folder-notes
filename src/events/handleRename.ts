@@ -3,15 +3,15 @@ import FolderNotesPlugin from 'src/main';
 import { extractFolderName, getFolderNote, getFolderNoteFolder } from '../functions/folderNoteFunctions';
 import { getExcludedFolder, addExcludedFolder, updateExcludedFolder, deleteExcludedFolder, getDetachedFolder } from '../ExcludeFolders/functions/folderFunctions';
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
-import { removeCSSClassFromFileExplorerEL, addCSSClassToFileExplorerEl } from 'src/functions/styleFunctions';
+import { removeCSSClassFromFileExplorerEL, addCSSClassToFileExplorerEl, markFileAsFolderNote, unmarkFileAsFolderNote, unmarkFolderAsFolderNote, markFolderWithFolderNoteClasses, hideFolderNoteInFileExplorer, removeActiveFolder, setActiveFolder } from 'src/functions/styleFunctions';
 import { getFolderPathFromString, removeExtension, getFileNameFromPathString } from 'src/functions/utils';
 
 export function handleRename(file: TAbstractFile, oldPath: string, plugin: FolderNotesPlugin) {
 	const folder = file.parent;
 	const oldFolder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(oldPath));
-	const isRename = (file.parent?.path === getFolderPathFromString(oldPath));
+
 	if (folder instanceof TFolder) {
-		if (plugin.isEmptyFolderNoteFolder(folder)) {
+		if (plugin.isEmptyFolderNoteFolder(folder) && getFolderNote(plugin, folder.path)) {
 			addCSSClassToFileExplorerEl(folder.path, 'only-has-folder-note', true, plugin);
 		} else {
 			removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);
@@ -19,7 +19,7 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 	}
 
 	if (oldFolder instanceof TFolder) {
-		if (plugin.isEmptyFolderNoteFolder(oldFolder)) {
+		if (plugin.isEmptyFolderNoteFolder(oldFolder) && getFolderNote(plugin, oldFolder.path)) {
 			addCSSClassToFileExplorerEl(oldFolder.path, 'only-has-folder-note', true, plugin);
 		} else {
 			removeCSSClassFromFileExplorerEL(oldFolder.path, 'only-has-folder-note', true, plugin);
@@ -27,21 +27,44 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 	}
 
 	if (file instanceof TFolder) {
-		plugin.tabManager.updateTab(file.path);
-		updateExcludedFolderPath(file, oldPath, plugin);
-		if (isRename) {
-			return handleFolderRename(file, oldPath, plugin);
+		const folder = file;
+		plugin.tabManager.updateTab(folder.path);
+		updateExcludedFolderPath(folder, oldPath, plugin);
+		if (isFolderRename(folder, oldPath)) {
+			return handleFolderRename(folder, oldPath, plugin);
 		} else {
-			return handleFolderMove(file, oldPath, plugin);
+			return handleFolderMove(folder, oldPath, plugin);
 		}
 	} else if (file instanceof TFile) {
-		if (isRename) {
+		if (isFileRename(file, oldPath)) {
+			console.log('File rename detected');
 			return fmptUpdateFileName(file, oldPath, plugin);
 		} else {
+			console.log('File move detected');
 			return handleFileMove(file, oldPath, plugin);
 		}
 	}
 }
+
+function isFileRename(file: TFile, oldPath: string): boolean {
+	const oldFolderPath = getFolderPathFromString(oldPath);
+	const newFolderPath = file.parent?.path;
+	const oldName = getFileNameFromPathString(oldPath);
+	const newName = file.name;
+
+	return oldFolderPath === newFolderPath && oldName !== newName;
+}
+
+
+function isFolderRename(folder: TFolder, oldPath: string): boolean {
+	const oldName = getFileNameFromPathString(oldPath);
+	const newName = folder.name;
+	const oldParent = getFolderPathFromString(oldPath);
+	const newParent = folder.parent?.path;
+
+	return oldParent === newParent && oldName !== newName;
+}
+
 
 
 export function handleFolderMove(file: TFolder, oldPath: string, plugin: FolderNotesPlugin) {
@@ -54,12 +77,19 @@ export async function handleFileMove(file: TFile, oldPath: string, plugin: Folde
 	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename) || file.basename;
 	const oldFileName = removeExtension(getFileNameFromPathString(oldPath));
 	const newFolder = getFolderNoteFolder(plugin, file, file.basename);
-	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
 	let excludedFolder = getExcludedFolder(plugin, newFolder?.path || '', true);
 	const oldFolder = getFolderNoteFolder(plugin, oldPath, oldFileName);
+	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
 
-	// file has been moved into position where it can be a folder note!
-	if (folderName === newFolder?.name && folderNote) {
+
+	const isFileNowFolderNoteInNewFolder = folderName === newFolder?.name;
+	const isFileMovedFromOldFolderNote = oldFolder && oldFolder.name === oldFileName && newFolder?.path !== oldFolder.path;
+
+	// this is for turning files into folder notes for folders that already have a folder note
+	// e.g. Turn into folder note for "Folder name"
+	const isFileNowFolderNoteWithExistingNote = folderName === newFolder?.name && folderNote;
+
+	if (isFileNowFolderNoteWithExistingNote) {
 		let excludedFolderExisted = true;
 		let disabledSync = false;
 
@@ -81,12 +111,28 @@ export async function handleFileMove(file: TFile, oldPath: string, plugin: Folde
 				updateExcludedFolder(plugin, excludedFolder, excludedFolder);
 			}
 		});
-	} else if (oldFolder && oldFolder.name === oldFileName && newFolder?.path !== oldFolder.path) {
-		// the note has been moved somewhere and is no longer a folder note
-		// cleanup css on the folder and note
-		removeCSSClassFromFileExplorerEL(oldFolder.path, 'has-folder-note', false, plugin);
-		removeCSSClassFromFileExplorerEL(file.path, 'is-folder-note', false, plugin);
-		removeCSSClassFromFileExplorerEL(oldPath, 'is-folder-note', false, plugin);
+	} else if (isFileNowFolderNoteInNewFolder) {
+		if (!excludedFolder?.disableFolderNote) {
+			markFileAsFolderNote(file, plugin);
+			if (newFolder instanceof TFolder) {
+				markFolderWithFolderNoteClasses(newFolder, plugin);
+				if (plugin.app.workspace.getActiveFile()?.path === file.path) {
+					removeActiveFolder(plugin);
+					setActiveFolder(newFolder.path, plugin);
+				}
+			}
+			if (oldFolder instanceof TFolder) {
+				hideFolderNoteInFileExplorer(oldFolder.path, plugin);
+				unmarkFolderAsFolderNote(oldFolder, plugin);
+			}
+		}
+	} else if (isFileMovedFromOldFolderNote) {
+		unmarkFileAsFolderNote(file, plugin);
+		if (oldFolder instanceof TFolder) {
+			removeActiveFolder(plugin);
+			hideFolderNoteInFileExplorer(oldFolder.path, plugin);
+			unmarkFolderAsFolderNote(oldFolder, plugin);
+		}
 	}
 }
 
@@ -95,7 +141,6 @@ export async function handleFolderRename(file: TFolder, oldPath: string, plugin:
 	const oldFileName = plugin.settings.folderNoteName.replace('{{folder_name}}', getFileNameFromPathString(oldPath));
 
 	if (fileName === oldFileName) { return; }
-
 
 	const folderNote = getFolderNote(plugin, oldPath);
 	if (!(folderNote instanceof TFile)) return;

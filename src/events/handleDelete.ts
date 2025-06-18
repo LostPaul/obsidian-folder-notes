@@ -1,13 +1,13 @@
 import { TAbstractFile, TFolder, TFile } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { getFolderNote, getFolder, deleteFolderNote } from 'src/functions/folderNoteFunctions';
-import { removeCSSClassFromFileExplorerEL, addCSSClassToFileExplorerEl } from 'src/functions/styleFunctions';
+import { removeCSSClassFromFileExplorerEL, addCSSClassToFileExplorerEl, hideFolderNoteInFileExplorer } from 'src/functions/styleFunctions';
 import { getFolderPathFromString } from 'src/functions/utils';
 
 export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
 	const folder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(file.path));
 	if (folder instanceof TFolder) {
-		if (plugin.isEmptyFolderNoteFolder(folder)) {
+		if (plugin.isEmptyFolderNoteFolder(folder) && getFolderNote(plugin, folder.path)) {
 			addCSSClassToFileExplorerEl(folder.path, 'only-has-folder-note', true, plugin);
 		} else {
 			removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);
@@ -21,6 +21,7 @@ export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
 		if (folderNote) { return; }
 		removeCSSClassFromFileExplorerEL(folder.path, 'has-folder-note', false, plugin);
 		removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);
+		hideFolderNoteInFileExplorer(folder.path, plugin);
 	}
 
 	if (!(file instanceof TFolder)) { return; }
