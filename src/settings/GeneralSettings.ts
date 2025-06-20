@@ -5,7 +5,7 @@ import AddSupportedFileModal from '../modals/AddSupportedFileType';
 import { FrontMatterTitlePluginHandler } from '../events/FrontMatterTitle';
 import ConfirmationModal from './modals/CreateFnForEveryFolder';
 import { TemplateSuggest } from '../suggesters/TemplateSuggester';
-import { updateAllFileStyles } from '../functions/styleFunctions';
+import { refreshAllFolderStyles } from '../functions/styleFunctions';
 import BackupWarningModal from './modals/BackupWarning';
 import RenameFolderNotesModal from './modals/RenameFns';
 
@@ -186,7 +186,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.storageLocation = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-					updateAllFileStyles(undefined, settingsTab.plugin);
+					refreshAllFolderStyles(undefined, settingsTab.plugin);
 				})
 		)
 		.addButton((button) =>

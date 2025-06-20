@@ -1,9 +1,9 @@
 import { Keymap, Platform } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { getFolderNote } from 'src/functions/folderNoteFunctions';
-import { handleFolderClick, handleViewHeaderClick } from './handleClick';
+import { handleViewHeaderClick } from './handleClick';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
-import { applyCSSClassesToFolder } from 'src/functions/styleFunctions';
+import { updateCSSClassesForFolder } from 'src/functions/styleFunctions';
 
 let fileExplorerMutationObserver: MutationObserver | null = null;
 
@@ -114,19 +114,13 @@ async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlu
 	if (!folderPath) return;
 
 	folderTitle.dataset.initialized = 'true';
-	await applyCSSClassesToFolder(folderPath, plugin);
+	await updateCSSClassesForFolder(folderPath, plugin);
 
 	if (plugin.settings.frontMatterTitle.enabled) {
 		plugin.fmtpHandler?.fmptUpdateFolderName({ id: '', result: false, path: folderPath, pathOnly: false }, false);
 	}
 
 	if (Platform.isMobile && plugin.settings.disableOpenFolderNoteOnClick) return;
-
-	folderTitle.addEventListener('auxclick', (event: MouseEvent) => {
-		if (event.button === 1) handleFolderClick(event, plugin);
-	}, { capture: true });
-
-	folderTitle.onclick = (event: MouseEvent) => handleFolderClick(event, plugin);
 
 	plugin.registerDomEvent(folderTitle, 'pointerover', (event: MouseEvent) => {
 		plugin.hoveredElement = folderTitle;
