@@ -37,10 +37,8 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 		}
 	} else if (file instanceof TFile) {
 		if (isFileRename(file, oldPath)) {
-			console.log('File rename detected');
 			return fmptUpdateFileName(file, oldPath, plugin);
 		} else {
-			console.log('File move detected');
 			return handleFileMove(file, oldPath, plugin);
 		}
 	}

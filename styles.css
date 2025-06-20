@@ -120,8 +120,10 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
 }
 
 .folder-overview-list {
-    margin: 0 !important;
-    padding: 1.2em 0 !important;
+     margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 1.200 !important;
+    padding-top: 1.200 !important;
 }
 
 .folder-overview-list-item {
