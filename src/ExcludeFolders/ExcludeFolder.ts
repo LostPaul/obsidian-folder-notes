@@ -14,7 +14,7 @@ export class ExcludedFolder {
 	hideInSettings: boolean;
 	detached: boolean;
 	detachedFilePath?: string;
-	showFolderNote?: boolean;
+	showFolderNote: boolean;
 	constructor(path: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
 		this.type = 'folder';
 		this.id = id || crypto.randomUUID();

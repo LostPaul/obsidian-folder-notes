@@ -70,13 +70,13 @@ export default class WhitelistPatternSettings extends Modal {
 
 		if (this.pattern.enableFolderNote) {
 			new Setting(contentEl)
-				.setName('Collapse folder when opening folder note')
+				.setName('Don\'t collapse folder when opening folder note')
 				.setDesc('Choose if the folder should be collapsed when the folder note is opened')
 				.addToggle((toggle) =>
 					toggle
-						.setValue(this.pattern.enableCollapsing)
+						.setValue(this.pattern.disableCollapsing)
 						.onChange(async (value) => {
-							this.pattern.enableCollapsing = value;
+							this.pattern.disableCollapsing = value;
 							await this.plugin.saveSettings();
 						})
 				);

@@ -1,6 +1,7 @@
 import { App, Modal, Setting } from 'obsidian';
 import FolderNotesPlugin from '../../main';
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
+import { updateCSSClassesForFolder } from 'src/functions/styleFunctions';
 export default class ExcludedFolderSettings extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -59,9 +60,10 @@ export default class ExcludedFolderSettings extends Modal {
 			.setDesc('Choose if the folder note should be shown in the file explorer')
 			.addToggle((toggle) =>
 				toggle
-					.setValue(this.excludedFolder.showFolderNote ? this.excludedFolder.showFolderNote : false)
+					.setValue(this.excludedFolder.showFolderNote)
 					.onChange(async (value) => {
 						this.excludedFolder.showFolderNote = value;
+						updateCSSClassesForFolder(this.excludedFolder.path, this.plugin);
 						await this.plugin.saveSettings();
 						this.display();
 					})

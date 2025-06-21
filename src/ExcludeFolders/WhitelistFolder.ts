@@ -8,8 +8,9 @@ export class WhitelistedFolder {
 	enableSync: boolean;
 	enableAutoCreate: boolean;
 	enableFolderNote: boolean;
-	enableCollapsing: boolean;
+	disableCollapsing: boolean;
 	showInFolderOverview: boolean;
+	hideInFileExplorer: boolean;
 	position: number;
 	hideInSettings: boolean;
 	constructor(path: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {

@@ -14,7 +14,7 @@ export class ExcludePattern {
 	hideInSettings: boolean;
 	detached: boolean;
 	detachedFilePath?: string;
-	showFolderNote?: boolean;
+	showFolderNote: boolean;
 	constructor(pattern: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
 		this.type = 'pattern';
 		this.id = id || crypto.randomUUID();

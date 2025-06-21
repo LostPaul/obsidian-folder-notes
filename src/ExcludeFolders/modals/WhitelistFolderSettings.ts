@@ -55,6 +55,18 @@ export default class WhitelistFolderSettings extends Modal {
 			);
 
 		new Setting(contentEl)
+			.setName('Hide folder note in file explorer')
+			.setDesc('Choose if the folder note should be hidden in the file explorer')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.whitelistedFolder.hideInFileExplorer)
+					.onChange(async (value) => {
+						this.whitelistedFolder.hideInFileExplorer = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(contentEl)
 			.setName('Allow auto creation of folder notes in this folder')
 			.addToggle((toggle) =>
 				toggle
@@ -81,13 +93,13 @@ export default class WhitelistFolderSettings extends Modal {
 
 		if (this.whitelistedFolder.enableFolderNote) {
 			new Setting(contentEl)
-				.setName('Collapse folder when opening folder note')
+				.setName('Don\'t collapse folder when opening folder note')
 				.setDesc('Choose if the folder should be collapsed when the folder note is opened')
 				.addToggle((toggle) =>
 					toggle
-						.setValue(this.whitelistedFolder.enableCollapsing)
+						.setValue(this.whitelistedFolder.disableCollapsing)
 						.onChange(async (value) => {
-							this.whitelistedFolder.enableCollapsing = value;
+							this.whitelistedFolder.disableCollapsing = value;
 							await this.plugin.saveSettings();
 						})
 				);
