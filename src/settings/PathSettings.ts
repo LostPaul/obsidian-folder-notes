@@ -39,22 +39,24 @@ export async function renderPath(settingsTab: SettingsTab) {
 				})
 		);
 
-	new Setting(containerEl)
-		.setName('Auto update folder name in the path (front matter title plugin only)')
-		.setDesc('Automatically update the folder name in the path when the front matter title plugin is enabled and the title for a folder note is changed in the front matter. This will not change the file name, only the displayed name in the path.')
-		.addToggle((toggle) =>
-			toggle
-				.setValue(settingsTab.plugin.settings.frontMatterTitle.path)
-				.onChange(async (value) => {
-					settingsTab.plugin.settings.frontMatterTitle.path = value;
-					await settingsTab.plugin.saveSettings();
-					if (value) {
-						settingsTab.plugin.updateAllBreadcrumbs();
-					} else {
-						settingsTab.plugin.updateAllBreadcrumbs(true);
-					}
-				})
-		);
+	if (settingsTab.plugin.settings.frontMatterTitle.enabled) {
+		new Setting(containerEl)
+			.setName('Auto update folder name in the path (front matter title plugin only)')
+			.setDesc('Automatically update the folder name in the path when the front matter title plugin is enabled and the title for a folder note is changed in the front matter. This will not change the file name, only the displayed name in the path.')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(settingsTab.plugin.settings.frontMatterTitle.path)
+					.onChange(async (value) => {
+						settingsTab.plugin.settings.frontMatterTitle.path = value;
+						await settingsTab.plugin.saveSettings();
+						if (value) {
+							settingsTab.plugin.updateAllBreadcrumbs();
+						} else {
+							settingsTab.plugin.updateAllBreadcrumbs(true);
+						}
+					})
+			);
+	}
 
 	settingsTab.settingsPage.createEl('h3', { text: 'Style settings' });
 
