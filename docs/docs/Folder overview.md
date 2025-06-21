@@ -1,4 +1,6 @@
 # Folder overview
+[The folder overview feature can be installed as a standalone plugin and works without the folder notes plugin by clicking on this.](https://obsidian.md/plugins?id=folder-overview)
+
 This feature/plugin creates a [code block](https://help.obsidian.md/Editing+and+formatting/Basic+formatting+syntax#Code+blocks) that provides an overview of your entire vault or specific folders. Instructions for creating or editing a folder overview, along with additional guidance, can be found further down the page.
 Currently there are two styles available: **file explorer** & **list style**, with more coming soon. The **overview updates** itself **automatically** when you create, delete or modify a file. You can also integrate it into **templates**, as explained further down below this page.
 

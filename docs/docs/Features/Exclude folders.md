@@ -1,7 +1,9 @@
 # Exclude folders
-The exclude folder feature can be found in the plugin settings under the tab "Exclude folders".
+The exclude folder feature can be found in the plugin settings under the tab "Exclude folders". Depending on what you exclude a folder from you for example can't open a folder note, the file/folder names don't sync, it doesn't show up in the folder overview and more.
 ## Exclude only one folder
 To only exclude the folder itself and not the sub folders also you have to click on the edit icon and disable include subfolders in the settings.
+
+## How to exclude a folder?
 ### Directly in the settings
 Click on the plus icon, then click on the text input, search a folder name and then select the folder you want to exclude from the list.
 ![Video](../assets/xdS3VV7wjIRFNHADE0lx.mp4)
@@ -11,7 +13,7 @@ Click on a folder and then use the context menu and click on "exclude folder fro
 ## Exclude a folder and their subfolders
 To exclude a folder and its subfolders you have to do the same steps as in how to exclude only one folder but enable include subfolders in the settings of an excluded folder.
 ## Exclude multiple folders (with a pattern)
-The pattern only looks at the names of the folders and nothing else. You have to options to exclude folders with a pattern and the first option is to use * before and after the string. The second option is to use a [regex](https://en.wikipedia.org/wiki/Regular_expression).
+The pattern only looks at the names of the folders and nothing else. You have two options to exclude folders with a pattern and the first option is to use * before and after the string. The second option is to use a [regex](https://en.wikipedia.org/wiki/Regular_expression).
 
 To use a regex you have to add "{regex}" at the beginning of the string and everything after it is going to be a regex that matches the folder names.
 
@@ -31,3 +33,6 @@ Open the exclude folders settings tab and click on a edit button if you've alrea
 ![Screenshot](../assets/mbZW1SXv8o3fKU4g8j3V.png)
 ## Default settings
 To edit the default settings for new excluded folders/patterns you just have to click on one of the "Manage" buttons in the settings that are next to "Exclude folder/pattern default settings".
+
+## Whitelisted folders
+The whitelisted folders overwrite the already excluded folders with options that are the opposite from the excluded folders. For example when you add a pattern to exclude all folders, select to disable opening of folders and then add one specific folder to the whitelist and select "open folder ..." you can only open the specific folder and not all the other folder notes.

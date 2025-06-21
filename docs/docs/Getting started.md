@@ -3,20 +3,6 @@
 ## How to install the plugin
 The plugin can be downloaded by clicking on [https://obsidian.md/plugins?id=folder-notes](https://obsidian.md/plugins?id=folder-notes) and then on install.
 ## Basic features 
-### Create folder overview
-Find more out about the folder overview feature on the [folder overview page](./Folder%20overview.md)
-
-To create a folder overview in a note either use the command "Insert folder overview" or on pc right click and select "create folder overview"
-
-![Context menu](./assets/VyBTGhA5eJAVVFusZXIz.png){: style="max-width: 40%;max-height: 40%"}
-
-The folder overview with the default settings looks like this with one note
-
-![Folder overview](./assets/u6ccTTzVbwzBivySFacZ.png)
-
-To edit the folder overview click on the little icon on the right that is shown when hovering over the codeblock
-
-![Folder overview settings](./assets/2wzCXFTpD2.gif)
 
 ### Create folder note
 
@@ -30,7 +16,7 @@ On PC either use ctrl or strg (depending on your settings) and then click on a f
 
 Open the [command palette](https://help.obsidian.md/Plugins/Command+palette) and then type "folder notes" and select the command you need.
 
-![Command palette](./assets/FKhiQZLm4Juu4VdFTxPC.png)
+![Command palette](./assets/screenshots/Obsidian_3VEQ3kOT4S.png)
 
 ### Open folder note
 
@@ -44,7 +30,17 @@ The second option is to open one file of the files from the folder from which yo
 
 The last option and the option that is only available to desktop users is to use alt or ctrl and click on the folder name. When you don't hold ctrl/alt and click on a folder name the folder gets collapsed as normal. To use this option you first have to enable it in the plugin settings under the tab general.
 
-![Settings page](./assets/2KHZfsNVuJL8dIz6cTF5.png)
+![Settings page](./assets/screenshots/Obsidian_7B8zdp5xDh.png)
 
+### Create folder overview
+Find more out about the folder overview feature on the [folder overview page](./Folder%20overview.md)
 
+To create a folder overview in a note either use the command "Insert folder overview" or on pc right click and select "create folder overview"
+
+![Context menu](./assets/VyBTGhA5eJAVVFusZXIz.png){: style="max-width: 40%;max-height: 40%"}
+
+The folder overview with the default settings looks like this with one note
+
+![Folder overview](./assets/u6ccTTzVbwzBivySFacZ.png)
+To find out how to edit the folder overview have a look at [folder overview page](./Folder%20overview.md)
 
