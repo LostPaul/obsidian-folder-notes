@@ -90,11 +90,17 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					dropdown.addOption('.' + type, type);
 				}
 			});
+
 			if (!settingsTab.plugin.settings.supportedFileTypes.includes(settingsTab.plugin.settings.folderNoteType.replace('.', '')) && settingsTab.plugin.settings.folderNoteType !== '.ask') {
 				settingsTab.plugin.settings.folderNoteType = '.md';
 				settingsTab.plugin.saveSettings();
 			}
-			const defaultType = settingsTab.plugin.settings.folderNoteType.startsWith('.') ? settingsTab.plugin.settings.folderNoteType : '.' + settingsTab.plugin.settings.folderNoteType;
+
+			let defaultType = settingsTab.plugin.settings.folderNoteType.startsWith('.') ? settingsTab.plugin.settings.folderNoteType : '.' + settingsTab.plugin.settings.folderNoteType;
+			if (!settingsTab.plugin.settings.supportedFileTypes.includes(defaultType.replace('.', ''))) {
+				defaultType = '.ask';
+				settingsTab.plugin.settings.folderNoteType = defaultType;
+			}
 
 			dropdown
 				.setValue(defaultType)
@@ -116,6 +122,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 	list.on('update', async (values: string[]) => {
 		settingsTab.plugin.settings.supportedFileTypes = values;
 		await settingsTab.plugin.saveSettings();
+		settingsTab.display();
 	});
 
 	if (!settingsTab.plugin.settings.supportedFileTypes.includes('md') || !settingsTab.plugin.settings.supportedFileTypes.includes('canvas') || !settingsTab.plugin.settings.supportedFileTypes.includes('excalidraw')) {

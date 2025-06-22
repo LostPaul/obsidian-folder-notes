@@ -315,7 +315,7 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, sto
 	}
 
 	let folderNote = plugin.app.vault.getAbstractFileByPath(path + folderNoteType);
-	if (folderNote instanceof TFile) {
+	if (folderNote instanceof TFile && plugin.settings.supportedFileTypes.includes(plugin.settings.folderNoteType.replace('.', ''))) {
 		return folderNote;
 	} else {
 		const supportedFileTypes = plugin.settings.supportedFileTypes.filter((type) => type !== plugin.settings.folderNoteType.replace('.', ''));
