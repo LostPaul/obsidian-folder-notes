@@ -14,6 +14,9 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+      
+      - name: Fetch all branches
+        run: git fetch --all
 
       - name: Extract branch name
         id: extract_branch
