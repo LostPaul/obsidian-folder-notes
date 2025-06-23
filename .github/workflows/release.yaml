@@ -45,9 +45,9 @@ jobs:
       # Switch back to the branch that triggered the workflow
       - name: Checkout original branch (if not main)
         run: |
-            if [ "${BRANCH_NAME}" != "main" ]; then
-              git checkout "${BRANCH_NAME}"
-              git pull origin "${BRANCH_NAME}"
+            if [ "${env.BRANCH_NAME}" != "main" ]; then
+              git checkout "${env.BRANCH_NAME}"
+              git pull origin "${env.BRANCH_NAME}"
             else
               echo "Already on main branch; no need to checkout."
             fi
