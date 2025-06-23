@@ -1,5 +1,6 @@
 # https://github.com/SilentVoid13/Templater/blob/master/.github/workflows/release.yml
 name: Plugin release
+
 on:
   push:
     tags:
@@ -8,19 +9,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
-      
+
       - name: Fetch all branches
         run: git fetch --all
 
       - name: Extract branch name
         id: extract_branch
-        run: echo "BRANCH_NAME=$(git branch -r --contains ${GITHUB_SHA} | grep -v 'detached' | sed 's|origin/||' | xargs)" >> $GITHUB_ENV
+        run: |
+          BRANCH_NAME=$(git name-rev --name-only $GITHUB_SHA | sed 's|^remotes/origin/||' | sed 's|^origin/||')
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Debug branch name
+        run: echo "Releasing from branch: $BRANCH_NAME"
 
       # Checkout the main branch to update manifest.json
       - name: Checkout main branch to update manifest
@@ -39,19 +46,18 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add manifest.json
-          git commit -m "Update manifest.json to version $VERSION"
+          git commit -m "Update manifest.json to version $VERSION" || echo "No changes to commit"
           git push origin main
 
-      # Switch back to the branch that triggered the workflow
+      # Switch back to the original branch ONLY if not 'main'
       - name: Checkout original branch (if not main)
         run: |
-            if [ "${env.BRANCH_NAME}" != "main" ]; then
-              git checkout "${env.BRANCH_NAME}"
-              git pull origin "${env.BRANCH_NAME}"
-            else
-              echo "Already on main branch; no need to checkout."
-            fi
-
+          if [ "$BRANCH_NAME" != "main" ]; then
+            git checkout "$BRANCH_NAME"
+            git pull origin "$BRANCH_NAME"
+          else
+            echo "Already on main branch; skipping checkout."
+          fi
 
       - name: npm build
         run: |
