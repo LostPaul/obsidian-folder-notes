@@ -1,12 +1,11 @@
 
-import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, WorkspaceLeaf, requireApiVersion } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, WorkspaceLeaf, requireApiVersion, Platform } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/SettingsTab';
 import { Commands } from './Commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
-import { handleFolderClick } from './events/handleClick';
-import { addObserver } from './events/MutationObserver';
+import { registerFileExplorerObserver, unregisterFileExplorerObserver } from './events/MutationObserver';
 import { handleRename } from './events/handleRename';
-import { getFolderNote, getFolder, openFolderNote } from './functions/folderNoteFunctions';
+import { getFolderNote, getFolder, openFolderNote, createFolderNote } from './functions/folderNoteFunctions';
 import { handleCreate } from './events/handleCreate';
 import { FrontMatterTitlePluginHandler } from './events/FrontMatterTitle';
 import { FolderOverviewSettings } from './obsidian-folder-overview/src/modals/Settings';
@@ -14,7 +13,7 @@ import { FolderOverview } from './obsidian-folder-overview/src/FolderOverview';
 import { TabManager } from './events/TabManager';
 import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
-import { addCSSClassToTitleEL, getEl, loadFileClasses } from './functions/styleFunctions';
+import { addCSSClassToFileExplorerEl, getFileExplorerElement, removeCSSClassFromFileExplorerEL, refreshAllFolderStyles, setActiveFolder, removeActiveFolder } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { FileExplorerView, InternalPlugin } from 'obsidian-typings';
 import { getFocusedItem } from './functions/utils';
@@ -67,12 +66,10 @@ export default class FolderNotesPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
 
-		await addObserver(this);
-
-		this.observer.observe(document.body, {
-			childList: true,
-			subtree: true,
-		});
+		// this.observer.observe(document.body, {
+		// 	childList: true,
+		// 	subtree: true,
+		// });
 
 		if (!this.settings.persistentSettingsTab.afterRestart) {
 			this.settings.settingsTab = 'general';
@@ -112,22 +109,18 @@ export default class FolderNotesPlugin extends Plugin {
 		}));
 
 		this.registerEvent(this.app.workspace.on('file-open', async (openFile: TFile | null) => {
-			if (this.activeFolderDom) {
-				this.activeFolderDom.removeClass('fn-is-active');
-				this.activeFolderDom = null;
-			}
+			removeActiveFolder(this);
 
 			if (!openFile || !openFile.basename) { return; }
 
 			const folder = getFolder(this, openFile);
 			if (!folder) { return; }
-			const excludedFolder = await getExcludedFolder(this, folder.path, true);
+			const excludedFolder = getExcludedFolder(this, folder.path, true);
 			if (excludedFolder?.disableFolderNote) return;
 			const folderNote = getFolderNote(this, folder.path);
 			if (!folderNote) { return; }
 			if (folderNote.path !== openFile.path) { return; }
-			this.activeFolderDom = getEl(folder.path, this);
-			if (this.activeFolderDom) this.activeFolderDom.addClass('fn-is-active');
+			setActiveFolder(folder.path, this);
 		}));
 
 		this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
@@ -141,9 +134,23 @@ export default class FolderNotesPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
 			this.handleOverviewBlock(source, el, ctx);
 		});
+
+		this.registerEvent(
+			this.app.workspace.on('layout-change', () => {
+				const fileExplorerLeaf = this.app.workspace.getLeavesOfType('file-explorer')[0];
+				if (!fileExplorerLeaf) return;
+				const container = fileExplorerLeaf.view.containerEl;
+				if (container) {
+					this.registerDomEvent(container, 'click', (evt: MouseEvent) => {
+						this.handleFileExplorerClick(evt);
+					}, true);
+				}
+			})
+		);
 	}
 
 	onLayoutReady() {
+		registerFileExplorerObserver(this);
 		this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
 			return new FolderOverviewView(leaf, this);
 		});
@@ -153,6 +160,35 @@ export default class FolderNotesPlugin extends Plugin {
 		this.tabManager = new TabManager(this);
 		this.tabManager.updateTabs();
 
+		const fileExplorerLeaf = this.app.workspace.getLeavesOfType('file-explorer')[0];
+		if (fileExplorerLeaf) {
+			const container = fileExplorerLeaf.view.containerEl;
+			if (container) {
+				this.registerDomEvent(container, 'click', (evt: MouseEvent) => {
+					this.handleFileExplorerClick(evt);
+				}, true);
+			}
+		}
+
+		const fileExplorerPlugin = this.app.internalPlugins.getEnabledPluginById('file-explorer');
+		if (fileExplorerPlugin) {
+			const originalRevealInFolder = fileExplorerPlugin.revealInFolder.bind(fileExplorerPlugin);
+			fileExplorerPlugin.revealInFolder = (file: TAbstractFile) => {
+				if (file instanceof TFile) {
+					const folder = getFolder(this, file);
+					if (folder instanceof TFolder) {
+						document.body.classList.remove('hide-folder-note');
+						originalRevealInFolder.call(fileExplorerPlugin, folder);
+						setTimeout(() => {
+							document.body.classList.add('hide-folder-note');
+						}, 100);
+						return;
+					}
+				}
+				return originalRevealInFolder.call(fileExplorerPlugin, file);
+			};
+		}
+
 		const leaf = this.app.workspace.getLeavesOfType('markdown').first();
 		const view = leaf?.view;
 
@@ -160,37 +196,90 @@ export default class FolderNotesPlugin extends Plugin {
 
 		// @ts-ignore
 		const editMode = view.editMode ?? view.sourceMode ?? this.app.workspace.activeEditor?.editMode;
+		// eslint-disable-next-line
+		const plugin = this;
 		if (!editMode) { return; }
 
 		// @ts-ignore
-		const originalHandleDragOver = editMode.clipboardManager.constructor.prototype.handleDragOver;
+		const clipboardProto = editMode.clipboardManager.constructor.prototype;
 
-		// @ts-ignore
-		editMode.clipboardManager.constructor.prototype.handleDragOver = function (evt, ...args) {
-			const { draggable } = this.app.dragManager;
-			if (draggable && draggable.file instanceof TFolder && getFolderNote(this, draggable.file.path)) {
-				this.app.dragManager.setAction(window.i18next.t('interface.drag-and-drop.insert-link-here'));
-			} else {
-				originalHandleDragOver.call(this, evt, ...args);
+		const originalHandleDragOver = clipboardProto.handleDragOver;
+		const originalHandleDrop = clipboardProto.handleDrop;
+
+		clipboardProto.handleDragOver = function (evt: DragEvent, ...args: any[]) {
+			const dragManager = this.app.dragManager;
+			const draggable = dragManager?.draggable;
+
+			if (draggable?.file instanceof TFolder) {
+				const folderNote = getFolderNote(plugin, draggable.file.path);
+				if (folderNote) {
+					dragManager.setAction(window.i18next.t('interface.drag-and-drop.insert-link-here'));
+					return;
+				}
 			}
+
+			return originalHandleDragOver.call(this, evt, ...args);
 		};
 
-		// @ts-ignore
-		const originalHandleDrop = editMode.clipboardManager.constructor.prototype.handleDrop;
-		// @ts-ignore
-		editMode.clipboardManager.constructor.prototype.handleDrop = function (evt, ...args) {
-			const { draggable } = this.app.dragManager;
-			if (draggable && draggable.file instanceof TFolder && getFolderNote(this, draggable.file.path)) {
-				const folderNote = getFolderNote(this, draggable.file.path);
-				if (draggable?.type === 'folder' && draggable.file instanceof TFolder && folderNote) {
+		clipboardProto.handleDrop = function (evt: DragEvent, ...args: any[]) {
+			const dragManager = this.app.dragManager;
+			const draggable = dragManager?.draggable;
+
+			if (draggable?.file instanceof TFolder) {
+				const folderNote = getFolderNote(plugin, draggable.file.path);
+				if (folderNote) {
 					draggable.file = folderNote;
 					draggable.type = 'file';
 				}
 			}
+
 			return originalHandleDrop.call(this, evt, ...args);
 		};
 	}
 
+	handleFileExplorerClick(evt: MouseEvent) {
+		const target = evt.target as HTMLElement;
+		if (evt.shiftKey) return;
+
+		if (Platform.isMobile && this.settings.disableOpenFolderNoteOnClick) return;
+
+		// Check if the click is on a folder
+		const folderTitleEl = target.closest('.nav-folder-title') as HTMLElement;
+		if (!folderTitleEl) return;
+
+		const onlyClickedOnFolderTitle = !!target.closest('.nav-folder-title-content');
+		if (!this.settings.stopWhitespaceCollapsing && !onlyClickedOnFolderTitle) return;
+
+		// Ignore clicks on the collapse icon
+		if (target.closest('.collapse-icon')) return;
+
+		const folderPath = folderTitleEl.getAttribute('data-path');
+		if (!folderPath) return;
+
+		const excludedFolder = getExcludedFolder(this, folderPath, true);
+		if (excludedFolder?.disableFolderNote) return;
+
+		const folderNote = getFolderNote(this, folderPath);
+		if (!folderNote && (evt.altKey || Keymap.isModEvent(evt) === 'tab')) {
+			if ((this.settings.altKey && evt.altKey) || (this.settings.ctrlKey && Keymap.isModEvent(evt) === 'tab')) {
+				createFolderNote(this, folderPath, true, undefined, true);
+				addCSSClassToFileExplorerEl(folderPath, 'has-folder-note', false, this);
+				removeCSSClassFromFileExplorerEL(folderPath, 'has-not-folder-note', false, this);
+				return;
+			}
+		}
+		if (!(folderNote instanceof TFile)) return;
+
+		if (this.settings.openWithCtrl && !evt.ctrlKey) return;
+		if (this.settings.openWithAlt && !evt.altKey) return;
+
+		if (!this.settings.enableCollapsing) {
+			evt.preventDefault();
+			evt.stopImmediatePropagation();
+		}
+
+		openFolderNote(this, folderNote, evt);
+	}
 
 	handleOverviewBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 		const observer = new MutationObserver(() => {
@@ -252,7 +341,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
 		const threshold = this.settings.storageLocation === 'insideFolder' ? 1 : 0;
 		if (folder.children.length === 0) {
-			addCSSClassToTitleEL(folder.path, 'fn-empty-folder', this);
+			addCSSClassToFileExplorerEl(folder.path, 'fn-empty-folder', false, this);
 		}
 
 		if (folder.children.length === threshold) {
@@ -265,7 +354,7 @@ export default class FolderNotesPlugin extends Plugin {
 				const attachmentFolder = this.app.vault.getAbstractFileByPath(folderPath);
 				if (attachmentFolder instanceof TFolder && folder.children.length <= threshold + 1) {
 					if (!folder.collapsed) {
-						getEl(folder.path, this)?.click();
+						getFileExplorerElement(folder.path, this)?.click();
 					}
 				}
 				return folder.children.length <= threshold + 1;
@@ -276,13 +365,13 @@ export default class FolderNotesPlugin extends Plugin {
 		return true;
 	}
 
-	async changeName(folder: TFolder, name: string | null | undefined, replacePath: boolean, waitForCreate = false, count = 0) {
-		if (!name) name = folder.name;
-		let fileExplorerItem = getEl(folder.path, this);
+	async changeFolderNameInExplorer(folder: TFolder, newName: string | null | undefined, waitForCreate = false, count = 0) {
+		if (!newName) newName = folder.name;
+		let fileExplorerItem = getFileExplorerElement(folder.path, this);
 		if (!fileExplorerItem) {
 			if (waitForCreate && count < 5) {
 				await new Promise((r) => setTimeout(r, 500));
-				this.changeName(folder, name, replacePath, waitForCreate, count + 1);
+				this.changeFolderNameInExplorer(folder, newName, waitForCreate, count + 1);
 				return;
 			}
 			return;
@@ -291,18 +380,26 @@ export default class FolderNotesPlugin extends Plugin {
 		fileExplorerItem = fileExplorerItem?.querySelector('div.nav-folder-title-content');
 		if (!fileExplorerItem) { return; }
 		if (this.settings.frontMatterTitle.explorer && this.settings.frontMatterTitle.enabled) {
-			fileExplorerItem.innerText = name;
+			fileExplorerItem.innerText = newName;
 			fileExplorerItem.setAttribute('old-name', folder.name);
 		} else {
 			fileExplorerItem.innerText = folder.name;
 			fileExplorerItem.removeAttribute('old-name');
 		}
-		if (replacePath) {
-			this.updateBreadcrumbs();
-		}
 	}
 
-	updateBreadcrumbs(remove?: boolean) {
+	async changeFolderNameInPath(folder: TFolder, newName: string | null | undefined, breadcrumb: HTMLElement) {
+		if (!newName) newName = folder.name;
+
+		breadcrumb.textContent = folder.newName || folder.name;
+		breadcrumb.setAttribute('old-name', folder.name);
+		breadcrumb.setAttribute('data-path', folder.path);
+	}
+
+	/**
+	 * Updates all folder names in the path above the note editor
+	*/
+	updateAllBreadcrumbs(remove?: boolean) {
 		if (!this.settings.frontMatterTitle.path && !remove) { return; }
 		const viewHeaderItems = document.querySelectorAll('span.view-header-breadcrumb');
 		const files = this.app.vault.getAllLoadedFiles().filter((file) => file instanceof TFolder);
@@ -322,22 +419,13 @@ export default class FolderNotesPlugin extends Plugin {
 		});
 	}
 
-	reloadHandlers() {
-		document.querySelectorAll('div.nav-folder-title-content')
-			.forEach((element: HTMLElement) => {
-				if (element.onclick) return;
-				element.onclick = (event: MouseEvent) => handleFolderClick(event, this);
-			});
-	}
-
 	onunload() {
-		console.log('unloading folder notes plugin');
-		this.observer.disconnect();
+		unregisterFileExplorerObserver();
 		document.body.classList.remove('folder-notes-plugin');
 		document.body.classList.remove('folder-note-underline');
 		document.body.classList.remove('hide-folder-note');
 		document.body.classList.remove('fn-whitespace-stop-collapsing');
-		if (this.activeFolderDom) { this.activeFolderDom.removeClass('is-active'); }
+		removeActiveFolder(this);
 		if (this.fmtpHandler) {
 			this.fmtpHandler.deleteEvent();
 		}
@@ -370,7 +458,7 @@ export default class FolderNotesPlugin extends Plugin {
 		await this.saveData(this.settings);
 		// cleanup any css if we need too
 		if ((!this.settingsOpened || reloadStyles === true) && reloadStyles !== false) {
-			loadFileClasses(true, this);
+			refreshAllFolderStyles(true, this);
 		}
 	}
 

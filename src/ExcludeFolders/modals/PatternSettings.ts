@@ -1,6 +1,7 @@
 import { App, Modal, Setting } from 'obsidian';
 import FolderNotesPlugin from '../../main';
 import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
+import { refreshAllFolderStyles } from 'src/functions/styleFunctions';
 
 export default class PatternSettings extends Modal {
 	plugin: FolderNotesPlugin;
@@ -53,6 +54,20 @@ export default class PatternSettings extends Modal {
 					.onChange(async (value) => {
 						this.pattern.excludeFromFolderOverview = value;
 						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(contentEl)
+			.setName('Show folder note in the file explorer')
+			.setDesc('Choose if the folder note should be shown in the file explorer')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.pattern.showFolderNote)
+					.onChange(async (value) => {
+						this.pattern.showFolderNote = value;
+						await this.plugin.saveSettings();
+						refreshAllFolderStyles(true, this.plugin);
+						this.display();
 					})
 			);
 

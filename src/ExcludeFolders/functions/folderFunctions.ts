@@ -32,8 +32,8 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, inclu
 		'excludeFromFolderOverview',
 		'detached',
 		'hideInSettings',
-		'hideNote',
 		'id',
+		'showFolderNote',
 	];
 
 	if (combinedExcludedFolders.length > 0) {
@@ -56,8 +56,9 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, inclu
 		excludedFolder.disableAutoCreate ? excludedFolder.disableAutoCreate = !whitelistedFolder.enableAutoCreate : '';
 		excludedFolder.disableFolderNote ? excludedFolder.disableFolderNote = !whitelistedFolder.enableFolderNote : '';
 		excludedFolder.disableSync ? excludedFolder.disableSync = !whitelistedFolder.enableSync : '';
-		excludedFolder.enableCollapsing = whitelistedFolder.enableCollapsing;
+		excludedFolder.enableCollapsing = !whitelistedFolder.disableCollapsing;
 		excludedFolder.excludeFromFolderOverview ? excludedFolder.excludeFromFolderOverview = !whitelistedFolder.showInFolderOverview : '';
+		excludedFolder.showFolderNote = !whitelistedFolder.hideInFileExplorer;
 	} else if (excludedFolder && Object.keys(excludedFolder).length === 0) {
 		excludedFolder = {
 			type: 'folder',
@@ -73,7 +74,7 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, inclu
 			excludeFromFolderOverview: false,
 			hideInSettings: false,
 			detached: false,
-			hideNote: false,
+			showFolderNote: false,
 		};
 	}
 

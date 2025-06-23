@@ -5,7 +5,7 @@ import AddSupportedFileModal from '../modals/AddSupportedFileType';
 import { FrontMatterTitlePluginHandler } from '../events/FrontMatterTitle';
 import ConfirmationModal from './modals/CreateFnForEveryFolder';
 import { TemplateSuggest } from '../suggesters/TemplateSuggester';
-import { loadFileClasses } from '../functions/styleFunctions';
+import { refreshAllFolderStyles } from '../functions/styleFunctions';
 import BackupWarningModal from './modals/BackupWarning';
 import RenameFolderNotesModal from './modals/RenameFns';
 
@@ -90,11 +90,17 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					dropdown.addOption('.' + type, type);
 				}
 			});
+
 			if (!settingsTab.plugin.settings.supportedFileTypes.includes(settingsTab.plugin.settings.folderNoteType.replace('.', '')) && settingsTab.plugin.settings.folderNoteType !== '.ask') {
 				settingsTab.plugin.settings.folderNoteType = '.md';
 				settingsTab.plugin.saveSettings();
 			}
-			const defaultType = settingsTab.plugin.settings.folderNoteType.startsWith('.') ? settingsTab.plugin.settings.folderNoteType : '.' + settingsTab.plugin.settings.folderNoteType;
+
+			let defaultType = settingsTab.plugin.settings.folderNoteType.startsWith('.') ? settingsTab.plugin.settings.folderNoteType : '.' + settingsTab.plugin.settings.folderNoteType;
+			if (!settingsTab.plugin.settings.supportedFileTypes.includes(defaultType.replace('.', ''))) {
+				defaultType = '.ask';
+				settingsTab.plugin.settings.folderNoteType = defaultType;
+			}
 
 			dropdown
 				.setValue(defaultType)
@@ -116,6 +122,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 	list.on('update', async (values: string[]) => {
 		settingsTab.plugin.settings.supportedFileTypes = values;
 		await settingsTab.plugin.saveSettings();
+		settingsTab.display();
 	});
 
 	if (!settingsTab.plugin.settings.supportedFileTypes.includes('md') || !settingsTab.plugin.settings.supportedFileTypes.includes('canvas') || !settingsTab.plugin.settings.supportedFileTypes.includes('excalidraw')) {
@@ -186,7 +193,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.storageLocation = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-					loadFileClasses(undefined, settingsTab.plugin);
+					refreshAllFolderStyles(undefined, settingsTab.plugin);
 				})
 		)
 		.addButton((button) =>
@@ -238,6 +245,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 			);
 	}
 	if (Platform.isDesktopApp) {
+		settingsTab.settingsPage.createEl('h3', { text: 'Keyboard Shortcuts' });
+
 		new Setting(containerEl)
 			.setName('Key for creating folder note')
 			.setDesc('The key combination to create a folder note')
@@ -285,6 +294,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 			});
 	}
 
+	settingsTab.settingsPage.createEl('h3', { text: 'Folder note behavior' });
+
 	new Setting(containerEl)
 		.setName('Confirm folder note deletion')
 		.setDesc('Ask for confirmation before deleting a folder note')
@@ -330,56 +341,20 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 		setting3.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 	}
 
-	const desc1 = document.createDocumentFragment();
-
-	const link = document.createElement('a');
-	link.href = 'https://github.com/snezhig/obsidian-front-matter-title';
-	link.textContent = 'front matter title plugin';
-	link.target = '_blank';
-
-	desc1.append(
-		'Allows you to use the ',
-		link,
-		' with folder notes. It allows you to set the folder name to some name you set in the front matter.',
-	);
-
-	new Setting(containerEl)
-		.setName('Enable front matter title plugin integration')
-		.setDesc(desc1)
-		.addToggle((toggle) =>
-			toggle
-				.setValue(settingsTab.plugin.settings.frontMatterTitle.enabled)
-				.onChange(async (value) => {
-					settingsTab.plugin.settings.frontMatterTitle.enabled = value;
-					await settingsTab.plugin.saveSettings();
-					if (value) {
-						settingsTab.plugin.fmtpHandler = new FrontMatterTitlePluginHandler(settingsTab.plugin);
-					} else {
-						if (settingsTab.plugin.fmtpHandler) {
-							settingsTab.plugin.updateBreadcrumbs(true);
-						}
-						settingsTab.plugin.app.vault.getFiles().forEach((file) => {
-							settingsTab.plugin.fmtpHandler?.handleRename({ id: '', result: false, path: file.path }, false);
-						});
-						settingsTab.plugin.fmtpHandler?.deleteEvent();
-						settingsTab.plugin.fmtpHandler = null;
-					}
-					settingsTab.display();
-				})
-		);
-
-	new Setting(containerEl)
-		.setName('Create folder note for every folder')
-		.setDesc('Create a folder note for every folder in the vault')
-		.addButton((cb) => {
-			cb.setIcon('plus');
-			cb.setTooltip('Create folder notes');
-			cb.onClick(async () => {
-				new ConfirmationModal(settingsTab.app, settingsTab.plugin).open();
-			});
-		});
-
-	settingsTab.settingsPage.createEl('h3', { text: 'Automation settings' });
+	if (settingsTab.plugin.settings.openInNewTab) {
+		new Setting(containerEl)
+			.setName('Focus existing tab instead of creating a new one')
+			.setDesc('If a folder note is already open in a tab, focus that tab instead of creating a new one.')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(settingsTab.plugin.settings.focusExistingTab)
+					.onChange(async (value) => {
+						settingsTab.plugin.settings.focusExistingTab = value;
+						await settingsTab.plugin.saveSettings();
+						settingsTab.display();
+					})
+			);
+	}
 
 	new Setting(containerEl)
 		.setName('Sync folder name')
@@ -394,9 +369,22 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 				})
 		);
 
+	settingsTab.settingsPage.createEl('h4', { text: 'Automation settings' });
+
 	new Setting(containerEl)
-		.setName('Automatically create folder notes')
-		.setDesc('Automatically create a folder note when a new folder is created')
+		.setName('Create folder notes for all folders')
+		.setDesc('Generate folder notes for every folder in the vault.')
+		.addButton((cb) => {
+			cb.setIcon('plus');
+			cb.setTooltip('Create folder notes');
+			cb.onClick(async () => {
+				new ConfirmationModal(settingsTab.app, settingsTab.plugin).open();
+			});
+		});
+
+	new Setting(containerEl)
+		.setName('Auto-create on folder creation')
+		.setDesc('Automatically create a folder note whenever a new folder is added.')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.autoCreate)
@@ -409,8 +397,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 
 	if (settingsTab.plugin.settings.autoCreate) {
 		new Setting(containerEl)
-			.setName('Open folder note after creating')
-			.setDesc('Automatically open the folder note after automatically creating it')
+			.setName('Auto-open after creation')
+			.setDesc('Open the folder note immediately after it’s created automatically.')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.autoCreateFocusFiles)
@@ -422,8 +410,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 			);
 
 		new Setting(containerEl)
-			.setName('Auto create folder note for attachment folder')
-			.setDesc('Automatically create a folder note for the attachment folder when you attach a file to a note and the attachment folder gets created')
+			.setName('Auto-create for attachment folders')
+			.setDesc('Also automatically create folder notes for attachment folders (e.g., "Attachments", "Media", etc.).')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.autoCreateForAttachmentFolder)
@@ -436,8 +424,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 	}
 
 	new Setting(containerEl)
-		.setName('Automatically create folder note when you create a note')
-		.setDesc('Automatically create a folder note when a note is created. It has to be a file type that you selected in the supported file types')
+		.setName('Auto-create when creating notes')
+		.setDesc('Automatically create a folder note when a regular note is created inside a folder. Works for supported file types only.')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.autoCreateForFiles)
@@ -448,11 +436,53 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 				})
 		);
 
-	settingsTab.settingsPage.createEl('h3', { text: 'Settings tab' });
+	settingsTab.settingsPage.createEl('h3', { text: 'Integration & Compatibility' });
+
+	const desc1 = document.createDocumentFragment();
+
+	const link = document.createElement('a');
+	link.href = 'https://github.com/snezhig/obsidian-front-matter-title';
+	link.textContent = 'front matter title plugin';
+	link.target = '_blank';
+
+	desc1.append(
+		'Allows you to use the ',
+		link,
+		' with folder notes. It allows you to set the folder name to some name you set in the front matter.',
+	);
+
+	const fmtpSetting = new Setting(containerEl)
+		.setName('Enable front matter title plugin integration')
+		.setDesc(desc1)
+		.addToggle((toggle) =>
+			toggle
+				.setValue(settingsTab.plugin.settings.frontMatterTitle.enabled)
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.frontMatterTitle.enabled = value;
+					await settingsTab.plugin.saveSettings();
+					if (value) {
+						settingsTab.plugin.fmtpHandler = new FrontMatterTitlePluginHandler(settingsTab.plugin);
+					} else {
+						if (settingsTab.plugin.fmtpHandler) {
+							settingsTab.plugin.updateAllBreadcrumbs(true);
+						}
+						settingsTab.plugin.app.vault.getFiles().forEach((file) => {
+							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName({ id: '', result: false, path: file.path, pathOnly: false }, false);
+						});
+						settingsTab.plugin.fmtpHandler?.deleteEvent();
+						settingsTab.plugin.fmtpHandler = null;
+					}
+					settingsTab.display();
+				})
+		);
+	fmtpSetting.infoEl.appendText('Requires a restart to take effect');
+	fmtpSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
+
+	settingsTab.settingsPage.createEl('h3', { text: 'Session & Persistence' });
 
 	new Setting(containerEl)
 		.setName('Persist tab after restart')
-		.setDesc('Reopen the same settings tab after restarting Obsidian')
+		.setDesc('Restore the same settings tab after restarting Obsidian.')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.persistentSettingsTab.afterRestart)
@@ -465,7 +495,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Persist tab during session only')
-		.setDesc('Keep the same settings tab while Obsidian is open, but reset after restart or tab reload')
+		.setDesc('Keep the current settings tab open during the session, but reset it after a restart or reload.')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.persistentSettingsTab.afterChangingTab)

@@ -9,8 +9,9 @@ export class WhitelistedPattern {
 	enableSync: boolean;
 	enableAutoCreate: boolean;
 	enableFolderNote: boolean;
-	enableCollapsing: boolean;
+	disableCollapsing: boolean;
 	showInFolderOverview: boolean;
+	hideInFileExplorer: boolean;
 	hideInSettings: boolean;
 	constructor(pattern: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
 		this.type = 'pattern';

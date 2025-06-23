@@ -5,7 +5,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Hide folder note')
-		.setDesc('Hide the folder note in the file explorer')
+		.setDesc('Hide the folder note file from appearing in the file explorer')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.hideFolderNote)
@@ -22,8 +22,8 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 		);
 
 	const setting2 = new Setting(containerEl)
-		.setName('Don\'t open folder notes by clicking on the name (on mobile)')
-		.setDesc('Folder notes don\'t open when clicking on the name of the folder (on mobile)')
+		.setName('Disable click-to-open folder note on mobile')
+		.setDesc('Prevents folder notes from opening when tapping the folder name or surrounding area on mobile devices. They can now only be opened via the context menu or a command.')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.disableOpenFolderNoteOnClick)
@@ -37,8 +37,8 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 	setting2.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
 	new Setting(containerEl)
-		.setName('Only open folder notes through the name')
-		.setDesc('Only open folder notes in the file explorer by clicking on the folder name')
+		.setName('Open folder notes by only clicking directly on the folder name')
+		.setDesc('Only allow folder notes to open when clicking directly on the folder name in the file explorer')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(!settingsTab.plugin.settings.stopWhitespaceCollapsing)
@@ -55,7 +55,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 
 	const disableSetting = new Setting(containerEl);
 	disableSetting.setName('Disable folder collapsing');
-	disableSetting.setDesc('Disable the ability to collapse folders by clicking exactly on the folder name');
+	disableSetting.setDesc('When enabled, folders in the file explorer will only collapse when clicking the collapse icon next to the folder name, not when clicking near a folder name when it has a folder note.');
 	disableSetting.addToggle((toggle) =>
 		toggle
 			.setValue(!settingsTab.plugin.settings.enableCollapsing)
@@ -82,8 +82,8 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 
 	if (settingsTab.plugin.settings.frontMatterTitle.enabled) {
 		new Setting(containerEl)
-			.setName('Change folder name in the file explorer')
-			.setDesc('Automatically rename a folder name in the file explorer when the folder note is renamed')
+			.setName('Auto update folder name in the file explorer (front matter title plugin only)')
+			.setDesc('Automatically update the folder name in the file explorer when the front matter title plugin is enabled and the title for a folder note is changed in the front matter. This will not change the file name, only the displayed name in the file explorer.')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.frontMatterTitle.explorer)
@@ -91,7 +91,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						settingsTab.plugin.settings.frontMatterTitle.explorer = value;
 						await settingsTab.plugin.saveSettings();
 						settingsTab.plugin.app.vault.getFiles().forEach((file) => {
-							settingsTab.plugin.fmtpHandler?.handleRename({ id: '', result: false, path: file.path }, false);
+							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName({ id: '', result: false, path: file.path, pathOnly: false }, false);
 						});
 					})
 			);
@@ -101,7 +101,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Highlight folder in the file explorer')
-		.setDesc('Highlight the folder name in the file explorer when you click on a folder that has a folder note')
+		.setDesc('Highlight the folder in the file explorer when it has a folder note and the folder note is open in the editor')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.highlightFolder)
@@ -154,7 +154,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 
 	if (settingsTab.plugin.settings.hideCollapsingIcon) {
 		new Setting(containerEl)
-			.setName('Hide collapse icon also when the attachment folder is in the same folder')
+			.setName('Hide collapse icon also when only the attachment folder is in the same folder')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.ignoreAttachmentFolder)
@@ -184,7 +184,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Bold the name of folder notes')
-		.setDesc('Make the folder name bold in the file explorer')
+		.setDesc('Make the folder name bold in the file explorer when it has a folder note')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.boldName)
@@ -201,7 +201,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Cursive the name of folder notes')
-		.setDesc('Make the folder name cursive in the file explorer')
+		.setDesc('Make the folder name cursive in the file explorer when it has a folder note')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.cursiveName)

@@ -29,4 +29,3 @@ Just create the folder overview as normal in a template and then change the sett
 ## What's the id in the code block for?
 They're there to differentiate the overviews from each other so that you can use "Edit folder overview" command to edit the overviews from one file (there can be multiple overviews in one file). It's especially useful on mobile because the button to edit the code block on mobile is quite small.
 
-

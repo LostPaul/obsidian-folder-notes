@@ -2,17 +2,17 @@ import { TAbstractFile, TFolder, TFile } from 'obsidian';
 import FolderNotesPlugin from 'src/main';
 import { createFolderNote, getFolder, getFolderNote, turnIntoFolderNote } from 'src/functions/folderNoteFunctions';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
-import { removeCSSClassFromEL, addCSSClassToTitleEL } from 'src/functions/styleFunctions';
+import { removeCSSClassFromFileExplorerEL, addCSSClassToFileExplorerEl } from 'src/functions/styleFunctions';
 
 export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
 	if (!plugin.app.workspace.layoutReady) return;
 
 	const folder = file.parent;
 	if (folder instanceof TFolder) {
-		if (plugin.isEmptyFolderNoteFolder(folder)) {
-			addCSSClassToTitleEL(folder.path, 'only-has-folder-note', plugin);
+		if (plugin.isEmptyFolderNoteFolder(folder) && getFolderNote(plugin, folder.path)) {
+			addCSSClassToFileExplorerEl(folder.path, 'only-has-folder-note', true, plugin);
 		} else {
-			removeCSSClassFromEL(folder.path, 'only-has-folder-note', plugin);
+			removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);
 		}
 	}
 
@@ -31,13 +31,17 @@ async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin) {
 		const newFolder = await plugin.app.fileManager.createNewFolder(file.parent);
 		turnIntoFolderNote(plugin, file, newFolder);
 	} else if (folder instanceof TFolder) {
-		const detachedFolder = await getExcludedFolder(plugin, folder.path, true);
+		if (folder.children.length >= 1) {
+			removeCSSClassFromFileExplorerEL(folder.path, 'fn-empty-folder', false, plugin);
+		}
+
+		const detachedFolder = getExcludedFolder(plugin, folder.path, true);
 		if (detachedFolder) { return; }
 		const folderNote = getFolderNote(plugin, folder.path);
 
 		if (folderNote && folderNote.path === file.path) {
-			addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
-			addCSSClassToTitleEL(file.path, 'is-folder-note', plugin);
+			addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
+			addCSSClassToFileExplorerEl(file.path, 'is-folder-note', false, plugin);
 		} else if (plugin.settings.autoCreateForFiles) {
 			if (!file.parent) { return; }
 			const newFolder = await plugin.app.fileManager.createNewFolder(file.parent);
@@ -52,6 +56,7 @@ async function handleFolderCreation(folder: TFolder, plugin: FolderNotesPlugin) 
 	const attachmentFolderPath = plugin.app.vault.getConfig('attachmentFolderPath') as string;
 	const cleanAttachmentFolderPath = attachmentFolderPath?.replace('./', '') || '';
 	const attachmentsAreInRootFolder = attachmentFolderPath === './' || attachmentFolderPath === '';
+	addCSSClassToFileExplorerEl(folder.path, 'fn-empty-folder', false, plugin);
 
 	if (!plugin.settings.autoCreateForAttachmentFolder) {
 		if (!attachmentsAreInRootFolder && cleanAttachmentFolderPath === folder.name) return;
@@ -59,12 +64,12 @@ async function handleFolderCreation(folder: TFolder, plugin: FolderNotesPlugin) 
 		openFile = false;
 	}
 
-	const excludedFolder = await getExcludedFolder(plugin, folder.path, true);
+	const excludedFolder = getExcludedFolder(plugin, folder.path, true);
 	if (excludedFolder?.disableAutoCreate) return;
 
 	const folderNote = getFolderNote(plugin, folder.path);
 	if (folderNote) return;
 
 	createFolderNote(plugin, folder.path, openFile, undefined, true);
-	addCSSClassToTitleEL(folder.path, 'has-folder-note', plugin);
+	addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
 }

@@ -33,6 +33,7 @@ export interface FolderNotesSettings {
 	underlineFolderInPath: boolean;
 	openFolderNoteOnClickInPath: boolean;
 	openInNewTab: boolean;
+	focusExistingTab: boolean;
 	oldFolderNoteName: string | undefined;
 	folderNoteName: string;
 	newFolderNoteName: string;
@@ -95,6 +96,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	underlineFolderInPath: true,
 	openFolderNoteOnClickInPath: true,
 	openInNewTab: false,
+	focusExistingTab: false,
 	oldFolderNoteName: undefined,
 	folderNoteName: '{{folder_name}}',
 	folderNoteType: '.md',
@@ -154,7 +156,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		string: '',
 		hideInSettings: false,
 		detached: false,
-		hideNote: false,
+		showFolderNote: false,
 	},
 	excludePatternDefaultSettings: {
 		type: 'pattern',
@@ -170,7 +172,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		string: '',
 		hideInSettings: false,
 		detached: false,
-		hideNote: false,
+		showFolderNote: false,
 	},
 	hideCollapsingIcon: false,
 	hideCollapsingIconForEmptyFolders: false,

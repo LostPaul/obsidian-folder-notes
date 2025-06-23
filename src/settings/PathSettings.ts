@@ -39,22 +39,24 @@ export async function renderPath(settingsTab: SettingsTab) {
 				})
 		);
 
-	new Setting(containerEl)
-		.setName('Change folder name in the path')
-		.setDesc('Automatically rename a folder name in the path above a note when the folder note is renamed')
-		.addToggle((toggle) =>
-			toggle
-				.setValue(settingsTab.plugin.settings.frontMatterTitle.path)
-				.onChange(async (value) => {
-					settingsTab.plugin.settings.frontMatterTitle.path = value;
-					await settingsTab.plugin.saveSettings();
-					if (value) {
-						settingsTab.plugin.updateBreadcrumbs();
-					} else {
-						settingsTab.plugin.updateBreadcrumbs(true);
-					}
-				})
-		);
+	if (settingsTab.plugin.settings.frontMatterTitle.enabled) {
+		new Setting(containerEl)
+			.setName('Auto update folder name in the path (front matter title plugin only)')
+			.setDesc('Automatically update the folder name in the path when the front matter title plugin is enabled and the title for a folder note is changed in the front matter. This will not change the file name, only the displayed name in the path.')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(settingsTab.plugin.settings.frontMatterTitle.path)
+					.onChange(async (value) => {
+						settingsTab.plugin.settings.frontMatterTitle.path = value;
+						await settingsTab.plugin.saveSettings();
+						if (value) {
+							settingsTab.plugin.updateAllBreadcrumbs();
+						} else {
+							settingsTab.plugin.updateAllBreadcrumbs(true);
+						}
+					})
+			);
+	}
 
 	settingsTab.settingsPage.createEl('h3', { text: 'Style settings' });
 
@@ -77,7 +79,7 @@ export async function renderPath(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Bold folders in the path')
-		.setDesc('Make the folder name bold in the path above a note')
+		.setDesc('Make the folder name bold in the path above a note when it has a folder note')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.boldNameInPath)
@@ -94,7 +96,7 @@ export async function renderPath(settingsTab: SettingsTab) {
 
 	new Setting(containerEl)
 		.setName('Cursive the name of folder notes in the path')
-		.setDesc('Make the folder name cursive in the path above a note')
+		.setDesc('Make the folder name cursive in the path above a note when it has a folder note')
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.cursiveNameInPath)
