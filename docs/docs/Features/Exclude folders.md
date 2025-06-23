@@ -6,7 +6,7 @@ To only exclude the folder itself and not the sub folders also you have to click
 ## How to exclude a folder?
 ### Directly in the settings
 Click on the plus icon, then click on the text input, search a folder name and then select the folder you want to exclude from the list.
-![Video](../assets/xdS3VV7wjIRFNHADE0lx.mp4)
+![Video type:video](../assets/xdS3VV7wjIRFNHADE0lx.mp4)
 ### Through the file explorer
 Click on a folder and then use the context menu and click on "exclude folder from folder notes". The plugin will then apply the [default exclude folder settings](#Default settings) and add it to the excluded folders list.
 ![Screenshot](../assets/Ny4aCJtZStlFmlsN9zp2.png)
