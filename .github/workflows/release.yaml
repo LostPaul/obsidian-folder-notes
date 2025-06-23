@@ -25,9 +25,6 @@ jobs:
           BRANCH_NAME=$(git name-rev --name-only $GITHUB_SHA | sed 's|^remotes/origin/||' | sed 's|^origin/||')
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
-      - name: Debug branch name
-        run: echo "Releasing from branch: ${{ env.BRANCH_NAME }}"
-
       # Checkout the main branch to update manifest.json
       - name: Checkout main branch to update manifest
         run: |
