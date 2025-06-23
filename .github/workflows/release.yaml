@@ -21,13 +21,12 @@ jobs:
         run: git fetch --all
 
       - name: Extract branch name
-        id: extract_branch
         run: |
           BRANCH_NAME=$(git name-rev --name-only $GITHUB_SHA | sed 's|^remotes/origin/||' | sed 's|^origin/||')
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Debug branch name
-        run: echo "Releasing from branch: $BRANCH_NAME"
+        run: echo "Releasing from branch: ${{ env.BRANCH_NAME }}"
 
       # Checkout the main branch to update manifest.json
       - name: Checkout main branch to update manifest
@@ -52,9 +51,9 @@ jobs:
       # Switch back to the original branch ONLY if not 'main'
       - name: Checkout original branch (if not main)
         run: |
-          if [ "$BRANCH_NAME" != "main" ]; then
-            git checkout "$BRANCH_NAME"
-            git pull origin "$BRANCH_NAME"
+          if [ "${{ env.BRANCH_NAME }}" != "main" ]; then
+            git checkout "${{ env.BRANCH_NAME }}"
+            git pull origin "${{ env.BRANCH_NAME }}"
           else
             echo "Already on main branch; skipping checkout."
           fi
