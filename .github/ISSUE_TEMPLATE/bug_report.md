@@ -30,7 +30,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Plugin information**
 - Version: [e.g. v1.7.30]
-- [ ] Beta version (If it is the beta version also add the beta label)
+- [ ] Beta version
 
 **Additional context**
 Add any other context about the problem here.

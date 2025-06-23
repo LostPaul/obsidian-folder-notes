@@ -2,6 +2,8 @@ site_name: Obsidian folder notes
 theme:
   name: material
   logo: assets/2023_Obsidian_logo.svg.png
+  features:
+    - navigation.expand
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default

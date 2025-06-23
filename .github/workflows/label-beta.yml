@@ -1,0 +1,30 @@
+name: Label Beta Issues
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  label-beta:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for Beta Version checkbox
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const betaChecked = context.payload.issue.body.includes("- [x] Beta version");
+
+            if (betaChecked) {
+              const issue_number = context.payload.issue.number;
+              const labels = context.payload.issue.labels.map(label => label.name);
+
+              if (!labels.includes('beta')) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue_number,
+                  labels: ['beta']
+                });
+              }
+            }
