@@ -16,7 +16,7 @@ import { handleDelete } from './events/handleDelete';
 import { addCSSClassToFileExplorerEl, getFileExplorerElement, removeCSSClassFromFileExplorerEL, refreshAllFolderStyles, setActiveFolder, removeActiveFolder } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
 import { FileExplorerView, InternalPlugin } from 'obsidian-typings';
-import { getFocusedItem } from './functions/utils';
+// import { getFocusedItem } from './functions/utils';
 import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './obsidian-folder-overview/src/view';
 import { registerOverviewCommands } from './obsidian-folder-overview/src/Commands';
 import { updateOverviewView, updateViewDropdown } from './obsidian-folder-overview/src/main';
@@ -76,11 +76,12 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 
 		this.registerDomEvent(window, 'keydown', (event: KeyboardEvent) => {
-			if (event.key === 'Enter') {
-				const folderNote = getFolderNote(this, getFocusedItem(this)?.file?.path || '');
-				if (!folderNote) return;
-				openFolderNote(this, folderNote);
-			}
+			// Was a bit too buggy
+			// if (event.key === 'Enter') {
+			// 	const folderNote = getFolderNote(this, getFocusedItem(this)?.file?.path || '');
+			// 	if (!folderNote) return;
+			// 	openFolderNote(this, folderNote);
+			// }
 
 			const hoveredElement = this.hoveredElement;
 			if (this.hoverLinkTriggered) return;

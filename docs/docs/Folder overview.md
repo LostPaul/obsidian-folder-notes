@@ -9,7 +9,7 @@ Additionally, you can **customize** the overview by selecting **specific file ty
 There are two options to create a folder overview in a note
 
 - Use the command "Insert folder overview" from the [command palette](https://help.obsidian.md/Plugins/Command+palette)
-- On desktop right click and click on the option "Create folder overview"
+- On desktop right click and click on the option "Insert folder overview"
 ## Edit overview
 If the overview shows no files or folders yet you can just click on the button that says "Edit overview". But if there are already files/folders you can use the command "Edit folder overview" from the [command palette](https://help.obsidian.md/Plugins/Command+palette) or click on the button as showed in the video below.
 
