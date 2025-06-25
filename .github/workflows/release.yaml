@@ -45,15 +45,12 @@ jobs:
           git commit -m "Update manifest.json to version $VERSION" || echo "No changes to commit"
           git push origin main
 
-      # Switch back to the original branch ONLY if not 'main'
-      - name: Checkout original branch (if not main)
+
+      - name: Ensure HEAD is at updated main commit
         run: |
-          if [ "${{ env.BRANCH_NAME }}" != "main" ]; then
-            git checkout "${{ env.BRANCH_NAME }}"
-            git pull origin "${{ env.BRANCH_NAME }}"
-          else
-            echo "Already on main branch; skipping checkout."
-          fi
+            git fetch origin
+            git checkout main
+            git reset --hard origin/main
 
       - name: npm build
         run: |
