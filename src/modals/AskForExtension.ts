@@ -16,6 +16,7 @@ export class AskForExtensionModal extends FuzzySuggestModal<string> {
 		this.openFile = openFile;
 		this.useModal = useModal;
 		this.existingNote = existingNote;
+		plugin.askModalCurrentlyOpen = true;
 	}
 
 	getItems(): string[] {
@@ -27,6 +28,7 @@ export class AskForExtensionModal extends FuzzySuggestModal<string> {
 	}
 
 	onChooseItem(item: string, evt: MouseEvent | KeyboardEvent) {
+		this.plugin.askModalCurrentlyOpen = false;
 		this.extension = '.' + item;
 		createFolderNote(this.plugin, this.folderPath, this.openFile, this.extension, this.useModal, this.existingNote);
 		this.close();

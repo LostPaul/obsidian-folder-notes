@@ -33,6 +33,7 @@ export default class FolderNotesPlugin extends Plugin {
 	hoverLinkTriggered = false;
 	tabManager: TabManager;
 	settingsOpened = false;
+	askModalCurrentlyOpen = false;
 
 	private fileExplorerPlugin!: InternalPlugin;
 	private fileExplorerView!: FileExplorerView;

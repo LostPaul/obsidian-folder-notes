@@ -42,6 +42,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 		folderNoteType = '.md';
 		extension = '.excalidraw';
 	} else if (folderNoteType === '.ask') {
+		if (plugin.askModalCurrentlyOpen) return;
 		return new AskForExtensionModal(plugin, folderPath, openFile, folderNoteType, displayModal, preexistingNote).open();
 	}
 
