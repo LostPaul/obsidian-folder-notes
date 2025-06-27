@@ -119,8 +119,19 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
     display: none;
 }
 
+.cm-line:has(.fv-link-list-item),
+.el-ul:has(.fv-link-list-item),
+.cm-line:has(.fv-link-list-start),
+.el-p:has(.fv-link-list-start),
+.cm-line:has(.fv-link-list-end),
+.el-p:has(.fv-link-list-end),
+.fv-hide-overview {
+    display: none !important;
+}
+
+
 .folder-overview-list {
-     margin-top: 0 !important;
+    margin-top: 0 !important;
     margin-bottom: 0 !important;
     padding-bottom: 1.200 !important;
     padding-top: 1.200 !important;
@@ -214,7 +225,7 @@ body:not(.disable-folder-highlight) .tree-item-self.fn-is-active {
 .fn-has-no-files .collapse-icon,
 .fn-hide-collapse-icon .has-folder-note.only-has-folder-note .tree-item-icon,
 .fn-hide-empty-collapse-icon .fn-empty-folder .tree-item-icon,
-.only-has-folder-note:not(.is-collapsed):not(.show-folder-note-in-explorer) > .nav-folder-children {
+.only-has-folder-note:not(.is-collapsed):not(.show-folder-note-in-explorer)>.nav-folder-children {
     display: none;
 }
 

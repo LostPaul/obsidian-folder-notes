@@ -74,7 +74,8 @@ export interface FolderNotesSettings {
 	persistentSettingsTab: {
 		afterRestart: boolean;
 		afterChangingTab: boolean;
-	}
+	},
+	firstTimeInsertOverview: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -124,6 +125,9 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		alwaysCollapse: false,
 		autoSync: true,
 		allowDragAndDrop: true,
+		hideLinkList: true,
+		hideFolderOverview: false,
+		useActualLinks: false,
 	},
 	useSubmenus: true,
 	syncMove: true,
@@ -188,6 +192,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		afterRestart: true,
 		afterChangingTab: true,
 	},
+	firstTimeInsertOverview: true,
 };
 
 export class SettingsTab extends PluginSettingTab {
@@ -240,7 +245,6 @@ export class SettingsTab extends PluginSettingTab {
 				renderPath(this);
 				break;
 		}
-
 	}
 
 	display(contentEl?: HTMLElement, yaml?: overviewSettings, plugin?: FolderNotesPlugin, defaultSettings?: boolean, display?: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: this) {
