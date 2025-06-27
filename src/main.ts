@@ -58,6 +58,7 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.settings.stopWhitespaceCollapsing) { document.body.classList.add('fn-whitespace-stop-collapsing'); }
 		if (this.settings.hideCollapsingIcon) { document.body.classList.add('fn-hide-collapse-icon'); }
 		if (!this.settings.highlightFolder) { document.body.classList.add('disable-folder-highlight'); }
+		// document.body.classList.add('fv-hide-link-list');
 		if (requireApiVersion('1.7.2')) {
 			document.body.classList.add('version-1-7-2');
 		}
@@ -179,6 +180,10 @@ export default class FolderNotesPlugin extends Plugin {
 				if (file instanceof TFile) {
 					const folder = getFolder(this, file);
 					if (folder instanceof TFolder) {
+						const folderNote = getFolderNote(this, folder.path);
+						if (!folderNote || folderNote.path !== file.path) {
+							return originalRevealInFolder.call(fileExplorerPlugin, file);
+						}
 						document.body.classList.remove('hide-folder-note');
 						originalRevealInFolder.call(fileExplorerPlugin, folder);
 						setTimeout(() => {
