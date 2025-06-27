@@ -10,7 +10,6 @@
 		"fv-build": "tsc -noEmit -skipLibCheck && node ./src/obsidian-folder-overview/esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"folder-overview": "node ./src/obsidian-folder-overview/esbuild.config.mjs",
-		
 		"fv-dev": "npm run folder-overview"
 	},
 	"keywords": [],
@@ -21,7 +20,7 @@
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
-		"esbuild": "0.25.0",
+		"esbuild": "0.14.47",
 		"front-matter-plugin-api-provider": "^0.1.4-alpha",
 		"obsidian": "latest",
 		"obsidian-typings": "^2.2.0",
