@@ -234,7 +234,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 			);
 		new Setting(containerEl)
 			.setName('Move folder notes when moving the folder')
-			.setDesc('Move the folder note when moving the folder')
+			.setDesc('Move the folder note file along with the folder when it is moved')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.syncMove)
