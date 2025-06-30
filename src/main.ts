@@ -280,7 +280,7 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.settings.openWithCtrl && !evt.ctrlKey) return;
 		if (this.settings.openWithAlt && !evt.altKey) return;
 
-		if (!this.settings.enableCollapsing) {
+		if (!this.settings.enableCollapsing || evt.ctrlKey) {
 			evt.preventDefault();
 			evt.stopImmediatePropagation();
 		}
