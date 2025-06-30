@@ -63,12 +63,22 @@ function isFolderRename(folder: TFolder, oldPath: string): boolean {
 	return oldParent === newParent && oldName !== newName;
 }
 
-
-
 export function handleFolderMove(file: TFolder, oldPath: string, plugin: FolderNotesPlugin) {
-	// Soon
-	// Will be useful to move folder notes along with the folder
-	// When the folder note is in the parent folder
+	if (plugin.settings.storageLocation === 'insideFolder') { return; }
+	if (!plugin.settings.syncMove) { return; }
+	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation);
+	if (!(file instanceof TFolder) || !folderNote) return;
+	const newFolder = plugin.app.vault.getAbstractFileByPath(file.path);
+	if (!(newFolder instanceof TFolder)) return;
+	let newPath = folderNote.path;
+
+	if (newFolder.path === '/') {
+		newPath = folderNote.name;
+	} else {
+		newPath = `${newFolder.parent?.path}/${folderNote.name}`;
+	}
+
+	plugin.app.fileManager.renameFile(folderNote, newPath);
 }
 
 export async function handleFileMove(file: TFile, oldPath: string, plugin: FolderNotesPlugin) {
