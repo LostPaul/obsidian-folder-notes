@@ -161,6 +161,7 @@ async function updateFolderNamesInPath(plugin: FolderNotesPlugin, titleContainer
 		const excludedFolder = getExcludedFolder(plugin, folderPath, true);
 		if (excludedFolder?.disableFolderNote) return;
 		const folderNote = getFolderNote(plugin, folderPath);
+		if (!folderNote) return;
 		if (folderNote) breadcrumb.classList.add('has-folder-note');
 
 		breadcrumb?.setAttribute('data-path', path.slice(0, -1));
