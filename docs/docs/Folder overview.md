@@ -31,7 +31,7 @@ Just create the folder overview as normal in a template and then change the sett
 ### What's the id in the code block for?
 They're there to differentiate the overviews from each other so that you can use "Edit folder overview" command to edit the overviews from one file (there can be multiple overviews in one file). It's especially useful on mobile because the button to edit the code block on mobile is quite small.
 
-## How can I make the links appear in the graph view?
+### How can I make the links appear in the graph view?
 [Edit the folder overview](#edit-overview) and then enable "Use actual links" to let the links appear in the graph view. The file will be then edited under the code block and there will be another list added which is hidden by default. You can choose to either hide the code block or the list under it in the folder overview settings. The list of links under the code block will also be visible in other apps that support markdown.
 
 ![Screenshot](../assets/screenshots/Obsidian_nAqAIrlZFW.png)
@@ -44,14 +44,15 @@ When this is enabled and you rename/create/delete a file/folder which is a child
 ### Title
 The title is above the overview when you enable "Show the title". You can use variables like this: {{variableName}} which will be replaced with something and the list of variables you can use is below this text.
 
-| Variable            | Explanation                                                                                                         | Example                                                        |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| folderName          | The name of the folder depending on what folder you choose to display                                               | Folder1                                                        |
-| folderPath          | The path of the choosen folder                                                                                      | Folder1/Folder2                                                |
-| fileName            | The name of the file where the overview is located in                                                               | File1                                                          |
-| filePath            | The path of the file where the overview is located in                                                               | Folder1/File1                                                  |
-| fmtpFileName        | The changed file name using the [front matter title plugin](https://github.com/snezhig/obsidian-front-matter-title) | Real file name: 1234, changed name: File1                      |
-| properties.\<name\> | Choose any property from a file                                                                                     | properties.name => File1<br>properties.date => e.g. 01.01.2001 |
+| Variable           | Explanation                                                                                                         | Example                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| folderName         | The name of the folder depending on what folder you choose to display                                               | Folder1                                                        |
+| folderPath         | The path of the choosen folder                                                                                      | Folder1/Folder2                                                |
+| fileName           | The name of the file where the overview is located in                                                               | File1                                                          |
+| filePath           | The path of the file where the overview is located in                                                               | Folder1/File1                                                  |
+| fmtpFileName       | The changed file name using the [front matter title plugin](https://github.com/snezhig/obsidian-front-matter-title) | Real file name: 1234, changed name: File1                      |
+| properties.<name\> | Choose any property from a file                                                                                     | properties.name => File1<br>properties.date => e.g. 01.01.2001 |
+
 ### Folder path
 The overview will show the children of the selected folder.
 
