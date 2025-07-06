@@ -157,21 +157,15 @@ export default class FolderNotesPlugin extends Plugin {
 		this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
 			return new FolderOverviewView(leaf, this);
 		});
-		if (this.settings.frontMatterTitle.enabled) {
+		if (this.app.plugins.getPlugin('obsidian-front-matter-title-plugin')) {
 			this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
 		}
 		this.tabManager = new TabManager(this);
 		this.tabManager.updateTabs();
 
-		const fileExplorerLeaf = this.app.workspace.getLeavesOfType('file-explorer')[0];
-		if (fileExplorerLeaf) {
-			const container = fileExplorerLeaf.view.containerEl;
-			if (container) {
-				this.registerDomEvent(container, 'click', (evt: MouseEvent) => {
-					this.handleFileExplorerClick(evt);
-				}, true);
-			}
-		}
+		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
+			this.handleFileExplorerClick(evt);
+		}, true);
 
 		const fileExplorerPlugin = this.app.internalPlugins.getEnabledPluginById('file-explorer');
 		if (fileExplorerPlugin) {
@@ -255,6 +249,13 @@ export default class FolderNotesPlugin extends Plugin {
 		if (!folderTitleEl) return;
 
 		const onlyClickedOnFolderTitle = !!target.closest('.nav-folder-title-content');
+		// const folderTitleContentEl = target.closest('.nav-folder-title-content') as HTMLElement;
+		// if (folderTitleContentEl) {
+		// 	const rect = folderTitleContentEl.getBoundingClientRect();
+		// 	const clickOffsetX = evt.clientX - rect.left;
+		// 	// Ignore clicks within the first N pixels, e.g., 20px where the icon is displayed
+		// 	if (clickOffsetX < 20) return;
+		// }
 		if (!this.settings.stopWhitespaceCollapsing && !onlyClickedOnFolderTitle) return;
 
 		// Ignore clicks on the collapse icon
