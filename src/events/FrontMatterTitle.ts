@@ -26,25 +26,27 @@ export class FrontMatterTitlePluginHandler {
 					await this.deffer.awaitFeatures();
 				}
 			}
-			const dispatcher = this.api?.getEventDispatcher();
-			if (dispatcher) {
-				this.dispatcher = dispatcher;
+			if (plugin.settings.frontMatterTitle.enabled) {
+				const dispatcher = this.api?.getEventDispatcher();
+				if (dispatcher) {
+					this.dispatcher = dispatcher;
+				}
+				const event: Listener<Events, 'manager:update'> = {
+					name: 'manager:update',
+					cb: (data) => {
+						this.fmptUpdateFileName(data as any, true);
+					},
+				};
+				// Keep ref to remove listener
+				const ref = dispatcher?.addListener(event);
+				if (ref) {
+					this.eventRef = ref;
+				}
+				// this.plugin.app.vault.getFiles().forEach((file) => {
+				// 	this.handleRename({ id: '', result: false, path: file.path }, false);
+				// });
+				this.plugin.updateAllBreadcrumbs();
 			}
-			const event: Listener<Events, 'manager:update'> = {
-				name: 'manager:update',
-				cb: (data) => {
-					this.fmptUpdateFileName(data as any, true);
-				},
-			};
-			// Keep ref to remove listener
-			const ref = dispatcher?.addListener(event);
-			if (ref) {
-				this.eventRef = ref;
-			}
-			// this.plugin.app.vault.getFiles().forEach((file) => {
-			// 	this.handleRename({ id: '', result: false, path: file.path }, false);
-			// });
-			this.plugin.updateAllBreadcrumbs();
 		})();
 	}
 	deleteEvent() {
@@ -122,5 +124,24 @@ export class FrontMatterTitlePluginHandler {
 
 		folder.newName = newName;
 		this.modifiedFolders.set(folder.path, folder);
+	}
+
+	async getNewFolderName(folder: TFolder): Promise<string | null> {
+		if (this.modifiedFolders.has(folder.path)) {
+			const modifiedFolder = this.modifiedFolders.get(folder.path);
+			if (modifiedFolder) {
+				return modifiedFolder.newName;
+			}
+		}
+		const folderNote = getFolderNote(this.plugin, folder.path);
+		if (!folderNote) return null;
+		const resolver = this.api?.getResolverFactory()?.createResolver('#feature-id#');
+		return resolver?.resolve(folderNote?.path ?? '') ?? null;
+	}
+
+	async getNewFileName(file: TFile): Promise<string | null> {
+		const resolver = this.api?.getResolverFactory()?.createResolver('#feature-id#');
+		const changedName = resolver?.resolve(file?.path ?? '');
+		return changedName ?? null;
 	}
 }

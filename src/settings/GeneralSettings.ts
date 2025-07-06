@@ -470,7 +470,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName({ id: '', result: false, path: file.path, pathOnly: false }, false);
 						});
 						settingsTab.plugin.fmtpHandler?.deleteEvent();
-						settingsTab.plugin.fmtpHandler = null;
+						settingsTab.plugin.fmtpHandler = new FrontMatterTitlePluginHandler(settingsTab.plugin);
 					}
 					settingsTab.display();
 				})
