@@ -137,19 +137,6 @@ export default class FolderNotesPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
 			this.handleOverviewBlock(source, el, ctx);
 		});
-
-		this.registerEvent(
-			this.app.workspace.on('layout-change', () => {
-				const fileExplorerLeaf = this.app.workspace.getLeavesOfType('file-explorer')[0];
-				if (!fileExplorerLeaf) return;
-				const container = fileExplorerLeaf.view.containerEl;
-				if (container) {
-					this.registerDomEvent(container, 'click', (evt: MouseEvent) => {
-						this.handleFileExplorerClick(evt);
-					}, true);
-				}
-			})
-		);
 	}
 
 	onLayoutReady() {
