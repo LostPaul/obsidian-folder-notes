@@ -154,6 +154,11 @@ export default class FolderNotesPlugin extends Plugin {
 			this.handleFileExplorerClick(evt);
 		}, true);
 
+		// Handle middle mouse button clicks
+		this.registerDomEvent(document, 'auxclick', (evt: MouseEvent) => {
+			this.handleFileExplorerClick(evt);
+		}, true);
+
 		const fileExplorerPlugin = this.app.internalPlugins.getEnabledPluginById('file-explorer');
 		if (fileExplorerPlugin) {
 			const originalRevealInFolder = fileExplorerPlugin.revealInFolder.bind(fileExplorerPlugin);
