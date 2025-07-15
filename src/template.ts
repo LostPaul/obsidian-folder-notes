@@ -7,6 +7,11 @@ export async function applyTemplate(
 	leaf?: WorkspaceLeaf | null,
 	templatePath?: string
 ) {
+	const fileContent = await plugin.app.vault.read(file).catch((err) => {
+		console.error(`Error reading file ${file.path}:`, err);
+	});
+	if (fileContent !== '') return;
+
 	const templateFile = templatePath
 		? plugin.app.vault.getAbstractFileByPath(templatePath)
 		: null;
