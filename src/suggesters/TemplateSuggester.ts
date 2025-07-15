@@ -2,14 +2,14 @@ import { TAbstractFile, TFile, TFolder, Vault, AbstractInputSuggest } from 'obsi
 import FolderNotesPlugin from '../main';
 import { getTemplatePlugins } from 'src/template';
 export enum FileSuggestMode {
-    TemplateFiles,
-    ScriptFiles,
+	TemplateFiles,
+	ScriptFiles,
 }
 
 export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 	constructor(
-        public inputEl: HTMLInputElement,
-        public plugin: FolderNotesPlugin
+		public inputEl: HTMLInputElement,
+		public plugin: FolderNotesPlugin
 	) {
 		super(plugin.app, inputEl);
 	}
@@ -35,13 +35,20 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 				file.path.toLowerCase().includes(lower_input_str)
 			);
 		} else {
-			let folder: TFolder;
+			let folder: TFolder | TAbstractFile | null = null;
 			if (templaterPlugin) {
 				folder = this.plugin.app.vault.getAbstractFileByPath(
 					templaterPlugin.plugin?.settings?.templates_folder as string
-				) as TFolder;
+				);
+				if (!(folder instanceof TFolder)) {
+					return [{ path: '', name: 'You need to set the Templates folder in the Templater settings first.' } as TFile];
+				}
 			} else {
 				folder = this.plugin.app.vault.getAbstractFileByPath(templateFolder) as TFolder;
+			}
+
+			if (!(folder instanceof TFolder)) {
+				return [];
 			}
 
 			Vault.recurseChildren(folder, (file: TAbstractFile) => {
