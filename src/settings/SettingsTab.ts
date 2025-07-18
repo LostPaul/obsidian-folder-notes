@@ -3,7 +3,7 @@ import FolderNotesPlugin from '../main';
 import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctions';
-import { overviewSettings } from '../obsidian-folder-overview/src/FolderOverview';
+import { defaultOverviewSettings } from '../obsidian-folder-overview/src/FolderOverview';
 import { renderGeneral } from './GeneralSettings';
 import { renderFileExplorer } from './FileExplorerSettings';
 import { renderPath } from './PathSettings';
@@ -41,7 +41,7 @@ export interface FolderNotesSettings {
 	disableFolderHighlighting: boolean;
 	storageLocation: 'insideFolder' | 'parentFolder' | 'vaultFolder';
 	syncDelete: boolean;
-	defaultOverview: overviewSettings;
+	defaultOverview: defaultOverviewSettings;
 	useSubmenus: boolean;
 	syncMove: boolean;
 	frontMatterTitle: {
@@ -76,6 +76,9 @@ export interface FolderNotesSettings {
 		afterChangingTab: boolean;
 	},
 	firstTimeInsertOverview: boolean;
+	fvGlobalSettings: {
+		autoUpdateLinks: boolean;
+	}
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -194,6 +197,9 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		afterChangingTab: true,
 	},
 	firstTimeInsertOverview: true,
+	fvGlobalSettings: {
+		autoUpdateLinks: false,
+	},
 };
 
 export class SettingsTab extends PluginSettingTab {
@@ -248,7 +254,7 @@ export class SettingsTab extends PluginSettingTab {
 		}
 	}
 
-	display(contentEl?: HTMLElement, yaml?: overviewSettings, plugin?: FolderNotesPlugin, defaultSettings?: boolean, display?: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: this) {
+	display(contentEl?: HTMLElement, yaml?: defaultOverviewSettings, plugin?: FolderNotesPlugin, defaultSettings?: boolean, display?: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: this) {
 		plugin = this?.plugin ?? plugin;
 		if (plugin) {
 			plugin.settingsOpened = true;

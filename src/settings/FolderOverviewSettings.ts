@@ -3,7 +3,7 @@ import { createOverviewSettings } from 'src/obsidian-folder-overview/src/setting
 
 export async function renderFolderOverview(settingsTab: SettingsTab) {
 	const { plugin } = settingsTab;
-	const overviewSettings = plugin.settings.defaultOverview;
+	const defaultOverviewSettings = plugin.settings.defaultOverview;
 	const containerEl = settingsTab.settingsPage;
 	const pEl = containerEl.createEl('p', {
 		text: 'Edit the default settings for new folder overviews, ',
@@ -14,5 +14,5 @@ export async function renderFolderOverview(settingsTab: SettingsTab) {
 	span.setAttr('style', `color: ${accentColor};`);
 	pEl.appendChild(span);
 
-	createOverviewSettings(containerEl, overviewSettings, plugin, plugin.settings.defaultOverview, settingsTab.display, undefined, undefined, undefined, settingsTab);
+	createOverviewSettings(containerEl, defaultOverviewSettings, plugin, plugin.settings.defaultOverview, settingsTab.display, undefined, undefined, undefined, settingsTab);
 }

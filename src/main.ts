@@ -1,5 +1,5 @@
 
-import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, WorkspaceLeaf, requireApiVersion, Platform } from 'obsidian';
+import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, WorkspaceLeaf, requireApiVersion, Platform, debounce } from 'obsidian';
 import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/SettingsTab';
 import { Commands } from './Commands';
 import { FileExplorerWorkspaceLeaf } from './globals';
@@ -20,6 +20,8 @@ import { FileExplorerView, InternalPlugin } from 'obsidian-typings';
 import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './obsidian-folder-overview/src/view';
 import { registerOverviewCommands } from './obsidian-folder-overview/src/Commands';
 import { updateOverviewView, updateViewDropdown } from './obsidian-folder-overview/src/main';
+import { FvIndexDB } from './obsidian-folder-overview/src/utils/IndexDB';
+import { updateAllOverviews } from './obsidian-folder-overview/src/utils/functions';
 
 export default class FolderNotesPlugin extends Plugin {
 	observer: MutationObserver;
@@ -34,6 +36,7 @@ export default class FolderNotesPlugin extends Plugin {
 	tabManager: TabManager;
 	settingsOpened = false;
 	askModalCurrentlyOpen = false;
+	fvIndexDB: FvIndexDB;
 
 	private fileExplorerPlugin!: InternalPlugin;
 	private fileExplorerView!: FileExplorerView;
@@ -44,6 +47,7 @@ export default class FolderNotesPlugin extends Plugin {
 		this.settingsTab = new SettingsTab(this.app, this);
 		this.addSettingTab(this.settingsTab);
 		this.saveSettings();
+		this.fvIndexDB = new FvIndexDB(this);
 
 		// Add CSS Classes
 		document.body.classList.add('folder-notes-plugin');
@@ -128,6 +132,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 		this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
 			handleRename(file, oldPath, this);
+
 		}));
 
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
@@ -228,6 +233,13 @@ export default class FolderNotesPlugin extends Plugin {
 
 			return originalHandleDrop.call(this, evt, ...args);
 		};
+	}
+
+	handleVaultChange() {
+		if (!this.settings.fvGlobalSettings.autoUpdateLinks) return;
+		debounce(() => {
+			updateAllOverviews(this);
+		}, 2000, true)();
 	}
 
 	handleFileExplorerClick(evt: MouseEvent) {
