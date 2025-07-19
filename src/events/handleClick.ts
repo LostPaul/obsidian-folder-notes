@@ -5,11 +5,11 @@ import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions'
 import { addCSSClassToFileExplorerEl, removeCSSClassFromFileExplorerEL } from 'src/functions/styleFunctions';
 
 export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNotesPlugin) {
+	if (!plugin.settings.openFolderNoteOnClickInPath) return;
 	event.stopImmediatePropagation();
 	event.preventDefault();
 	event.stopPropagation();
 	if (!(event.target instanceof HTMLElement)) return;
-	if (!plugin.settings.openFolderNoteOnClickInPath) return;
 
 	const folderPath = event.target.getAttribute('data-path');
 	if (!folderPath) { return; }
