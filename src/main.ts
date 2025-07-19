@@ -111,10 +111,6 @@ export default class FolderNotesPlugin extends Plugin {
 			this.hoverLinkTriggered = true;
 		});
 
-		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
-			handleCreate(file, this);
-		}));
-
 		this.registerEvent(this.app.workspace.on('file-open', async (openFile: TFile | null) => {
 			removeActiveFolder(this);
 
@@ -130,13 +126,19 @@ export default class FolderNotesPlugin extends Plugin {
 			setActiveFolder(folder.path, this);
 		}));
 
+		this.registerEvent(this.app.vault.on('create', (file: TAbstractFile) => {
+			handleCreate(file, this);
+			this.handleVaultChange();
+		}));
+
 		this.registerEvent(this.app.vault.on('rename', (file: TAbstractFile, oldPath: string) => {
 			handleRename(file, oldPath, this);
-
+			this.handleVaultChange();
 		}));
 
 		this.registerEvent(this.app.vault.on('delete', (file: TAbstractFile) => {
 			handleDelete(file, this);
+			this.handleVaultChange();
 		}));
 
 		this.registerMarkdownCodeBlockProcessor('folder-overview', (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
@@ -233,6 +235,10 @@ export default class FolderNotesPlugin extends Plugin {
 
 			return originalHandleDrop.call(this, evt, ...args);
 		};
+
+		if (this.settings.fvGlobalSettings.autoUpdateLinks) {
+			this.fvIndexDB.init(true);
+		}
 	}
 
 	handleVaultChange() {
