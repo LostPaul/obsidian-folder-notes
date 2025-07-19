@@ -132,6 +132,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		hideFolderOverview: false,
 		useActualLinks: false,
 		fmtpIntegration: false,
+		titleSize: 1,
 	},
 	useSubmenus: true,
 	syncMove: true,
