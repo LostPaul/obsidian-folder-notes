@@ -320,8 +320,6 @@ export class Commands {
 					// 	item.setTitle('Manage excluded folder')
 					// 		.setIcon('settings-2')
 					// 		.onClick(() => {
-					// 			console.log('excludedFolder', excludedFolder)
-					// 			console.log('2', getExcludedFolder(this.plugin, file.path, false))
 					// 			if (excludedFolder instanceof ExcludedFolder) {
 					// 				new ExcludedFolderSettings(this.plugin.app, this.plugin, excludedFolder).open();
 					// 			} else if (excludedFolder instanceof ExcludePattern) {
