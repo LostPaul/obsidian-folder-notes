@@ -141,7 +141,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		path: true,
 	},
 	settingsTab: 'general',
-	supportedFileTypes: ['md', 'canvas'],
+	supportedFileTypes: ['md', 'canvas', 'base'],
 	boldName: false,
 	boldNameInPath: false,
 	cursiveName: false,

@@ -130,7 +130,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 			const options = [
 				{ value: 'md', label: 'Markdown' },
 				{ value: 'canvas', label: 'Canvas' },
-				{ value: 'excalidraw', label: 'excalidraw' },
+				{ value: 'base', label: 'Bases' },
+				{ value: 'excalidraw', label: 'Excalidraw' },
 				{ value: 'custom', label: 'Custom extension' },
 			];
 
