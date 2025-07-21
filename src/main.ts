@@ -151,6 +151,7 @@ export default class FolderNotesPlugin extends Plugin {
 		this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
 			return new FolderOverviewView(leaf, this);
 		});
+
 		if (this.app.plugins.getPlugin('obsidian-front-matter-title-plugin')) {
 			this.fmtpHandler = new FrontMatterTitlePluginHandler(this);
 		}
@@ -237,7 +238,7 @@ export default class FolderNotesPlugin extends Plugin {
 		};
 
 		if (this.settings.fvGlobalSettings.autoUpdateLinks) {
-			this.fvIndexDB.init(true);
+			this.fvIndexDB.init(false);
 		}
 	}
 
