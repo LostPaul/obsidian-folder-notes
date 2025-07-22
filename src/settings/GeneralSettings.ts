@@ -254,10 +254,11 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 			.addDropdown((dropdown) => {
 				if (!Platform.isMacOS) {
 					dropdown.addOption('ctrl', 'Ctrl + Click');
+					dropdown.addOption('alt', 'Alt + Click');
 				} else {
 					dropdown.addOption('ctrl', 'Cmd + Click');
+					dropdown.addOption('alt', 'Option + Click');
 				}
-				dropdown.addOption('alt', 'Alt + Click');
 				dropdown.setValue(settingsTab.plugin.settings.ctrlKey ? 'ctrl' : 'alt');
 				dropdown.onChange(async (value) => {
 					settingsTab.plugin.settings.ctrlKey = value === 'ctrl';
@@ -274,10 +275,11 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 				dropdown.addOption('click', 'Mouse Click');
 				if (!Platform.isMacOS) {
 					dropdown.addOption('ctrl', 'Ctrl + Click');
+					dropdown.addOption('alt', 'Alt + Click');
 				} else {
 					dropdown.addOption('ctrl', 'Cmd + Click');
+					dropdown.addOption('alt', 'Option + Click');
 				}
-				dropdown.addOption('alt', 'Alt + Click');
 				if (settingsTab.plugin.settings.openByClick) {
 					dropdown.setValue('click');
 				} else if (settingsTab.plugin.settings.openWithCtrl) {

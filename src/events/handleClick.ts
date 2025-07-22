@@ -36,7 +36,8 @@ export async function handleViewHeaderClick(event: MouseEvent, plugin: FolderNot
 		});
 		return;
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
-		if ((plugin.settings.altKey && event.altKey) || (plugin.settings.ctrlKey && Keymap.isModEvent(event) === 'tab')) {
+		const usedCtrl = Platform.isMacOS ? event.metaKey : event.ctrlKey;
+		if ((plugin.settings.altKey && event.altKey) || (usedCtrl && Keymap.isModEvent(event) === 'tab')) {
 			await createFolderNote(plugin, folderPath, true, undefined, true);
 			addCSSClassToFileExplorerEl(folderPath, 'has-folder-note', false, plugin);
 			removeCSSClassFromFileExplorerEL(folderPath, 'has-not-folder-note', false, plugin);

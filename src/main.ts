@@ -278,9 +278,11 @@ export default class FolderNotesPlugin extends Plugin {
 		const excludedFolder = getExcludedFolder(this, folderPath, true);
 		if (excludedFolder?.disableFolderNote) return;
 
+		const usedCtrl = Platform.isMacOS ? evt.metaKey : evt.ctrlKey;
+
 		const folderNote = getFolderNote(this, folderPath);
 		if (!folderNote && (evt.altKey || Keymap.isModEvent(evt) === 'tab')) {
-			if ((this.settings.altKey && evt.altKey) || (this.settings.ctrlKey && Keymap.isModEvent(evt) === 'tab')) {
+			if ((this.settings.altKey && evt.altKey) || (usedCtrl && this.settings.ctrlKey)) {
 				createFolderNote(this, folderPath, true, undefined, true);
 				addCSSClassToFileExplorerEl(folderPath, 'has-folder-note', false, this);
 				removeCSSClassFromFileExplorerEL(folderPath, 'has-not-folder-note', false, this);
@@ -289,10 +291,10 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 		if (!(folderNote instanceof TFile)) return;
 
-		if (this.settings.openWithCtrl && !evt.ctrlKey) return;
+		if (this.settings.openWithCtrl && !usedCtrl) return;
 		if (this.settings.openWithAlt && !evt.altKey) return;
 
-		if (!this.settings.enableCollapsing || evt.ctrlKey) {
+		if (!this.settings.enableCollapsing || usedCtrl) {
 			evt.preventDefault();
 			evt.stopImmediatePropagation();
 		}
