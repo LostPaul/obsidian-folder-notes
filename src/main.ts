@@ -147,6 +147,10 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	onLayoutReady() {
+		if (!this._loaded) {
+			return;
+		}
+
 		registerFileExplorerObserver(this);
 		this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
 			return new FolderOverviewView(leaf, this);
