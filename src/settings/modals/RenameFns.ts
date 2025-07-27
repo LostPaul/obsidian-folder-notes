@@ -1,5 +1,5 @@
 import BackupWarningModal from './BackupWarning';
-import FolderNotesPlugin from 'src/main';
+import type FolderNotesPlugin from 'src/main';
 import { Setting } from 'obsidian';
 
 export default class RenameFolderNotesModal extends BackupWarningModal {
@@ -17,7 +17,7 @@ export default class RenameFolderNotesModal extends BackupWarningModal {
 				.setValue(this.plugin.settings.oldFolderNoteName || '')
 				.onChange(async (value) => {
 					this.plugin.settings.oldFolderNoteName = value;
-				})
+				}),
 			);
 
 		new Setting(contentEl)
@@ -29,7 +29,7 @@ export default class RenameFolderNotesModal extends BackupWarningModal {
 				.onChange(async (value) => {
 					this.plugin.settings.folderNoteName = value;
 					this.plugin.settingsTab.display();
-				})
+				}),
 			);
 	}
 }

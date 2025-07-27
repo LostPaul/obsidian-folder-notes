@@ -1,10 +1,10 @@
 import { TFile, TFolder } from 'obsidian';
-import FolderNotesPlugin from '../main';
+import type FolderNotesPlugin from '../main';
 import { getDetachedFolder, getExcludedFolder, addExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getFileExplorer } from './utils';
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
-import FolderOverviewPlugin from 'src/obsidian-folder-overview/src/main';
+import type FolderOverviewPlugin from 'src/obsidian-folder-overview/src/main';
 
 /**
  * @description Refreshes the CSS classes for all folder notes in the file explorer.
@@ -156,9 +156,9 @@ export function removeCSSClassFromFileExplorerEL(path: string | undefined, cssCl
 			parentElement.removeClass(cssClass);
 		}
 		return;
-	} else {
-		fileExplorerItem.removeClass(cssClass);
 	}
+	fileExplorerItem.removeClass(cssClass);
+
 }
 
 export function getFileExplorerElement(path: string, plugin: FolderNotesPlugin | FolderOverviewPlugin): HTMLElement | null {

@@ -1,4 +1,4 @@
-import { TAbstractFile, TFile, TFolder, View, WorkspaceLeaf } from 'obsidian';
+import type { TAbstractFile, TFile, TFolder, View, WorkspaceLeaf } from 'obsidian';
 
 declare module 'obsidian' {
 	interface Setting {

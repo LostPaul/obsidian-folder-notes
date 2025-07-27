@@ -1,5 +1,5 @@
 import { Setting } from 'obsidian';
-import { SettingsTab } from './SettingsTab';
+import type { SettingsTab } from './SettingsTab';
 export async function renderFileExplorer(settingsTab: SettingsTab) {
 	const containerEl = settingsTab.settingsPage;
 
@@ -18,7 +18,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						document.body.classList.remove('hide-folder-note');
 					}
 					settingsTab.display();
-				})
+				}),
 		);
 
 	const setting2 = new Setting(containerEl)
@@ -30,7 +30,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.disableOpenFolderNoteOnClick = value;
 					await settingsTab.plugin.saveSettings();
-				})
+				}),
 		);
 
 	setting2.infoEl.appendText('Requires a restart to take effect');
@@ -50,7 +50,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 					}
 					settingsTab.plugin.settings.stopWhitespaceCollapsing = !value;
 					await settingsTab.plugin.saveSettings();
-				})
+				}),
 		);
 
 	const disableSetting = new Setting(containerEl);
@@ -62,7 +62,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 			.onChange(async (value) => {
 				settingsTab.plugin.settings.enableCollapsing = !value;
 				await settingsTab.plugin.saveSettings();
-			})
+			}),
 	);
 	disableSetting.infoEl.appendText('Requires a restart to take effect');
 	disableSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
@@ -77,7 +77,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.useSubmenus = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-				})
+				}),
 		);
 
 	if (settingsTab.plugin.settings.frontMatterTitle.enabled) {
@@ -93,7 +93,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						settingsTab.plugin.app.vault.getFiles().forEach((file) => {
 							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName({ id: '', result: false, path: file.path, pathOnly: false }, false);
 						});
-					})
+					}),
 			);
 	}
 
@@ -113,7 +113,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						document.body.classList.remove('disable-folder-highlight');
 					}
 					await settingsTab.plugin.saveSettings();
-				})
+				}),
 		);
 
 	new Setting(containerEl)
@@ -131,7 +131,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						document.body.classList.remove('fn-hide-collapse-icon');
 					}
 					settingsTab.display();
-				})
+				}),
 		);
 
 	new Setting(containerEl)
@@ -149,7 +149,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						document.body.classList.remove('fn-hide-empty-collapse-icon');
 					}
 					settingsTab.display();
-				}
+				},
 				));
 
 	if (settingsTab.plugin.settings.hideCollapsingIcon) {
@@ -161,7 +161,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 					.onChange(async (value) => {
 						settingsTab.plugin.settings.ignoreAttachmentFolder = value;
 						await settingsTab.plugin.saveSettings();
-					})
+					}),
 			);
 	}
 
@@ -179,7 +179,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						document.body.classList.remove('folder-note-underline');
 					}
 					await settingsTab.plugin.saveSettings();
-				})
+				}),
 		);
 
 	new Setting(containerEl)
@@ -196,7 +196,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						document.body.classList.remove('folder-note-bold');
 					}
 					await settingsTab.plugin.saveSettings();
-				})
+				}),
 		);
 
 	new Setting(containerEl)
@@ -213,7 +213,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						document.body.classList.remove('folder-note-cursive');
 					}
 					await settingsTab.plugin.saveSettings();
-				})
+				}),
 		);
 
 }

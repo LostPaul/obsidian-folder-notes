@@ -1,7 +1,8 @@
-import FolderNotesPlugin from '../main';
+import type FolderNotesPlugin from '../main';
 import ExistingFolderNoteModal from '../modals/ExistingNote';
 import { applyTemplate } from '../template';
-import { TFolder, TFile, TAbstractFile, Keymap } from 'obsidian';
+import type { TAbstractFile } from 'obsidian';
+import { TFolder, TFile, Keymap } from 'obsidian';
 import DeleteConfirmationModal from '../modals/DeleteConfirmation';
 import { addExcludedFolder, deleteExcludedFolder, getDetachedFolder, getExcludedFolder, updateExcludedFolder } from '../ExcludeFolders/functions/folderFunctions';
 import { ExcludedFolder } from '../ExcludeFolders/ExcludeFolder';
@@ -146,7 +147,7 @@ export async function createFolderNote(plugin: FolderNotesPlugin, folderPath: st
 }
 
 export async function turnIntoFolderNote(plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote?: TFile | null | TAbstractFile, skipConfirmation?: boolean) {
-	const extension = file.extension;
+	const { extension } = file;
 	const detachedExcludedFolder = getDetachedFolder(plugin, folder.path);
 
 	if (folderNote) {
@@ -214,7 +215,7 @@ export async function tempDisableSync(plugin: FolderNotesPlugin, folder: TFolder
 }
 
 export async function openFolderNote(plugin: FolderNotesPlugin, file: TAbstractFile, evt?: MouseEvent) {
-	const path = file.path;
+	const { path } = file;
 	const focusExistingTab = plugin.settings.focusExistingTab && plugin.settings.openInNewTab;
 	const activeFilePath = plugin.app.workspace.getActiveFile()?.path;
 
@@ -310,7 +311,7 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, sto
 	folder.path === '/' ? path = fileName : path = `${folder.path}/${fileName}`;
 
 
-	let folderNoteType = plugin.settings.folderNoteType;
+	let { folderNoteType } = plugin.settings;
 	if (folderNoteType === '.excalidraw') {
 		folderNoteType = '.md';
 	}
@@ -318,21 +319,21 @@ export function getFolderNote(plugin: FolderNotesPlugin, folderPath: string, sto
 	let folderNote = plugin.app.vault.getAbstractFileByPath(path + folderNoteType);
 	if (folderNote instanceof TFile && plugin.settings.supportedFileTypes.includes(plugin.settings.folderNoteType.replace('.', ''))) {
 		return folderNote;
-	} else {
-		const supportedFileTypes = plugin.settings.supportedFileTypes.filter((type) => type !== plugin.settings.folderNoteType.replace('.', ''));
-		for (let type of supportedFileTypes) {
-			if (type === 'excalidraw' || type === '.excalidraw') {
-				type = '.md';
-			}
-			if (!type.startsWith('.')) {
-				type = '.' + type;
-			}
-			folderNote = plugin.app.vault.getAbstractFileByPath(path + type);
-			if (folderNote instanceof TFile) {
-				return folderNote;
-			}
+	}
+	const supportedFileTypes = plugin.settings.supportedFileTypes.filter((type) => type !== plugin.settings.folderNoteType.replace('.', ''));
+	for (let type of supportedFileTypes) {
+		if (type === 'excalidraw' || type === '.excalidraw') {
+			type = '.md';
+		}
+		if (!type.startsWith('.')) {
+			type = '.' + type;
+		}
+		folderNote = plugin.app.vault.getAbstractFileByPath(path + type);
+		if (folderNote instanceof TFile) {
+			return folderNote;
 		}
 	}
+
 }
 
 export function detachFolderNote(plugin: FolderNotesPlugin, file: TFile) {

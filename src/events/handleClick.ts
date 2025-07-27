@@ -1,5 +1,5 @@
 import { Keymap, Platform } from 'obsidian';
-import FolderNotesPlugin from 'src/main';
+import type FolderNotesPlugin from 'src/main';
 import { openFolderNote, createFolderNote, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { addCSSClassToFileExplorerEl, removeCSSClassFromFileExplorerEL } from 'src/functions/styleFunctions';

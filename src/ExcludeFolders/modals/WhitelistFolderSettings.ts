@@ -1,6 +1,7 @@
-import { App, Modal, Setting } from 'obsidian';
-import FolderNotesPlugin from '../../main';
-import { WhitelistedFolder } from '../WhitelistFolder';
+import type { App } from 'obsidian';
+import { Modal, Setting } from 'obsidian';
+import type FolderNotesPlugin from '../../main';
+import type { WhitelistedFolder } from '../WhitelistFolder';
 export default class WhitelistFolderSettings extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -27,7 +28,7 @@ export default class WhitelistFolderSettings extends Modal {
 					.onChange(async (value) => {
 						this.whitelistedFolder.subFolders = value;
 						await this.plugin.saveSettings(true);
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -39,7 +40,7 @@ export default class WhitelistFolderSettings extends Modal {
 					.onChange(async (value) => {
 						this.whitelistedFolder.enableSync = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -51,7 +52,7 @@ export default class WhitelistFolderSettings extends Modal {
 					.onChange(async (value) => {
 						this.whitelistedFolder.showInFolderOverview = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -63,7 +64,7 @@ export default class WhitelistFolderSettings extends Modal {
 					.onChange(async (value) => {
 						this.whitelistedFolder.hideInFileExplorer = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -74,7 +75,7 @@ export default class WhitelistFolderSettings extends Modal {
 					.onChange(async (value) => {
 						this.whitelistedFolder.enableAutoCreate = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 
@@ -88,7 +89,7 @@ export default class WhitelistFolderSettings extends Modal {
 						this.whitelistedFolder.enableFolderNote = value;
 						await this.plugin.saveSettings(true);
 						this.display();
-					})
+					}),
 			);
 
 		if (this.whitelistedFolder.enableFolderNote) {
@@ -101,7 +102,7 @@ export default class WhitelistFolderSettings extends Modal {
 						.onChange(async (value) => {
 							this.whitelistedFolder.disableCollapsing = value;
 							await this.plugin.saveSettings();
-						})
+						}),
 				);
 		}
 

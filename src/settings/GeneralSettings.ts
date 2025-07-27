@@ -1,5 +1,5 @@
 import { Setting, Platform } from 'obsidian';
-import { SettingsTab } from './SettingsTab';
+import type { SettingsTab } from './SettingsTab';
 import { ListComponent } from '../functions/ListComponent';
 import AddSupportedFileModal from '../modals/AddSupportedFileType';
 import { FrontMatterTitlePluginHandler } from '../events/FrontMatterTitle';
@@ -38,7 +38,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 							}
 						}
 					}, 2000);
-				})
+				}),
 		)
 		.addButton((button) =>
 			button
@@ -52,7 +52,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 						settingsTab.renameFolderNotes,
 						[])
 						.open();
-				})
+				}),
 		);
 	nameSetting.infoEl.appendText('Requires a restart to take effect');
 	nameSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
@@ -74,7 +74,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 						settingsTab.plugin.settings.tabManagerEnabled = value;
 						await settingsTab.plugin.saveSettings();
 						settingsTab.display();
-					})
+					}),
 			);
 	}
 
@@ -115,7 +115,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 	setting0.setName('Supported file types');
 	const desc0 = document.createDocumentFragment();
 	desc0.append(
-		'Specify which file types are allowed as folder notes. Applies to both new and existing folders. Adding many types may affect performance.'
+		'Specify which file types are allowed as folder notes. Applies to both new and existing folders. Adding many types may affect performance.',
 	);
 	setting0.setDesc(desc0);
 	const list = new ListComponent(setting0.settingEl, settingsTab.plugin.settings.supportedFileTypes || [], ['md', 'canvas']);
@@ -158,7 +158,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 				.setCta()
 				.onClick(async () => {
 					new AddSupportedFileModal(settingsTab.app, settingsTab.plugin, settingsTab, list as ListComponent).open();
-				})
+				}),
 		);
 	}
 
@@ -195,7 +195,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
 					refreshAllFolderStyles(undefined, settingsTab.plugin);
-				})
+				}),
 		)
 		.addButton((button) =>
 			button
@@ -213,9 +213,9 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 						'Switch storage location',
 						'When you click on "Confirm" all folder notes will be moved to the new storage location.',
 						settingsTab.switchStorageLocation,
-						[oldStorageLocation]
+						[oldStorageLocation],
 					).open();
-				})
+				}),
 		);
 	storageLocation.infoEl.appendText('Requires a restart to take effect');
 	storageLocation.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
@@ -230,8 +230,8 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					.onChange(async (value) => {
 						settingsTab.plugin.settings.syncDelete = value;
 						await settingsTab.plugin.saveSettings();
-					}
-					)
+					},
+					),
 			);
 		new Setting(containerEl)
 			.setName('Move folder notes when moving the folder')
@@ -242,7 +242,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					.onChange(async (value) => {
 						settingsTab.plugin.settings.syncMove = value;
 						await settingsTab.plugin.saveSettings();
-					})
+					}),
 			);
 	}
 	if (Platform.isDesktopApp) {
@@ -309,7 +309,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.showDeleteConfirmation = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-				})
+				}),
 		);
 
 	new Setting(containerEl)
@@ -338,7 +338,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.openInNewTab = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-				})
+				}),
 		);
 		setting3.infoEl.appendText('Requires a restart to take effect');
 		setting3.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
@@ -355,7 +355,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 						settingsTab.plugin.settings.focusExistingTab = value;
 						await settingsTab.plugin.saveSettings();
 						settingsTab.display();
-					})
+					}),
 			);
 	}
 
@@ -369,7 +369,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.syncFolderName = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-				})
+				}),
 		);
 
 	settingsTab.settingsPage.createEl('h4', { text: 'Automation settings' });
@@ -395,7 +395,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.autoCreate = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-				})
+				}),
 		);
 
 	if (settingsTab.plugin.settings.autoCreate) {
@@ -409,7 +409,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 						settingsTab.plugin.settings.autoCreateFocusFiles = value;
 						await settingsTab.plugin.saveSettings();
 						settingsTab.display();
-					})
+					}),
 			);
 
 		new Setting(containerEl)
@@ -422,7 +422,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 						settingsTab.plugin.settings.autoCreateForAttachmentFolder = value;
 						await settingsTab.plugin.saveSettings();
 						settingsTab.display();
-					})
+					}),
 			);
 	}
 
@@ -436,7 +436,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.autoCreateForFiles = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-				})
+				}),
 		);
 
 	settingsTab.settingsPage.createEl('h3', { text: 'Integration & Compatibility' });
@@ -476,7 +476,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 						settingsTab.plugin.fmtpHandler = new FrontMatterTitlePluginHandler(settingsTab.plugin);
 					}
 					settingsTab.display();
-				})
+				}),
 		);
 	fmtpSetting.infoEl.appendText('Requires a restart to take effect');
 	fmtpSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
@@ -493,7 +493,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.persistentSettingsTab.afterRestart = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-				})
+				}),
 		);
 
 	new Setting(containerEl)
@@ -506,6 +506,6 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.persistentSettingsTab.afterChangingTab = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-				})
+				}),
 		);
 }

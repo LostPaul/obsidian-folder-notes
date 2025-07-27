@@ -1,9 +1,9 @@
-import FolderNotesPlugin from '../../main';
+import type FolderNotesPlugin from '../../main';
 import { Setting } from 'obsidian';
-import { SettingsTab } from '../../settings/SettingsTab';
+import type { SettingsTab } from '../../settings/SettingsTab';
 import { resyncArray } from './folderFunctions';
 import WhitelistPatternSettings from '../modals/WhitelistPatternSettings';
-import { WhitelistedPattern } from '../WhitelistPattern';
+import type { WhitelistedPattern } from '../WhitelistPattern';
 import { addWhitelistedFolder, updateWhitelistedFolder } from './whitelistFolderFunctions';
 
 export function updateWhitelistedPattern(plugin: FolderNotesPlugin, pattern: WhitelistedPattern, newPattern: WhitelistedPattern) {
@@ -74,7 +74,7 @@ export function getWhitelistedFoldersByPattern(plugin: FolderNotesPlugin, folder
 }
 
 export function addWhitelistedPatternListItem(settings: SettingsTab, containerEl: HTMLElement, pattern: WhitelistedPattern) {
-	const plugin: FolderNotesPlugin = settings.plugin;
+	const { plugin } = settings;
 	const setting = new Setting(containerEl);
 	setting.setClass('fn-exclude-folder-list');
 	setting.addSearch((cb) => {

@@ -1,6 +1,7 @@
-import { App, Modal, Setting } from 'obsidian';
-import FolderNotesPlugin from '../../main';
-import { WhitelistedPattern } from '../WhitelistPattern';
+import type { App } from 'obsidian';
+import { Modal, Setting } from 'obsidian';
+import type FolderNotesPlugin from '../../main';
+import type { WhitelistedPattern } from '../WhitelistPattern';
 
 export default class WhitelistPatternSettings extends Modal {
 	plugin: FolderNotesPlugin;
@@ -28,7 +29,7 @@ export default class WhitelistPatternSettings extends Modal {
 					.onChange(async (value) => {
 						this.pattern.enableSync = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -39,7 +40,7 @@ export default class WhitelistPatternSettings extends Modal {
 					.onChange(async (value) => {
 						this.pattern.enableAutoCreate = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -51,7 +52,7 @@ export default class WhitelistPatternSettings extends Modal {
 					.onChange(async (value) => {
 						this.pattern.showInFolderOverview = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 
@@ -65,7 +66,7 @@ export default class WhitelistPatternSettings extends Modal {
 						this.pattern.enableFolderNote = value;
 						await this.plugin.saveSettings(true);
 						this.display();
-					})
+					}),
 			);
 
 		if (this.pattern.enableFolderNote) {
@@ -78,7 +79,7 @@ export default class WhitelistPatternSettings extends Modal {
 						.onChange(async (value) => {
 							this.pattern.disableCollapsing = value;
 							await this.plugin.saveSettings();
-						})
+						}),
 				);
 		}
 

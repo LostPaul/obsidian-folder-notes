@@ -1,4 +1,4 @@
-import { WorkspaceLeaf, App } from 'obsidian';
+import type { WorkspaceLeaf, App } from 'obsidian';
 
 export async function openExcalidrawView(leaf: WorkspaceLeaf) {
 	const { excalidraw, excalidrawEnabled } = await getExcalidrawPlugin(this.app);
@@ -10,7 +10,7 @@ export async function openExcalidrawView(leaf: WorkspaceLeaf) {
 export async function getExcalidrawPlugin(app: App) {
 	const excalidraw = (app as any).plugins.plugins['obsidian-excalidraw-plugin'];
 	const excalidrawEnabled = (app as any).plugins.enabledPlugins.has(
-		'obsidian-excalidraw-plugin'
+		'obsidian-excalidraw-plugin',
 	);
 	return {
 		excalidraw,

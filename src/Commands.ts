@@ -1,5 +1,6 @@
-import { App, TFolder, Menu, TAbstractFile, Notice, TFile, Editor, MarkdownView, Platform } from 'obsidian';
-import FolderNotesPlugin from './main';
+import type { App, Menu, TAbstractFile, Editor, MarkdownView } from 'obsidian';
+import { TFolder, Notice, TFile, Platform } from 'obsidian';
+import type FolderNotesPlugin from './main';
 import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName, detachFolderNote } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString, getFileExplorerActiveFolder } from './functions/utils';
@@ -108,7 +109,7 @@ export class Commands {
 
 					// Everything is fine and not checking, let's create the folder note.
 					const ext = '.' + fileType;
-					const path = folder.path;
+					const { path } = folder;
 					createFolderNote(this.plugin, path, true, ext, false);
 				},
 			});
@@ -179,7 +180,7 @@ export class Commands {
 			name: 'Create folder note from selection',
 			editorCheckCallback: (checking: boolean, editor: Editor, view: MarkdownView) => {
 				const text = editor.getSelection().trim();
-				const file = view.file;
+				const { file } = view;
 				if (!(file instanceof TFile)) return false;
 				if (text && text.trim() !== '') {
 					if (checking) { return true; }
@@ -201,10 +202,10 @@ export class Commands {
 						if (folder instanceof TFolder) {
 							new Notice('Folder note already exists');
 							return false;
-						} else {
-							this.plugin.app.vault.createFolder(text);
-							createFolderNote(this.plugin, text, false);
 						}
+						this.plugin.app.vault.createFolder(text);
+						createFolderNote(this.plugin, text, false);
+
 					} else {
 						folder = this.plugin.app.vault.getAbstractFileByPath(folderPath + '/' + text);
 						if (folder instanceof TFolder) {
@@ -447,7 +448,7 @@ export class Commands {
 				item.setTitle('Create folder note')
 					.setIcon('edit')
 					.onClick(() => {
-						const file = view.file;
+						const { file } = view;
 						if (!(file instanceof TFile)) return;
 						const blacklist = ['*', '\\', '"', '/', '<', '>', '?', '|', ':'];
 						for (const char of blacklist) {
@@ -467,10 +468,10 @@ export class Commands {
 							folder = this.plugin.app.vault.getAbstractFileByPath(text);
 							if (folder instanceof TFolder) {
 								return new Notice('Folder note already exists');
-							} else {
-								this.plugin.app.vault.createFolder(text);
-								createFolderNote(this.plugin, text, false);
 							}
+							this.plugin.app.vault.createFolder(text);
+							createFolderNote(this.plugin, text, false);
+
 						} else {
 							folder = this.plugin.app.vault.getAbstractFileByPath(folderPath + '/' + text);
 							if (folder instanceof TFolder) {

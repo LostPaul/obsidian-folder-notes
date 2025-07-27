@@ -1,6 +1,7 @@
-import { App, Modal, Setting } from 'obsidian';
-import { SettingsTab } from 'src/settings/SettingsTab';
-import FolderNotesPlugin from '../../main';
+import type { App } from 'obsidian';
+import { Modal, Setting } from 'obsidian';
+import type { SettingsTab } from 'src/settings/SettingsTab';
+import type FolderNotesPlugin from '../../main';
 import { WhitelistedFolder } from '../WhitelistFolder';
 import { addWhitelistFolderListItem, addWhitelistedFolder } from '../functions/whitelistFolderFunctions';
 import { addWhitelistedPatternListItem } from '../functions/whitelistPatternFunctions';

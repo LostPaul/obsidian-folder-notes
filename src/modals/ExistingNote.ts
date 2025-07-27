@@ -1,5 +1,6 @@
-import { App, Modal, Setting, TFile, Platform, TFolder, TAbstractFile } from 'obsidian';
-import FolderNotesPlugin from '../main';
+import type { App, TFile, TFolder, TAbstractFile } from 'obsidian';
+import { Modal, Setting, Platform } from 'obsidian';
+import type FolderNotesPlugin from '../main';
 import { turnIntoFolderNote } from 'src/functions/folderNoteFunctions';
 export default class ExistingFolderNoteModal extends Modal {
 	plugin: FolderNotesPlugin;

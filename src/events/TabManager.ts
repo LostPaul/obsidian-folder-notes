@@ -1,5 +1,6 @@
-import FolderNotesPlugin from 'src/main';
-import { App, EditableFileView, TFolder } from 'obsidian';
+import type FolderNotesPlugin from 'src/main';
+import type { App } from 'obsidian';
+import { EditableFileView, TFolder } from 'obsidian';
 import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 export class TabManager {
 	plugin: FolderNotesPlugin;

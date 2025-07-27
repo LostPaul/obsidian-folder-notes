@@ -1,5 +1,5 @@
 import { Modal, ButtonComponent } from 'obsidian';
-import FolderNotesPlugin from 'src/main';
+import type FolderNotesPlugin from 'src/main';
 
 export default class BackupWarningModal extends Modal {
 	plugin: FolderNotesPlugin;

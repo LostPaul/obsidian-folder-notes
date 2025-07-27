@@ -1,15 +1,15 @@
-import FolderNotesPlugin from '../../main';
+import type FolderNotesPlugin from '../../main';
 import { getFolderNameFromPathString, getFolderPathFromString } from '../../functions/utils';
-import { ExcludedFolder } from '../ExcludeFolder';
+import type { ExcludedFolder } from '../ExcludeFolder';
 import { ExcludePattern } from '../ExcludePattern';
 import { Platform, Setting } from 'obsidian';
 import { FolderSuggest } from '../../suggesters/FolderSuggester';
-import { SettingsTab } from '../../settings/SettingsTab';
+import type { SettingsTab } from '../../settings/SettingsTab';
 import ExcludedFolderSettings from '../modals/ExcludeFolderSettings';
 import { updatePattern, getExcludedFoldersByPattern, addExcludePatternListItem } from './patternFunctions';
 import { getWhitelistedFolder } from './whitelistFolderFunctions';
-import { WhitelistedFolder } from '../WhitelistFolder';
-import { WhitelistedPattern } from '../WhitelistPattern';
+import type { WhitelistedFolder } from '../WhitelistFolder';
+import type { WhitelistedPattern } from '../WhitelistPattern';
 
 export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, includeDetached: boolean, pathOnly?: boolean, ignoreWhitelist?: boolean) {
 	let excludedFolder = {} as ExcludedFolder | ExcludePattern | undefined;
@@ -97,9 +97,9 @@ export function getExcludedFolderByPath(plugin: FolderNotesPlugin, path: string)
 
 		if (folderPath.includes('/') || folderPath.includes('\\')) {
 			return folderPath.startsWith(excludedFolderPath) || folderPath === excludedFolderPath;
-		} else {
-			return folderPath === excludedFolderPath;
 		}
+		return folderPath === excludedFolderPath;
+
 	});
 }
 
@@ -114,9 +114,9 @@ export function getExcludedFoldersByPath(plugin: FolderNotesPlugin, path: string
 
 		if (folderPath.includes('/') || folderPath.includes('\\')) {
 			return folderPath.startsWith(excludedFolderPath) || folderPath === excludedFolderPath;
-		} else {
-			return folderPath === excludedFolderPath;
 		}
+		return folderPath === excludedFolderPath;
+
 	});
 }
 
@@ -146,14 +146,14 @@ export function resyncArray(plugin: FolderNotesPlugin) {
 
 
 export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTMLElement, excludedFolder: ExcludedFolder) {
-	const plugin: FolderNotesPlugin = settings.plugin;
+	const { plugin } = settings;
 	const setting = new Setting(containerEl);
 	setting.setClass('fn-exclude-folder-list');
 	setting.addSearch((cb) => {
 		new FolderSuggest(
 			cb.inputEl,
 			plugin,
-			false
+			false,
 		);
 		// @ts-ignore
 		cb.containerEl.addClass('fn-exclude-folder-path');

@@ -1,6 +1,7 @@
-import { App, Modal, Setting } from 'obsidian';
-import FolderNotesPlugin from '../../main';
-import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
+import type { App } from 'obsidian';
+import { Modal, Setting } from 'obsidian';
+import type FolderNotesPlugin from '../../main';
+import type { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
 import { refreshAllFolderStyles } from 'src/functions/styleFunctions';
 
 export default class PatternSettings extends Modal {
@@ -30,7 +31,7 @@ export default class PatternSettings extends Modal {
 					.onChange(async (value) => {
 						this.pattern.disableSync = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -42,7 +43,7 @@ export default class PatternSettings extends Modal {
 					.onChange(async (value) => {
 						this.pattern.disableAutoCreate = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -54,7 +55,7 @@ export default class PatternSettings extends Modal {
 					.onChange(async (value) => {
 						this.pattern.excludeFromFolderOverview = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -68,7 +69,7 @@ export default class PatternSettings extends Modal {
 						await this.plugin.saveSettings();
 						refreshAllFolderStyles(true, this.plugin);
 						this.display();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -81,7 +82,7 @@ export default class PatternSettings extends Modal {
 						this.pattern.disableFolderNote = value;
 						await this.plugin.saveSettings(true);
 						this.display();
-					})
+					}),
 			);
 
 		if (!this.pattern.disableFolderNote) {
@@ -94,7 +95,7 @@ export default class PatternSettings extends Modal {
 						.onChange(async (value) => {
 							this.pattern.enableCollapsing = value;
 							await this.plugin.saveSettings();
-						})
+						}),
 				);
 		}
 

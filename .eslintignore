@@ -1,7 +1,0 @@
-npm node_modules
-build
-*.js
-*.json
-*.md
-*.css
-LICENSE

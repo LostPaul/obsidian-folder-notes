@@ -1,5 +1,6 @@
-import { App, Modal, Setting, TFolder } from 'obsidian';
-import FolderNotesPlugin from '../main';
+import type { App, TFolder } from 'obsidian';
+import { Modal, Setting } from 'obsidian';
+import type FolderNotesPlugin from '../main';
 export default class FolderNameModal extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -30,7 +31,7 @@ export default class FolderNameModal extends Modal {
 								this.plugin.app.fileManager.renameFile(this.folder, this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + value.trim());
 							}
 						}
-					})
+					}),
 			);
 	}
 	onClose() {

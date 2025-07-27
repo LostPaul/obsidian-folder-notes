@@ -1,5 +1,6 @@
-import { TAbstractFile, TFolder, TFile } from 'obsidian';
-import FolderNotesPlugin from 'src/main';
+import type { TAbstractFile } from 'obsidian';
+import { TFolder, TFile } from 'obsidian';
+import type FolderNotesPlugin from 'src/main';
 import { getFolderNote, getFolder, deleteFolderNote } from 'src/functions/folderNoteFunctions';
 import { removeCSSClassFromFileExplorerEL, addCSSClassToFileExplorerEl, hideFolderNoteInFileExplorer } from 'src/functions/styleFunctions';
 import { getFolderPathFromString } from 'src/functions/utils';

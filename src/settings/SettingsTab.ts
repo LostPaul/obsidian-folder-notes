@@ -1,17 +1,18 @@
-import { App, Notice, PluginSettingTab, TFile, TFolder, MarkdownPostProcessorContext } from 'obsidian';
-import FolderNotesPlugin from '../main';
-import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
-import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
+import type { App, MarkdownPostProcessorContext } from 'obsidian';
+import { Notice, PluginSettingTab, TFile, TFolder } from 'obsidian';
+import type FolderNotesPlugin from '../main';
+import type { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
+import type { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctions';
-import { defaultOverviewSettings } from '../obsidian-folder-overview/src/FolderOverview';
+import type { defaultOverviewSettings } from '../obsidian-folder-overview/src/FolderOverview';
 import { renderGeneral } from './GeneralSettings';
 import { renderFileExplorer } from './FileExplorerSettings';
 import { renderPath } from './PathSettings';
 import { renderFolderOverview } from './FolderOverviewSettings';
 import { renderExcludeFolders } from './ExcludedFoldersSettings';
 import { getFolderPathFromString } from '../functions/utils';
-import { WhitelistedFolder } from 'src/ExcludeFolders/WhitelistFolder';
-import { WhitelistedPattern } from 'src/ExcludeFolders/WhitelistPattern';
+import type { WhitelistedFolder } from 'src/ExcludeFolders/WhitelistFolder';
+import type { WhitelistedPattern } from 'src/ExcludeFolders/WhitelistPattern';
 
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
@@ -348,10 +349,10 @@ export class SettingsTab extends PluginSettingTab {
 					} else if (this.plugin.settings.storageLocation === 'insideFolder') {
 						if (getFolderPathFromString(folderNote.path) === file.path) {
 							return;
-						} else {
-							const newPath = `${file.path}/${folderNote.name}`;
-							this.plugin.app.fileManager.renameFile(folderNote, newPath);
 						}
+						const newPath = `${file.path}/${folderNote.name}`;
+						this.plugin.app.fileManager.renameFile(folderNote, newPath);
+
 					}
 				}
 			}

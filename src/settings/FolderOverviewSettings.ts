@@ -1,5 +1,5 @@
 import { Setting } from 'obsidian';
-import { SettingsTab } from './SettingsTab';
+import type { SettingsTab } from './SettingsTab';
 import { createOverviewSettings } from 'src/obsidian-folder-overview/src/settings';
 
 export async function renderFolderOverview(settingsTab: SettingsTab) {
@@ -22,7 +22,7 @@ export async function renderFolderOverview(settingsTab: SettingsTab) {
 					} else {
 						plugin.fvIndexDB.active = false;
 					}
-				})
+				}),
 		);
 
 	containerEl.createEl('h3', { text: 'Overviews default settings' });

@@ -1,11 +1,12 @@
-import { TFile, App, WorkspaceLeaf } from 'obsidian';
-import FolderNotesPlugin from './main';
+import type { App } from 'obsidian';
+import { TFile, WorkspaceLeaf } from 'obsidian';
+import type FolderNotesPlugin from './main';
 
 export async function applyTemplate(
 	plugin: FolderNotesPlugin,
 	file: TFile,
 	leaf?: WorkspaceLeaf | null,
-	templatePath?: string
+	templatePath?: string,
 ) {
 	const fileContent = await plugin.app.vault.read(file).catch((err) => {
 		console.error(`Error reading file ${file.path}:`, err);
@@ -37,9 +38,9 @@ export async function applyTemplate(
 					await leaf.openFile(file);
 				}
 				return await templatesPlugin.instance.insertTemplate(templateFile);
-			} else {
-				await plugin.app.vault.modify(file, templateContent);
 			}
+			await plugin.app.vault.modify(file, templateContent);
+
 
 		} catch (e) {
 			console.error(e);

@@ -1,5 +1,5 @@
 import { Keymap, Platform } from 'obsidian';
-import FolderNotesPlugin from 'src/main';
+import type FolderNotesPlugin from 'src/main';
 import { getFolderNote } from 'src/functions/folderNoteFunctions';
 import { handleViewHeaderClick } from './handleClick';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
@@ -26,7 +26,7 @@ export function registerFileExplorerObserver(plugin: FolderNotesPlugin) {
 			if (!(titleContainer instanceof HTMLElement)) return;
 
 			updateFolderNamesInPath(plugin, titleContainer);
-		})
+		}),
 	);
 }
 

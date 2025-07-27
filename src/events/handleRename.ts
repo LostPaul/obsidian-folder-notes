@@ -1,5 +1,6 @@
-import { TFile, TFolder, TAbstractFile, Notice } from 'obsidian';
-import FolderNotesPlugin from 'src/main';
+import type { TAbstractFile } from 'obsidian';
+import { TFile, TFolder, Notice } from 'obsidian';
+import type FolderNotesPlugin from 'src/main';
 import { extractFolderName, getFolderNote, getFolderNoteFolder } from '../functions/folderNoteFunctions';
 import { getExcludedFolder, addExcludedFolder, updateExcludedFolder, deleteExcludedFolder, getDetachedFolder } from '../ExcludeFolders/functions/folderFunctions';
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
@@ -32,15 +33,15 @@ export function handleRename(file: TAbstractFile, oldPath: string, plugin: Folde
 		updateExcludedFolderPath(folder, oldPath, plugin);
 		if (isFolderRename(folder, oldPath)) {
 			return handleFolderRename(folder, oldPath, plugin);
-		} else {
-			return handleFolderMove(folder, oldPath, plugin);
 		}
+		return handleFolderMove(folder, oldPath, plugin);
+
 	} else if (file instanceof TFile) {
 		if (isFileRename(file, oldPath)) {
 			return fmptUpdateFileName(file, oldPath, plugin);
-		} else {
-			return handleFileMove(file, oldPath, plugin);
 		}
+		return handleFileMove(file, oldPath, plugin);
+
 	}
 }
 
@@ -262,7 +263,7 @@ async function renameFolderOnFileRename(file: TFile, oldPath: string, oldFolder:
 
 function updateExcludedFolderPath(folder: TFolder, oldPath: string, plugin: FolderNotesPlugin) {
 	const excludedFolders = plugin.settings.excludeFolders.filter(
-		(excludedFolder) => excludedFolder.path?.includes(oldPath)
+		(excludedFolder) => excludedFolder.path?.includes(oldPath),
 	);
 
 	excludedFolders.forEach((excludedFolder) => {

@@ -1,7 +1,7 @@
-import FolderNotesPlugin from '../../main';
-import { ExcludePattern } from '../ExcludePattern';
+import type FolderNotesPlugin from '../../main';
+import type { ExcludePattern } from '../ExcludePattern';
 import { Setting, Platform } from 'obsidian';
-import { SettingsTab } from '../../settings/SettingsTab';
+import type { SettingsTab } from '../../settings/SettingsTab';
 import { addExcludedFolder, resyncArray, updateExcludedFolder } from './folderFunctions';
 import PatternSettings from '../modals/PatternSettings';
 
@@ -73,7 +73,7 @@ export function getExcludedFolderByPattern(plugin: FolderNotesPlugin, folderName
 }
 
 export function addExcludePatternListItem(settings: SettingsTab, containerEl: HTMLElement, pattern: ExcludePattern) {
-	const plugin: FolderNotesPlugin = settings.plugin;
+	const { plugin } = settings;
 	const setting = new Setting(containerEl);
 	setting.setClass('fn-exclude-folder-list');
 	setting.addSearch((cb) => {

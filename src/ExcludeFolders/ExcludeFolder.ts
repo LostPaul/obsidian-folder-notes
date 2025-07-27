@@ -1,4 +1,4 @@
-import FolderNotesPlugin from '../main';
+import type FolderNotesPlugin from '../main';
 export class ExcludedFolder {
 	type: string;
 	id: string;

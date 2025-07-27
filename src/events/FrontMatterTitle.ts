@@ -1,6 +1,8 @@
-import FolderNotesPlugin from 'src/main';
-import { getDefer, Listener, Events, ApiInterface, DeferInterface, ListenerRef, EventDispatcherInterface } from 'front-matter-plugin-api-provider';
-import { App, TFile, TFolder } from 'obsidian';
+import type FolderNotesPlugin from 'src/main';
+import type { Listener, Events, ApiInterface, DeferInterface, ListenerRef, EventDispatcherInterface } from 'front-matter-plugin-api-provider';
+import { getDefer } from 'front-matter-plugin-api-provider';
+import type { App } from 'obsidian';
+import { TFile, TFolder } from 'obsidian';
 import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 export class FrontMatterTitlePluginHandler {
 	plugin: FolderNotesPlugin;
@@ -77,7 +79,7 @@ export class FrontMatterTitlePluginHandler {
 			this.plugin.changeFolderNameInExplorer(folder, newName);
 		}
 
-		const breadcrumb = data.breadcrumb;
+		const { breadcrumb } = data;
 		if (breadcrumb) {
 			this.plugin.changeFolderNameInPath(folder, newName, breadcrumb);
 		}
@@ -117,7 +119,7 @@ export class FrontMatterTitlePluginHandler {
 			this.plugin.changeFolderNameInExplorer(folder, newName);
 		}
 
-		const breadcrumb = data.breadcrumb;
+		const { breadcrumb } = data;
 		if (breadcrumb) {
 			this.plugin.changeFolderNameInPath(folder, newName, breadcrumb);
 		}

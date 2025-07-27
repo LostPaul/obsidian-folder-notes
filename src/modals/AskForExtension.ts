@@ -1,5 +1,6 @@
-import { FuzzySuggestModal, TFile } from 'obsidian';
-import FolderNotesPlugin from 'src/main';
+import type { TFile } from 'obsidian';
+import { FuzzySuggestModal } from 'obsidian';
+import type FolderNotesPlugin from 'src/main';
 import { createFolderNote } from 'src/functions/folderNoteFunctions';
 export class AskForExtensionModal extends FuzzySuggestModal<string> {
 	plugin: FolderNotesPlugin;

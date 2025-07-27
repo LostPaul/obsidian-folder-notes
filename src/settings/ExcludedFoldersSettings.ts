@@ -2,7 +2,7 @@ import { addExcludeFolderListItem, addExcludedFolder } from 'src/ExcludeFolders/
 import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 import { addExcludePatternListItem } from 'src/ExcludeFolders/functions/patternFunctions';
 import { Setting } from 'obsidian';
-import { SettingsTab } from './SettingsTab';
+import type { SettingsTab } from './SettingsTab';
 import ExcludedFolderSettings from 'src/ExcludeFolders/modals/ExcludeFolderSettings';
 import PatternSettings from 'src/ExcludeFolders/modals/PatternSettings';
 import WhitelistedFoldersSettings from 'src/ExcludeFolders/modals/WhitelistedFoldersSettings';

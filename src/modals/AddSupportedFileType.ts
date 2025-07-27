@@ -1,6 +1,7 @@
-import { App, Modal, Setting, Notice, SettingTab } from 'obsidian';
-import FolderNotesPlugin from '../main';
-import { ListComponent } from 'src/functions/ListComponent';
+import type { App, SettingTab } from 'obsidian';
+import { Modal, Setting, Notice } from 'obsidian';
+import type FolderNotesPlugin from '../main';
+import type { ListComponent } from 'src/functions/ListComponent';
 
 export default class AddSupportedFileModal extends Modal {
 	plugin: FolderNotesPlugin;
@@ -34,7 +35,7 @@ export default class AddSupportedFileModal extends Modal {
 						if (value.trim() !== '') {
 							this.name = value.trim();
 						}
-					})
+					}),
 			);
 	}
 	async onClose() {

@@ -1,4 +1,4 @@
-import FolderNotesPlugin from '../main';
+import type FolderNotesPlugin from '../main';
 export class WhitelistedFolder {
 	type: string;
 	id: string;

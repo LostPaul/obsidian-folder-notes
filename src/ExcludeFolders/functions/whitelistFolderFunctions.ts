@@ -1,10 +1,10 @@
-import FolderNotesPlugin from '../../main';
+import type FolderNotesPlugin from '../../main';
 import { getFolderNameFromPathString, getFolderPathFromString } from '../../functions/utils';
-import { WhitelistedFolder } from '../WhitelistFolder';
+import type { WhitelistedFolder } from '../WhitelistFolder';
 import { WhitelistedPattern } from '../WhitelistPattern';
 import { Setting, Platform, ButtonComponent } from 'obsidian';
 import { FolderSuggest } from '../../suggesters/FolderSuggester';
-import { SettingsTab } from '../../settings/SettingsTab';
+import type { SettingsTab } from '../../settings/SettingsTab';
 import WhitelistFolderSettings from '../modals/WhitelistFolderSettings';
 import { updateWhitelistedPattern, getWhitelistedFoldersByPattern, addWhitelistedPatternListItem } from './whitelistPatternFunctions';
 Platform.isMobileApp;
@@ -81,7 +81,7 @@ export function resyncArray(plugin: FolderNotesPlugin) {
 
 
 export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: HTMLElement, whitelistedFolder: WhitelistedFolder) {
-	const plugin: FolderNotesPlugin = settings.plugin;
+	const { plugin } = settings;
 	const setting = new Setting(containerEl);
 	setting.setClass('fn-exclude-folder-list');
 
@@ -91,7 +91,7 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 		new FolderSuggest(
 			cb.inputEl,
 			plugin,
-			true
+			true,
 		);
 		// @ts-ignore
 		cb.containerEl.addClass('fn-exclude-folder-path');

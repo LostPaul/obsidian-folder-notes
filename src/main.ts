@@ -1,8 +1,10 @@
 
-import { Plugin, TFile, TFolder, TAbstractFile, MarkdownPostProcessorContext, parseYaml, Notice, Keymap, WorkspaceLeaf, requireApiVersion, Platform, debounce } from 'obsidian';
-import { DEFAULT_SETTINGS, FolderNotesSettings, SettingsTab } from './settings/SettingsTab';
+import type { TAbstractFile, MarkdownPostProcessorContext, WorkspaceLeaf } from 'obsidian';
+import { Plugin, TFile, TFolder, parseYaml, Notice, Keymap, requireApiVersion, Platform, debounce } from 'obsidian';
+import type { FolderNotesSettings } from './settings/SettingsTab';
+import { DEFAULT_SETTINGS, SettingsTab } from './settings/SettingsTab';
 import { Commands } from './Commands';
-import { FileExplorerWorkspaceLeaf } from './globals';
+import type { FileExplorerWorkspaceLeaf } from './globals';
 import { registerFileExplorerObserver, unregisterFileExplorerObserver } from './events/MutationObserver';
 import { handleRename } from './events/handleRename';
 import { getFolderNote, getFolder, openFolderNote, createFolderNote } from './functions/folderNoteFunctions';
@@ -15,7 +17,7 @@ import './functions/ListComponent';
 import { handleDelete } from './events/handleDelete';
 import { addCSSClassToFileExplorerEl, getFileExplorerElement, removeCSSClassFromFileExplorerEL, refreshAllFolderStyles, setActiveFolder, removeActiveFolder } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import { FileExplorerView, InternalPlugin } from 'obsidian-typings';
+import type { FileExplorerView, InternalPlugin } from 'obsidian-typings';
 // import { getFocusedItem } from './functions/utils';
 import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './obsidian-folder-overview/src/view';
 import { registerOverviewCommands } from './obsidian-folder-overview/src/Commands';
@@ -89,7 +91,7 @@ export default class FolderNotesPlugin extends Plugin {
 			// 	openFolderNote(this, folderNote);
 			// }
 
-			const hoveredElement = this.hoveredElement;
+			const { hoveredElement } = this;
 			if (this.hoverLinkTriggered) return;
 			if (!hoveredElement) return;
 			if (!Keymap.isModEvent(event)) return;
@@ -212,7 +214,7 @@ export default class FolderNotesPlugin extends Plugin {
 		const originalHandleDrop = clipboardProto.handleDrop;
 
 		clipboardProto.handleDragOver = function (evt: DragEvent, ...args: any[]) {
-			const dragManager = this.app.dragManager;
+			const { dragManager } = this.app;
 			const draggable = dragManager?.draggable;
 
 			if (draggable?.file instanceof TFolder) {
@@ -227,7 +229,7 @@ export default class FolderNotesPlugin extends Plugin {
 		};
 
 		clipboardProto.handleDrop = function (evt: DragEvent, ...args: any[]) {
-			const dragManager = this.app.dragManager;
+			const { dragManager } = this.app;
 			const draggable = dragManager?.draggable;
 
 			if (draggable?.file instanceof TFolder) {
@@ -383,9 +385,9 @@ export default class FolderNotesPlugin extends Plugin {
 					}
 				}
 				return folder.children.length <= threshold + 1;
-			} else {
-				return false;
 			}
+			return false;
+
 		}
 		return true;
 	}
