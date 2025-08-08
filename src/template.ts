@@ -1,5 +1,4 @@
-import type { App } from 'obsidian';
-import { TFile, WorkspaceLeaf } from 'obsidian';
+import { TFile, WorkspaceLeaf, type App } from 'obsidian';
 import type FolderNotesPlugin from './main';
 
 export async function applyTemplate(

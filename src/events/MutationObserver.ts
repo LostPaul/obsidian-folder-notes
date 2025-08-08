@@ -7,7 +7,7 @@ import { updateCSSClassesForFolder } from 'src/functions/styleFunctions';
 
 let fileExplorerMutationObserver: MutationObserver | null = null;
 
-export function registerFileExplorerObserver(plugin: FolderNotesPlugin) {
+export function registerFileExplorerObserver(plugin: FolderNotesPlugin): void {
 	// Run once on initial layout
 	plugin.app.workspace.onLayoutReady(() => {
 		initializeFolderNoteFeatures(plugin);
@@ -30,19 +30,19 @@ export function registerFileExplorerObserver(plugin: FolderNotesPlugin) {
 	);
 }
 
-export function unregisterFileExplorerObserver() {
+export function unregisterFileExplorerObserver(): void {
 	if (fileExplorerMutationObserver) {
 		fileExplorerMutationObserver.disconnect();
 		fileExplorerMutationObserver = null;
 	}
 }
 
-function initializeFolderNoteFeatures(plugin: FolderNotesPlugin) {
+function initializeFolderNoteFeatures(plugin: FolderNotesPlugin): void {
 	initializeAllFolderTitles(plugin);
 	observeFolderTitleMutations(plugin);
 }
 
-function initializeBreadcrumbs(plugin: FolderNotesPlugin) {
+function initializeBreadcrumbs(plugin: FolderNotesPlugin): void {
 	const titleContainers = document.querySelectorAll('.view-header-title-container');
 	if (!titleContainers.length) return;
 	titleContainers.forEach((container) => {
@@ -55,7 +55,7 @@ function initializeBreadcrumbs(plugin: FolderNotesPlugin) {
  * Observes the File Explorer for newly added folder elements and applies plugin logic (e.g., styles, event listeners)
  * automatically when folders are created, expanded, or when the File Explorer view is reopened.
  */
-function observeFolderTitleMutations(plugin: FolderNotesPlugin) {
+function observeFolderTitleMutations(plugin: FolderNotesPlugin): void {
 	if (fileExplorerMutationObserver) {
 		fileExplorerMutationObserver.disconnect();
 	}
@@ -71,7 +71,7 @@ function observeFolderTitleMutations(plugin: FolderNotesPlugin) {
 	fileExplorerMutationObserver.observe(document, { childList: true, subtree: true });
 }
 
-function initializeAllFolderTitles(plugin: FolderNotesPlugin) {
+function initializeAllFolderTitles(plugin: FolderNotesPlugin): void {
 	const allTitles = document.querySelectorAll('.nav-folder-title-content');
 	for (const title of Array.from(allTitles)) {
 		const folderTitle = title as HTMLElement;
@@ -83,7 +83,7 @@ function initializeAllFolderTitles(plugin: FolderNotesPlugin) {
 	}
 }
 
-function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin) {
+function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin): void {
 	const titles: HTMLElement[] = [];
 	if (node.matches('.nav-folder-title-content')) {
 		titles.push(node);
@@ -95,6 +95,7 @@ function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin) {
 	titles.forEach((folderTitle) => {
 		const folderEl = folderTitle.closest('.nav-folder-title');
 		const folderPath = folderEl?.getAttribute('data-path') || '';
+		const RETRY_TIMEOUT = 50;
 		if (!folderEl || !folderPath) {
 			setTimeout(() => {
 				const retryFolderEl = folderTitle.closest('.nav-folder-title');
@@ -102,14 +103,18 @@ function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin) {
 				if (retryFolderEl && retryFolderPath) {
 					setupFolderTitle(folderTitle, plugin, retryFolderPath);
 				}
-			}, 50);
+			}, RETRY_TIMEOUT);
 			return;
 		}
 		setupFolderTitle(folderTitle, plugin, folderPath);
 	});
 }
 
-async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlugin, folderPath: string) {
+async function setupFolderTitle(
+	folderTitle: HTMLElement,
+	plugin: FolderNotesPlugin,
+	folderPath: string,
+): Promise<void> {
 	if (folderTitle.dataset.initialized === 'true') return;
 	if (!folderPath) return;
 
@@ -117,7 +122,10 @@ async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlu
 	await updateCSSClassesForFolder(folderPath, plugin);
 
 	if (plugin.settings.frontMatterTitle.enabled) {
-		plugin.fmtpHandler?.fmptUpdateFolderName({ id: '', result: false, path: folderPath, pathOnly: false }, false);
+		plugin.fmtpHandler?.fmptUpdateFolderName(
+			{ id: '', result: false, path: folderPath, pathOnly: false },
+			false,
+		);
 	}
 
 	if (Platform.isMobile && plugin.settings.disableOpenFolderNoteOnClick) return;
@@ -150,21 +158,24 @@ async function setupFolderTitle(folderTitle: HTMLElement, plugin: FolderNotesPlu
 	});
 }
 
-async function updateFolderNamesInPath(plugin: FolderNotesPlugin, titleContainer: HTMLElement) {
+async function updateFolderNamesInPath(
+	plugin: FolderNotesPlugin,
+	titleContainer: HTMLElement,
+): Promise<void> {
 	const headers = titleContainer.querySelectorAll('span.view-header-breadcrumb');
 	let path = '';
+	const TRAILING_SLASH_LENGTH = 1;
 	headers.forEach(async (breadcrumb: HTMLElement) => {
 		path += breadcrumb.getAttribute('old-name') ?? (breadcrumb as HTMLElement).innerText.trim();
 		path += '/';
-		const folderPath = path.slice(0, -1);
+		const folderPath = path.slice(0, -TRAILING_SLASH_LENGTH);
 
 		const excludedFolder = getExcludedFolder(plugin, folderPath, true);
 		if (excludedFolder?.disableFolderNote) return;
 		const folderNote = getFolderNote(plugin, folderPath);
 		if (!folderNote) return;
 		if (folderNote) breadcrumb.classList.add('has-folder-note');
-
-		breadcrumb?.setAttribute('data-path', path.slice(0, -1));
+		breadcrumb?.setAttribute('data-path', path.slice(0, -TRAILING_SLASH_LENGTH));
 		if (!breadcrumb.onclick) {
 			breadcrumb.addEventListener('click', (e) => {
 				handleViewHeaderClick(e as MouseEvent, plugin);
@@ -172,7 +183,10 @@ async function updateFolderNamesInPath(plugin: FolderNotesPlugin, titleContainer
 		}
 
 		if (plugin.settings.frontMatterTitle.enabled) {
-			plugin.fmtpHandler?.fmptUpdateFolderName({ id: '', result: false, path: folderPath, pathOnly: true, breadcrumb: breadcrumb }, true);
+			plugin.fmtpHandler?.fmptUpdateFolderName(
+				{ id: '', result: false, path: folderPath, pathOnly: true, breadcrumb: breadcrumb },
+				true,
+			);
 		}
 	});
 }
@@ -180,10 +194,14 @@ async function updateFolderNamesInPath(plugin: FolderNotesPlugin, titleContainer
 // Schedules a callback to run when the browser is idle, or after a timeout as a fallback.
 // - callback: The function to execute when idle or after the timeout.
 // - options: Optional object with a 'timeout' property (in milliseconds).
-function scheduleIdle(callback: () => void, options?: { timeout: number }) {
+function scheduleIdle(callback: () => void, options?: { timeout: number }): void {
+	const DEFAULT_IDLE_TIMEOUT = 200;
 	if ('requestIdleCallback' in window) {
-		(window as any).requestIdleCallback(callback, options);
+		const windowWithIdle = window as Window & {
+			requestIdleCallback: (callback: () => void, options?: { timeout: number }) => void
+		};
+		windowWithIdle.requestIdleCallback(callback, options);
 	} else {
-		setTimeout(callback, options?.timeout || 200);
+		setTimeout(callback, options?.timeout || DEFAULT_IDLE_TIMEOUT);
 	}
 }

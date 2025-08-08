@@ -1,11 +1,14 @@
-import type { TAbstractFile } from 'obsidian';
-import { TFolder, TFile } from 'obsidian';
+import { TFolder, TFile, type TAbstractFile } from 'obsidian';
 import type FolderNotesPlugin from 'src/main';
 import { getFolderNote, getFolder, deleteFolderNote } from 'src/functions/folderNoteFunctions';
-import { removeCSSClassFromFileExplorerEL, addCSSClassToFileExplorerEl, hideFolderNoteInFileExplorer } from 'src/functions/styleFunctions';
+import {
+	removeCSSClassFromFileExplorerEL,
+	addCSSClassToFileExplorerEl,
+	hideFolderNoteInFileExplorer,
+} from 'src/functions/styleFunctions';
 import { getFolderPathFromString } from 'src/functions/utils';
 
-export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
+export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin): void {
 	const folder = plugin.app.vault.getAbstractFileByPath(getFolderPathFromString(file.path));
 	if (folder instanceof TFolder) {
 		if (plugin.isEmptyFolderNoteFolder(folder) && getFolderNote(plugin, folder.path)) {
@@ -16,13 +19,15 @@ export function handleDelete(file: TAbstractFile, plugin: FolderNotesPlugin) {
 	}
 
 	if (file instanceof TFile) {
-		const folder = getFolder(plugin, file);
-		if (!folder) { return; }
-		const folderNote = getFolderNote(plugin, folder.path);
+		const folderNoteFolder = getFolder(plugin, file);
+		if (!folderNoteFolder) { return; }
+		const folderNote = getFolderNote(plugin, folderNoteFolder.path);
 		if (folderNote) { return; }
-		removeCSSClassFromFileExplorerEL(folder.path, 'has-folder-note', false, plugin);
-		removeCSSClassFromFileExplorerEL(folder.path, 'only-has-folder-note', true, plugin);
-		hideFolderNoteInFileExplorer(folder.path, plugin);
+		removeCSSClassFromFileExplorerEL(folderNoteFolder.path, 'has-folder-note', false, plugin);
+		removeCSSClassFromFileExplorerEL(
+			folderNoteFolder.path, 'only-has-folder-note', true, plugin,
+		);
+		hideFolderNoteInFileExplorer(folderNoteFolder.path, plugin);
 	}
 
 	if (!(file instanceof TFolder)) { return; }

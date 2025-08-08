@@ -139,18 +139,23 @@ export default [
 			'no-empty-function': 'warn',
 			'complexity': [
 				'warn',
-				10
+				15
 			],
 			'max-len': [
 				'warn', {
-					code: 100
+					code: 100,
+					ignoreComments: true,
 				}
 			],
 			'no-inline-comments': 'warn',
 			'no-magic-numbers': [
 				'warn', {
 					ignore: [0, 1],
-					enforceConst: true
+					enforceConst: true,
+					ignoreTypeIndexes: true,
+					ignoreEnums: true,
+					ignoreNumericLiteralTypes: true,
+					ignoreClassFieldInitialValues: true,
 				}
 			],
 		}

@@ -203,7 +203,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 		// @ts-ignore
 		const editMode = view.editMode ?? view.sourceMode ?? this.app.workspace.activeEditor?.editMode;
-		// eslint-disable-next-line
+
 		const plugin = this;
 		if (!editMode) { return; }
 
@@ -308,7 +308,7 @@ export default class FolderNotesPlugin extends Plugin {
 		openFolderNote(this, folderNote, evt);
 	}
 
-	handleOverviewBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+	handleOverviewBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext): void {
 		const observer = new MutationObserver(() => {
 			const editButton = el.parentElement?.childNodes.item(1);
 			if (editButton) {
@@ -316,7 +316,10 @@ export default class FolderNotesPlugin extends Plugin {
 					e.stopImmediatePropagation();
 					e.preventDefault();
 					e.stopPropagation();
-					new FolderOverviewSettings(this.app, this, parseYaml(source), ctx, el, this.settings.defaultOverview).open();
+					new FolderOverviewSettings(
+						this.app, this, parseYaml(source),
+						ctx, el, this.settings.defaultOverview,
+					).open();
 				}, { capture: true });
 			}
 		});
@@ -329,11 +332,11 @@ export default class FolderNotesPlugin extends Plugin {
 		try {
 			if (this.app.workspace.layoutReady) {
 				const folderOverview = new FolderOverview(this, ctx, source, el, this.settings.defaultOverview);
-				folderOverview.create(this, parseYaml(source), el, ctx);
+				folderOverview.create(this, el, ctx);
 			} else {
 				this.app.workspace.onLayoutReady(() => {
 					const folderOverview = new FolderOverview(this, ctx, source, el, this.settings.defaultOverview);
-					folderOverview.create(this, parseYaml(source), el, ctx);
+					folderOverview.create(this, el, ctx);
 				});
 			}
 		} catch (e) {

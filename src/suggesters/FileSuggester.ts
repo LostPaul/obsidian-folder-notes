@@ -1,7 +1,4 @@
-// Credits go to Liam's Periodic Notes Plugin: https://github.com/liamcain/obsidian-periodic-notes and https://github.com/SilentVoid13/Templater
-
-import type { TAbstractFile } from 'obsidian';
-import { TFile } from 'obsidian';
+import { type TAbstractFile, TFile } from 'obsidian';
 import { TextInputSuggest } from './Suggest';
 import type FolderNotesPlugin from '../main';
 export enum FileSuggestMode {
