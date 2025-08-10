@@ -1,9 +1,11 @@
-import type { App } from 'obsidian';
-import { Modal, Setting } from 'obsidian';
+import { Modal, Setting, type App } from 'obsidian';
 import type { SettingsTab } from 'src/settings/SettingsTab';
 import type FolderNotesPlugin from '../../main';
 import { WhitelistedFolder } from '../WhitelistFolder';
-import { addWhitelistFolderListItem, addWhitelistedFolder } from '../functions/whitelistFolderFunctions';
+import {
+	addWhitelistFolderListItem,
+	addWhitelistedFolder,
+} from '../functions/whitelistFolderFunctions';
 import { addWhitelistedPatternListItem } from '../functions/whitelistPatternFunctions';
 
 export default class WhitelistedFoldersSettings extends Modal {
@@ -16,7 +18,8 @@ export default class WhitelistedFoldersSettings extends Modal {
 		this.settingsTab = settingsTab;
 		this.app = settingsTab.app;
 	}
-	onOpen() {
+
+	onOpen(): void {
 
 		const { contentEl } = this;
 		contentEl.createEl('h2', { text: 'Manage whitelisted folders' });
@@ -29,22 +32,31 @@ export default class WhitelistedFoldersSettings extends Modal {
 				cb.setClass('add-exclude-folder');
 				cb.setTooltip('Add whitelisted folder');
 				cb.onClick(() => {
-					const whitelistedFolder = new WhitelistedFolder('', this.plugin.settings.whitelistFolders.length, undefined, this.plugin);
-					addWhitelistFolderListItem(this.plugin.settingsTab, contentEl, whitelistedFolder);
+					const whitelistedFolder = new WhitelistedFolder(
+						'', this.plugin.settings.whitelistFolders.length,
+						undefined, this.plugin,
+					);
+					addWhitelistFolderListItem(
+						this.plugin.settingsTab, contentEl, whitelistedFolder,
+					);
 					addWhitelistedFolder(this.plugin, whitelistedFolder);
 					this.settingsTab.display();
 				});
 			});
-		this.plugin.settings.whitelistFolders.sort((a, b) => a.position - b.position).forEach((whitelistedFolder) => {
-			if (whitelistedFolder.string?.trim() !== '' && whitelistedFolder.path?.trim() === '') {
-				addWhitelistedPatternListItem(this.settingsTab, contentEl, whitelistedFolder);
-			} else {
-				addWhitelistFolderListItem(this.settingsTab, contentEl, whitelistedFolder);
-			}
-		});
+
+		this.plugin.settings.whitelistFolders
+			.sort((a, b) => a.position - b.position)
+			.forEach((whitelistedFolder) => {
+				if (whitelistedFolder.string?.trim() !== '' &&
+					whitelistedFolder.path?.trim() === '') {
+					addWhitelistedPatternListItem(this.settingsTab, contentEl, whitelistedFolder);
+				} else {
+					addWhitelistFolderListItem(this.settingsTab, contentEl, whitelistedFolder);
+				}
+			});
 	}
 
-	onClose() {
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

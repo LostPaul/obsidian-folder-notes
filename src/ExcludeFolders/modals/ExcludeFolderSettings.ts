@@ -1,5 +1,4 @@
-import type { App } from 'obsidian';
-import { Modal, Setting } from 'obsidian';
+import { Modal, Setting, type App } from 'obsidian';
 import type FolderNotesPlugin from '../../main';
 import type { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 import { updateCSSClassesForFolder } from 'src/functions/styleFunctions';
@@ -13,10 +12,10 @@ export default class ExcludedFolderSettings extends Modal {
 		this.app = app;
 		this.excludedFolder = excludedFolder;
 	}
-	onOpen() {
+	onOpen(): void {
 		this.display();
 	}
-	display() {
+	display(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.createEl('h2', { text: 'Excluded folder settings' });
@@ -108,9 +107,9 @@ export default class ExcludedFolderSettings extends Modal {
 						}),
 				);
 		}
-
 	}
-	onClose() {
+
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

@@ -6,24 +6,34 @@ import { Platform, Setting } from 'obsidian';
 import { FolderSuggest } from '../../suggesters/FolderSuggester';
 import type { SettingsTab } from '../../settings/SettingsTab';
 import ExcludedFolderSettings from '../modals/ExcludeFolderSettings';
-import { updatePattern, getExcludedFoldersByPattern, addExcludePatternListItem } from './patternFunctions';
+import {
+	updatePattern,
+	getExcludedFoldersByPattern,
+	addExcludePatternListItem,
+} from './patternFunctions';
 import { getWhitelistedFolder } from './whitelistFolderFunctions';
 import type { WhitelistedFolder } from '../WhitelistFolder';
 import type { WhitelistedPattern } from '../WhitelistPattern';
 
-export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, includeDetached: boolean, pathOnly?: boolean, ignoreWhitelist?: boolean) {
-	let excludedFolder = {} as ExcludedFolder | ExcludePattern | undefined;
-	const whitelistedFolder = getWhitelistedFolder(plugin, path) as WhitelistedFolder | WhitelistedPattern | undefined;
+function combineExcluded(
+	plugin: FolderNotesPlugin,
+	path: string,
+	includeDetached: boolean,
+	pathOnly?: boolean,
+): Array<ExcludedFolder | ExcludePattern> {
 	const folderName = getFolderNameFromPathString(path);
-	let matchedPatterns = getExcludedFoldersByPattern(plugin, folderName);
-	const excludedFolders = getExcludedFoldersByPath(plugin, path);
-	if (pathOnly) { matchedPatterns = []; }
-	let combinedExcludedFolders = [...matchedPatterns, ...excludedFolders];
+	const matchedPatterns = pathOnly ? [] : getExcludedFoldersByPattern(plugin, folderName);
+	const excludedByPath = getExcludedFoldersByPath(plugin, path);
+	let combined = [...matchedPatterns, ...excludedByPath];
+	if (!includeDetached) combined = combined.filter((f) => !f.detached);
+	return combined;
+}
 
-	if (!includeDetached) {
-		combinedExcludedFolders = combinedExcludedFolders.filter((f) => !f.detached);
-	}
-
+function aggregateFlags(
+	combinedExcludedFolders: Array<ExcludedFolder | ExcludePattern>,
+): Partial<ExcludedFolder> | undefined {
+	if (combinedExcludedFolders.length === 0) return undefined;
+	const result: Partial<ExcludedFolder> = {};
 	const propertiesToCopy: (keyof ExcludedFolder)[] = [
 		'disableAutoCreate',
 		'disableFolderNote',
@@ -35,32 +45,46 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, inclu
 		'id',
 		'showFolderNote',
 	];
-
-	if (combinedExcludedFolders.length > 0) {
-		for (const matchedFolder of combinedExcludedFolders) {
-			propertiesToCopy.forEach((property) => {
-				if (matchedFolder[property] === true) {
-					(excludedFolder as any)[property] = true;
-				} else if (!matchedFolder[property]) {
-					(excludedFolder as any)[property] = false;
-				}
-			});
+	for (const matchedFolder of combinedExcludedFolders) {
+		for (const property of propertiesToCopy) {
+			const value = (matchedFolder as Partial<ExcludedFolder>)[property];
+			if (value === true) {
+				(result as Partial<ExcludedFolder>)[property] = true as never;
+			} else if (!value) {
+				(result as Partial<ExcludedFolder>)[property] = false as never;
+			}
 		}
-	} else {
-		excludedFolder = undefined;
 	}
+	return result;
+}
 
-	if (excludedFolder?.detached) { ignoreWhitelist = true; }
+function applyWhitelistOverrides(
+	excluded: Partial<ExcludedFolder>,
+	whitelisted: WhitelistedFolder | WhitelistedPattern,
+): Partial<ExcludedFolder> {
+	const out: Partial<ExcludedFolder> = { ...excluded };
+	if (out.disableAutoCreate !== undefined) {
+		out.disableAutoCreate = !whitelisted.enableAutoCreate;
+	}
+	if (out.disableFolderNote !== undefined) {
+		out.disableFolderNote = !whitelisted.enableFolderNote;
+	}
+	if (out.disableSync !== undefined) {
+		out.disableSync = !whitelisted.enableSync;
+	}
+	out.enableCollapsing = !whitelisted.disableCollapsing;
+	if (out.excludeFromFolderOverview !== undefined) {
+		out.excludeFromFolderOverview = !whitelisted.showInFolderOverview;
+	}
+	out.showFolderNote = !whitelisted.hideInFileExplorer;
+	return out;
+}
 
-	if (whitelistedFolder && excludedFolder && !ignoreWhitelist) {
-		excludedFolder.disableAutoCreate ? excludedFolder.disableAutoCreate = !whitelistedFolder.enableAutoCreate : '';
-		excludedFolder.disableFolderNote ? excludedFolder.disableFolderNote = !whitelistedFolder.enableFolderNote : '';
-		excludedFolder.disableSync ? excludedFolder.disableSync = !whitelistedFolder.enableSync : '';
-		excludedFolder.enableCollapsing = !whitelistedFolder.disableCollapsing;
-		excludedFolder.excludeFromFolderOverview ? excludedFolder.excludeFromFolderOverview = !whitelistedFolder.showInFolderOverview : '';
-		excludedFolder.showFolderNote = !whitelistedFolder.hideInFileExplorer;
-	} else if (excludedFolder && Object.keys(excludedFolder).length === 0) {
-		excludedFolder = {
+function defaultExcludedIfEmpty(
+	value: Partial<ExcludedFolder> | undefined,
+): ExcludedFolder | undefined {
+	if (value && Object.keys(value).length === 0) {
+		return {
 			type: 'folder',
 			id: '',
 			path: '',
@@ -77,23 +101,54 @@ export function getExcludedFolder(plugin: FolderNotesPlugin, path: string, inclu
 			showFolderNote: false,
 		};
 	}
-
-	return excludedFolder;
+	return value as ExcludedFolder | undefined;
 }
 
-export function getDetachedFolder(plugin: FolderNotesPlugin, path: string) {
+export function getExcludedFolder(
+	plugin: FolderNotesPlugin,
+	path: string,
+	includeDetached: boolean,
+	pathOnly?: boolean,
+	ignoreWhitelist?: boolean,
+): ExcludedFolder | ExcludePattern | undefined {
+	const combined = combineExcluded(plugin, path, includeDetached, pathOnly);
+	let excluded = aggregateFlags(combined);
+
+	const whitelist = getWhitelistedFolder(
+		plugin,
+		path,
+	) as WhitelistedFolder | WhitelistedPattern | undefined;
+
+	let skipWhitelist = ignoreWhitelist ?? false;
+	if (excluded?.detached) skipWhitelist = true;
+
+	if (whitelist && excluded && !skipWhitelist) {
+		excluded = applyWhitelistOverrides(excluded, whitelist);
+	}
+
+	return defaultExcludedIfEmpty(excluded) as ExcludedFolder | ExcludePattern | undefined;
+}
+
+export function getDetachedFolder(
+	plugin: FolderNotesPlugin,
+	path: string,
+): ExcludedFolder | undefined {
 	return plugin.settings.excludeFolders.find((f) => f.path === path && f.detached);
 }
 
-
-export function getExcludedFolderByPath(plugin: FolderNotesPlugin, path: string) {
+export function getExcludedFolderByPath(
+	plugin: FolderNotesPlugin,
+	path: string,
+): ExcludedFolder | undefined {
 	return plugin.settings.excludeFolders.find((excludedFolder) => {
 		if (path.trim() === '' || !excludedFolder.path) { return false; }
 		if (excludedFolder.path === path) { return true; }
 		if (!excludedFolder.subFolders) { return false; }
-		const excludedFolderPath = excludedFolder.path.includes('/') ? excludedFolder.path : excludedFolder.path + '/';
+		const excludedFolderPath = excludedFolder.path.includes('/')
+			? excludedFolder.path
+			: `${excludedFolder.path}/`;
 		let folderPath = getFolderPathFromString(path);
-		folderPath = folderPath.includes('/') ? folderPath : folderPath + '/';
+		folderPath = folderPath.includes('/') ? folderPath : `${folderPath}/`;
 
 		if (folderPath.includes('/') || folderPath.includes('\\')) {
 			return folderPath.startsWith(excludedFolderPath) || folderPath === excludedFolderPath;
@@ -103,14 +158,19 @@ export function getExcludedFolderByPath(plugin: FolderNotesPlugin, path: string)
 	});
 }
 
-export function getExcludedFoldersByPath(plugin: FolderNotesPlugin, path: string) {
+export function getExcludedFoldersByPath(
+	plugin: FolderNotesPlugin,
+	path: string,
+): ExcludedFolder[] {
 	return plugin.settings.excludeFolders.filter((excludedFolder) => {
 		if (path.trim() === '' || !excludedFolder.path) { return false; }
 		if (excludedFolder.path === path) { return true; }
 		if (!excludedFolder.subFolders) { return false; }
-		const excludedFolderPath = excludedFolder.path.includes('/') ? excludedFolder.path : excludedFolder.path + '/';
+		const excludedFolderPath = excludedFolder.path.includes('/')
+			? excludedFolder.path
+			: `${excludedFolder.path}/`;
 		let folderPath = getFolderPathFromString(path);
-		folderPath = folderPath.includes('/') ? folderPath : folderPath + '/';
+		folderPath = folderPath.includes('/') ? folderPath : `${folderPath}/`;
 
 		if (folderPath.includes('/') || folderPath.includes('\\')) {
 			return folderPath.startsWith(excludedFolderPath) || folderPath === excludedFolderPath;
@@ -120,32 +180,52 @@ export function getExcludedFoldersByPath(plugin: FolderNotesPlugin, path: string
 	});
 }
 
-export function addExcludedFolder(plugin: FolderNotesPlugin, excludedFolder: ExcludedFolder, reloadStyles = true) {
+export function addExcludedFolder(
+	plugin: FolderNotesPlugin,
+	excludedFolder: ExcludedFolder,
+	reloadStyles = true,
+): void {
 	plugin.settings.excludeFolders.push(excludedFolder);
-	plugin.saveSettings(reloadStyles);
+	void plugin.saveSettings(reloadStyles);
 }
 
-export async function deleteExcludedFolder(plugin: FolderNotesPlugin, excludedFolder: ExcludedFolder) {
-	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter((folder) => folder.id !== excludedFolder.id || folder.type === 'pattern');
-	plugin.saveSettings(true);
+export async function deleteExcludedFolder(
+	plugin: FolderNotesPlugin,
+	excludedFolder: ExcludedFolder,
+): Promise<void> {
+	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter(
+		(folder) => folder.id !== excludedFolder.id || folder.type === 'pattern',
+	);
+	await plugin.saveSettings(true);
 	resyncArray(plugin);
 }
 
-export function updateExcludedFolder(plugin: FolderNotesPlugin, excludedFolder: ExcludePattern, newExcludeFolder: ExcludePattern) {
-	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter((folder) => folder.id !== excludedFolder.id);
+export function updateExcludedFolder(
+	plugin: FolderNotesPlugin,
+	excludedFolder: ExcludePattern,
+	newExcludeFolder: ExcludePattern,
+): void {
+	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter(
+		(folder) => folder.id !== excludedFolder.id,
+	);
 	addExcludedFolder(plugin, newExcludeFolder);
 }
 
-export function resyncArray(plugin: FolderNotesPlugin) {
-	plugin.settings.excludeFolders = plugin.settings.excludeFolders.sort((a, b) => a.position - b.position);
+export function resyncArray(plugin: FolderNotesPlugin): void {
+	plugin.settings.excludeFolders = plugin.settings.excludeFolders.sort(
+		(a, b) => a.position - b.position,
+	);
 	plugin.settings.excludeFolders.forEach((folder, index) => {
 		folder.position = index;
 	});
-	plugin.saveSettings();
+	void plugin.saveSettings();
 }
 
-
-export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTMLElement, excludedFolder: ExcludedFolder) {
+export function addExcludeFolderListItem(
+	settings: SettingsTab,
+	containerEl: HTMLElement,
+	excludedFolder: ExcludedFolder,
+): void {
 	const { plugin } = settings;
 	const setting = new Setting(containerEl);
 	setting.setClass('fn-exclude-folder-list');
@@ -155,14 +235,19 @@ export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTM
 			plugin,
 			false,
 		);
-		// @ts-ignore
+		// @ts-expect-error Obsidian's public types don't include this property
 		cb.containerEl.addClass('fn-exclude-folder-path');
 		cb.setPlaceholder('Folder path');
 		cb.setValue(excludedFolder.path || '');
 		cb.onChange((value) => {
 			if (value.startsWith('{regex}') || value.includes('*')) {
 				deleteExcludedFolder(plugin, excludedFolder);
-				const pattern = new ExcludePattern(value, plugin.settings.excludeFolders.length, undefined, plugin);
+				const pattern = new ExcludePattern(
+					value,
+					plugin.settings.excludeFolders.length,
+					undefined,
+					plugin,
+				);
 				addExcludedFolder(plugin, pattern);
 				addExcludePatternListItem(settings, containerEl, pattern);
 				setting.clear();
@@ -190,7 +275,9 @@ export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTM
 				if (excludedFolder.position === 0) { return; }
 				excludedFolder.position -= 1;
 				updateExcludedFolder(plugin, excludedFolder, excludedFolder);
-				const oldExcludedFolder = plugin.settings.excludeFolders.find((folder) => folder.position === excludedFolder.position);
+				const oldExcludedFolder = plugin.settings.excludeFolders.find(
+					(folder) => folder.position === excludedFolder.position,
+				);
 				if (oldExcludedFolder) {
 					oldExcludedFolder.position += 1;
 					if (oldExcludedFolder.type === 'pattern') {
@@ -213,7 +300,9 @@ export function addExcludeFolderListItem(settings: SettingsTab, containerEl: HTM
 				excludedFolder.position += 1;
 
 				updateExcludedFolder(plugin, excludedFolder, excludedFolder);
-				const oldExcludedFolder = plugin.settings.excludeFolders.find((folder) => folder.position === excludedFolder.position);
+				const oldExcludedFolder = plugin.settings.excludeFolders.find(
+					(folder) => folder.position === excludedFolder.position,
+				);
 				if (oldExcludedFolder) {
 					oldExcludedFolder.position -= 1;
 					if (oldExcludedFolder.type === 'pattern') {

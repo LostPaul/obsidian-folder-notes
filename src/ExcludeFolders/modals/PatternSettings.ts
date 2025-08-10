@@ -1,5 +1,4 @@
-import type { App } from 'obsidian';
-import { Modal, Setting } from 'obsidian';
+import { Modal, Setting, type App } from 'obsidian';
 import type FolderNotesPlugin from '../../main';
 import type { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
 import { refreshAllFolderStyles } from 'src/functions/styleFunctions';
@@ -14,16 +13,19 @@ export default class PatternSettings extends Modal {
 		this.app = app;
 		this.pattern = pattern;
 	}
-	onOpen() {
+
+	onOpen(): void {
 		this.display();
 	}
-	display() {
+
+	display(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.createEl('h2', { text: 'Pattern settings' });
 
 		new Setting(contentEl)
 			.setName('Disable folder name sync')
+			// eslint-disable-next-line max-len
 			.setDesc('Choose if the folder name should be renamed when the file name has been changed')
 			.addToggle((toggle) =>
 				toggle
@@ -36,6 +38,7 @@ export default class PatternSettings extends Modal {
 
 		new Setting(contentEl)
 			.setName('Disable auto creation of folder notes in this folder')
+			// eslint-disable-next-line max-len
 			.setDesc('Choose if a folder note should be created when a new folder is created that matches this pattern')
 			.addToggle((toggle) =>
 				toggle
@@ -98,9 +101,9 @@ export default class PatternSettings extends Modal {
 						}),
 				);
 		}
-
 	}
-	onClose() {
+
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

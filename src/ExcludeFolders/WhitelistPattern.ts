@@ -13,7 +13,12 @@ export class WhitelistedPattern {
 	showInFolderOverview: boolean;
 	hideInFileExplorer: boolean;
 	hideInSettings: boolean;
-	constructor(pattern: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
+	constructor(
+		pattern: string,
+		position: number,
+		id: string | undefined,
+		plugin: FolderNotesPlugin,
+	) {
 		this.type = 'pattern';
 		this.id = id || crypto.randomUUID();
 		this.subFolders = plugin.settings.excludePatternDefaultSettings.subFolders;

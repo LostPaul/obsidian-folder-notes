@@ -2,15 +2,21 @@ import type FolderNotesPlugin from '../../main';
 import { getFolderNameFromPathString, getFolderPathFromString } from '../../functions/utils';
 import type { WhitelistedFolder } from '../WhitelistFolder';
 import { WhitelistedPattern } from '../WhitelistPattern';
-import { Setting, Platform, ButtonComponent } from 'obsidian';
+import { Setting, ButtonComponent } from 'obsidian';
 import { FolderSuggest } from '../../suggesters/FolderSuggester';
 import type { SettingsTab } from '../../settings/SettingsTab';
 import WhitelistFolderSettings from '../modals/WhitelistFolderSettings';
-import { updateWhitelistedPattern, getWhitelistedFoldersByPattern, addWhitelistedPatternListItem } from './whitelistPatternFunctions';
-Platform.isMobileApp;
+import {
+	updateWhitelistedPattern,
+	getWhitelistedFoldersByPattern,
+	addWhitelistedPatternListItem,
+} from './whitelistPatternFunctions';
 
-export function getWhitelistedFolder(plugin: FolderNotesPlugin, path: string) {
-	let whitelistedFolder = {} as WhitelistedFolder | WhitelistedPattern | undefined;
+export function getWhitelistedFolder(
+	plugin: FolderNotesPlugin,
+	path: string,
+): WhitelistedFolder | WhitelistedPattern | undefined {
+	let whitelistedFolder: Partial<WhitelistedFolder> | undefined = {};
 	const folderName = getFolderNameFromPathString(path);
 	const matchedPatterns = getWhitelistedFoldersByPattern(plugin, folderName);
 	const whitelistedFolders = getWhitelistedFoldersByPath(plugin, path);
@@ -25,21 +31,30 @@ export function getWhitelistedFolder(plugin: FolderNotesPlugin, path: string) {
 	if (combinedWhitelistedFolders.length > 0) {
 		for (const matchedFolder of combinedWhitelistedFolders) {
 			propertiesToCopy.forEach((property) => {
-				if (matchedFolder[property] === true) {
-					(whitelistedFolder as any)[property] = true;
-				} else if (!matchedFolder[property]) {
-					(whitelistedFolder as any)[property] = false;
+				const value = (matchedFolder as Partial<WhitelistedFolder>)[property];
+				if (value === true) {
+					(whitelistedFolder as Partial<WhitelistedFolder>)[property] = true as never;
+				} else if (!value) {
+					(whitelistedFolder as Partial<WhitelistedFolder>)[property] = false as never;
 				}
 			});
 		}
 	}
 
-	if ((whitelistedFolder instanceof Object) && Object.keys(whitelistedFolder).length === 0) { whitelistedFolder = undefined; }
+	if (
+		whitelistedFolder
+		&& Object.keys(whitelistedFolder).length === 0
+	) {
+		whitelistedFolder = undefined;
+	}
 
-	return whitelistedFolder;
+	return whitelistedFolder as WhitelistedFolder | WhitelistedPattern | undefined;
 }
 
-export function getWhitelistedFolderByPath(plugin: FolderNotesPlugin, path: string) {
+export function getWhitelistedFolderByPath(
+	plugin: FolderNotesPlugin,
+	path: string,
+): WhitelistedFolder | WhitelistedPattern | undefined {
 	return plugin.settings.whitelistFolders.find((whitelistedFolder) => {
 		if (whitelistedFolder.path === path) { return true; }
 		if (!whitelistedFolder.subFolders) { return false; }
@@ -47,7 +62,10 @@ export function getWhitelistedFolderByPath(plugin: FolderNotesPlugin, path: stri
 	});
 }
 
-export function getWhitelistedFoldersByPath(plugin: FolderNotesPlugin, path: string) {
+export function getWhitelistedFoldersByPath(
+	plugin: FolderNotesPlugin,
+	path: string,
+): Array<WhitelistedFolder | WhitelistedPattern> {
 	return plugin.settings.whitelistFolders.filter((whitelistedFolder) => {
 		if (whitelistedFolder.path === path) { return true; }
 		if (!whitelistedFolder.subFolders) { return false; }
@@ -55,37 +73,58 @@ export function getWhitelistedFoldersByPath(plugin: FolderNotesPlugin, path: str
 	});
 }
 
-export function addWhitelistedFolder(plugin: FolderNotesPlugin, whitelistedFolder: WhitelistedFolder) {
+export function addWhitelistedFolder(
+	plugin: FolderNotesPlugin,
+	whitelistedFolder: WhitelistedFolder | WhitelistedPattern,
+): void {
 	plugin.settings.whitelistFolders.push(whitelistedFolder);
-	plugin.saveSettings(true);
+	void plugin.saveSettings(true);
 }
 
-export function deleteWhitelistedFolder(plugin: FolderNotesPlugin, whitelistedFolder: WhitelistedFolder) {
-	plugin.settings.whitelistFolders = plugin.settings.whitelistFolders.filter((folder) => folder.id !== whitelistedFolder.id || folder.type === 'pattern');
-	plugin.saveSettings(true);
+export async function deleteWhitelistedFolder(
+	plugin: FolderNotesPlugin,
+	whitelistedFolder: WhitelistedFolder | WhitelistedPattern,
+): Promise<void> {
+	plugin.settings.whitelistFolders = plugin.settings.whitelistFolders.filter(
+		(folder) => folder.id !== whitelistedFolder.id || folder.type === 'pattern',
+	);
+	await plugin.saveSettings(true);
 	resyncArray(plugin);
 }
 
-export function updateWhitelistedFolder(plugin: FolderNotesPlugin, whitelistedFolder: WhitelistedFolder, newWhitelistFolder: WhitelistedFolder) {
-	plugin.settings.whitelistFolders = plugin.settings.whitelistFolders.filter((folder) => folder.id !== whitelistedFolder.id);
+export function updateWhitelistedFolder(
+	plugin: FolderNotesPlugin,
+	whitelistedFolder: WhitelistedFolder,
+	newWhitelistFolder: WhitelistedFolder,
+): void {
+	plugin.settings.whitelistFolders = plugin.settings.whitelistFolders.filter(
+		(folder) => folder.id !== whitelistedFolder.id,
+	);
 	addWhitelistedFolder(plugin, newWhitelistFolder);
 }
 
-export function resyncArray(plugin: FolderNotesPlugin) {
-	plugin.settings.whitelistFolders = plugin.settings.whitelistFolders.sort((a, b) => a.position - b.position);
+export function resyncArray(plugin: FolderNotesPlugin): void {
+	plugin.settings.whitelistFolders = plugin.settings.whitelistFolders.sort(
+		(a, b) => a.position - b.position,
+	);
 	plugin.settings.whitelistFolders.forEach((folder, index) => {
 		folder.position = index;
 	});
-	plugin.saveSettings();
+	void plugin.saveSettings();
 }
 
-
-export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: HTMLElement, whitelistedFolder: WhitelistedFolder) {
+export function addWhitelistFolderListItem(
+	settings: SettingsTab,
+	containerEl: HTMLElement,
+	whitelistedFolder: WhitelistedFolder,
+): void {
 	const { plugin } = settings;
 	const setting = new Setting(containerEl);
 	setting.setClass('fn-exclude-folder-list');
 
-	const inputContainer = setting.settingEl.createDiv({ cls: 'fn-whitelist-folder-input-container' });
+	const inputContainer = setting.settingEl.createDiv({
+		cls: 'fn-whitelist-folder-input-container',
+	});
 	const SearchComponent = new Setting(inputContainer);
 	SearchComponent.addSearch((cb) => {
 		new FolderSuggest(
@@ -93,14 +132,19 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 			plugin,
 			true,
 		);
-		// @ts-ignore
+		// @ts-expect-error Obsidian's public types don't include this property
 		cb.containerEl.addClass('fn-exclude-folder-path');
 		cb.setPlaceholder('Folder path');
 		cb.setValue(whitelistedFolder.path);
 		cb.onChange((value) => {
 			if (value.startsWith('{regex}') || value.includes('*')) {
-				deleteWhitelistedFolder(plugin, whitelistedFolder);
-				const pattern = new WhitelistedPattern(value, plugin.settings.whitelistFolders.length, undefined, plugin);
+				void deleteWhitelistedFolder(plugin, whitelistedFolder);
+				const pattern = new WhitelistedPattern(
+					value,
+					plugin.settings.whitelistFolders.length,
+					undefined,
+					plugin,
+				);
 				addWhitelistedFolder(plugin, pattern);
 				addWhitelistedPatternListItem(settings, containerEl, pattern);
 				setting.clear();
@@ -127,7 +171,9 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 			if (whitelistedFolder.position === 0) { return; }
 			whitelistedFolder.position -= 1;
 			updateWhitelistedFolder(plugin, whitelistedFolder, whitelistedFolder);
-			const oldWhitelistedFolder = plugin.settings.whitelistFolders.find((folder) => folder.position === whitelistedFolder.position);
+			const oldWhitelistedFolder = plugin.settings.whitelistFolders.find(
+				(folder) => folder.position === whitelistedFolder.position,
+			);
 			if (oldWhitelistedFolder) {
 				oldWhitelistedFolder.position += 1;
 				if (oldWhitelistedFolder.type === 'pattern') {
@@ -149,7 +195,9 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 			whitelistedFolder.position += 1;
 
 			updateWhitelistedFolder(plugin, whitelistedFolder, whitelistedFolder);
-			const oldWhitelistedFolder = plugin.settings.whitelistFolders.find((folder) => folder.position === whitelistedFolder.position);
+			const oldWhitelistedFolder = plugin.settings.whitelistFolders.find(
+				(folder) => folder.position === whitelistedFolder.position,
+			);
 			if (oldWhitelistedFolder) {
 				oldWhitelistedFolder.position -= 1;
 				if (oldWhitelistedFolder.type === 'pattern') {
@@ -166,7 +214,7 @@ export function addWhitelistFolderListItem(settings: SettingsTab, containerEl: H
 		.setIcon('trash-2')
 		.setTooltip('Delete excluded folder')
 		.onClick(() => {
-			deleteWhitelistedFolder(plugin, whitelistedFolder);
+			void deleteWhitelistedFolder(plugin, whitelistedFolder);
 			setting.clear();
 			setting.settingEl.remove();
 		});

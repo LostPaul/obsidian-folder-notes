@@ -1,5 +1,4 @@
-import type { App } from 'obsidian';
-import { Modal, Setting } from 'obsidian';
+import { Modal, Setting, type App } from 'obsidian';
 import type FolderNotesPlugin from '../../main';
 import type { WhitelistedPattern } from '../WhitelistPattern';
 
@@ -13,15 +12,18 @@ export default class WhitelistPatternSettings extends Modal {
 		this.app = app;
 		this.pattern = pattern;
 	}
-	onOpen() {
+
+	onOpen(): void {
 		this.display();
 	}
-	display() {
+
+	display(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.createEl('h2', { text: 'Whitelisted pattern settings' });
 		new Setting(contentEl)
 			.setName('Enable folder name sync')
+			// eslint-disable-next-line max-len
 			.setDesc('Choose if the name of a folder note should be renamed when the folder name is changed')
 			.addToggle((toggle) =>
 				toggle
@@ -82,9 +84,9 @@ export default class WhitelistPatternSettings extends Modal {
 						}),
 				);
 		}
-
 	}
-	onClose() {
+
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}
