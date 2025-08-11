@@ -1,5 +1,4 @@
-import type { App, ButtonComponent } from 'obsidian';
-import { Modal, Setting, TFolder, Notice } from 'obsidian';
+import { Modal, Setting, TFolder, Notice, type App, type ButtonComponent } from 'obsidian';
 import type FolderNotesPlugin from '../../main';
 import { createFolderNote, getFolderNote } from 'src/functions/folderNoteFunctions';
 import { getTemplatePlugins } from 'src/template';
@@ -15,7 +14,8 @@ export default class ConfirmationModal extends Modal {
 		this.app = app;
 		this.extension = plugin.settings.folderNoteType;
 	}
-	onOpen() {
+
+	onOpen(): void {
 		this.modalEl.addClass('fn-confirmation-modal');
 		let templateFolderPath: string;
 		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.plugin.app);
@@ -23,19 +23,29 @@ export default class ConfirmationModal extends Modal {
 			templateFolderPath = '';
 		}
 		if (templaterPlugin) {
-			templateFolderPath = templaterPlugin.plugin?.settings?.templates_folder as string;
-		} else {
+			templateFolderPath = (
+				templaterPlugin as unknown as {
+					plugin?: { settings?: { templates_folder?: string } }
+				}
+			).plugin?.settings?.templates_folder as string;
+		} else if (templateFolder) {
 			templateFolderPath = templateFolder;
 		}
 
 		const { contentEl } = this;
 		contentEl.createEl('h2', { text: 'Create folder note for every folder' });
 		const setting = new Setting(contentEl);
+		// eslint-disable-next-line max-len
 		setting.infoEl.createEl('p', { text: 'Make sure to backup your vault before using this feature.' }).style.color = '#fb464c';
+		// eslint-disable-next-line max-len
 		setting.infoEl.createEl('p', { text: 'This feature will create a folder note for every folder in your vault.' });
+		// eslint-disable-next-line max-len
 		setting.infoEl.createEl('p', { text: 'Every folder that already has a folder note will be ignored.' });
 		setting.infoEl.createEl('p', { text: 'Every excluded folder will be ignored.' });
-		if (!this.plugin.settings.templatePath || this.plugin.settings.templatePath?.trim() === '') {
+		if (
+			!this.plugin.settings.templatePath ||
+			this.plugin.settings.templatePath?.trim() === ''
+		) {
 			new Setting(contentEl)
 				.setName('Folder note file extension')
 				.setDesc('Choose the file extension for the folder notes.')
@@ -56,17 +66,24 @@ export default class ConfirmationModal extends Modal {
 				cb.setCta();
 				cb.buttonEl.focus();
 				cb.onClick(async () => {
-					if (this.plugin.settings.templatePath && this.plugin.settings.templatePath.trim() !== '') {
+					if (
+						this.plugin.settings.templatePath &&
+						this.plugin.settings.templatePath.trim() !== ''
+					) {
 						this.extension = '.' + this.plugin.settings.templatePath.split('.').pop();
 					}
 					if (this.extension === '.ask') {
 						return new Notice('Please choose a file extension');
 					}
 					this.close();
-					const folders = this.app.vault.getAllLoadedFiles().filter((file) => file.parent instanceof TFolder);
+					const folders = this.app.vault
+						.getAllLoadedFiles()
+						.filter((file) => file.parent instanceof TFolder);
 					for (const folder of folders) {
 						if (folder instanceof TFolder) {
-							const excludedFolder = getExcludedFolder(this.plugin, folder.path, true);
+							const excludedFolder = getExcludedFolder(
+								this.plugin, folder.path, true,
+							);
 							if (excludedFolder) continue;
 							if (folder.path === templateFolderPath) continue;
 							const folderNote = getFolderNote(this.plugin, folder.path);
@@ -83,7 +100,8 @@ export default class ConfirmationModal extends Modal {
 				});
 			});
 	}
-	onClose() {
+
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

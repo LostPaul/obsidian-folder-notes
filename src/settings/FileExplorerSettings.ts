@@ -1,6 +1,7 @@
+/* eslint-disable max-len */
 import { Setting } from 'obsidian';
 import type { SettingsTab } from './SettingsTab';
-export async function renderFileExplorer(settingsTab: SettingsTab) {
+export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void> {
 	const containerEl = settingsTab.settingsPage;
 
 	new Setting(containerEl)
@@ -34,7 +35,8 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 		);
 
 	setting2.infoEl.appendText('Requires a restart to take effect');
-	setting2.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
+	const setting2AccentColor = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
+	setting2.infoEl.style.color = setting2AccentColor;
 
 	new Setting(containerEl)
 		.setName('Open folder notes by only clicking directly on the folder name')
@@ -65,7 +67,8 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 			}),
 	);
 	disableSetting.infoEl.appendText('Requires a restart to take effect');
-	disableSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
+	const accentColor = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
+	disableSetting.infoEl.style.color = accentColor;
 
 	new Setting(containerEl)
 		.setName('Use submenus')
@@ -91,7 +94,15 @@ export async function renderFileExplorer(settingsTab: SettingsTab) {
 						settingsTab.plugin.settings.frontMatterTitle.explorer = value;
 						await settingsTab.plugin.saveSettings();
 						settingsTab.plugin.app.vault.getFiles().forEach((file) => {
-							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName({ id: '', result: false, path: file.path, pathOnly: false }, false);
+							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName(
+								{
+									id: '',
+									result: false,
+									path: file.path,
+									pathOnly: false,
+								},
+								false,
+							);
 						});
 					}),
 			);

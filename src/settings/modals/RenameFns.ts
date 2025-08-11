@@ -3,7 +3,13 @@ import type FolderNotesPlugin from 'src/main';
 import { Setting } from 'obsidian';
 
 export default class RenameFolderNotesModal extends BackupWarningModal {
-	constructor(plugin: FolderNotesPlugin, title: string, description: string, callback: (...args: any[]) => void, args: any[] = []) {
+	constructor(
+		plugin: FolderNotesPlugin,
+		title: string,
+		description: string,
+		callback: (...args: unknown[]) => void,
+		args: unknown[] = [],
+	) {
 		super(plugin, title, description, callback, args);
 	}
 
@@ -11,6 +17,7 @@ export default class RenameFolderNotesModal extends BackupWarningModal {
 		const { contentEl } = this;
 		new Setting(contentEl)
 			.setName('Old Folder Note Name')
+			// eslint-disable-next-line max-len
 			.setDesc('Every folder note that matches this name will be renamed to the new folder note name.')
 			.addText((text) => text
 				.setPlaceholder('Enter the old folder note name')
@@ -22,6 +29,7 @@ export default class RenameFolderNotesModal extends BackupWarningModal {
 
 		new Setting(contentEl)
 			.setName('New Folder Note Name')
+			// eslint-disable-next-line max-len
 			.setDesc('Every folder note that matches the old folder note name will be renamed to this name.')
 			.addText((text) => text
 				.setPlaceholder('Enter the new folder note name')

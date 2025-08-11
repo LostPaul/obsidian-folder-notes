@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { Setting, Platform } from 'obsidian';
 import type { SettingsTab } from './SettingsTab';
 import { ListComponent } from '../functions/ListComponent';
@@ -11,7 +12,8 @@ import RenameFolderNotesModal from './modals/RenameFns';
 
 let debounceTimer: NodeJS.Timeout;
 
-export async function renderGeneral(settingsTab: SettingsTab) {
+// eslint-disable-next-line complexity
+export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 	const containerEl = settingsTab.settingsPage;
 	const nameSetting = new Setting(containerEl)
 		.setName('Folder note name template')
@@ -25,6 +27,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					await settingsTab.plugin.saveSettings();
 
 					clearTimeout(debounceTimer);
+					const FOLDER_NOTE_NAME_DEBOUNCE_MS = 2000;
 					debounceTimer = setTimeout(() => {
 						if (!value.includes('{{folder_name}}')) {
 							if (!settingsTab.showFolderNameInTabTitleSetting) {
@@ -37,7 +40,7 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 								settingsTab.showFolderNameInTabTitleSetting = false;
 							}
 						}
-					}, 2000);
+					}, FOLDER_NOTE_NAME_DEBOUNCE_MS);
 				}),
 		)
 		.addButton((button) =>
@@ -91,13 +94,24 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 				}
 			});
 
-			if (!settingsTab.plugin.settings.supportedFileTypes.includes(settingsTab.plugin.settings.folderNoteType.replace('.', '')) && settingsTab.plugin.settings.folderNoteType !== '.ask') {
+			if (
+				!settingsTab.plugin.settings.supportedFileTypes.includes(
+					settingsTab.plugin.settings.folderNoteType.replace('.', ''),
+				) &&
+				settingsTab.plugin.settings.folderNoteType !== '.ask'
+			) {
 				settingsTab.plugin.settings.folderNoteType = '.md';
 				settingsTab.plugin.saveSettings();
 			}
 
-			let defaultType = settingsTab.plugin.settings.folderNoteType.startsWith('.') ? settingsTab.plugin.settings.folderNoteType : '.' + settingsTab.plugin.settings.folderNoteType;
-			if (!settingsTab.plugin.settings.supportedFileTypes.includes(defaultType.replace('.', ''))) {
+			let defaultType = settingsTab.plugin.settings.folderNoteType.startsWith('.')
+				? settingsTab.plugin.settings.folderNoteType
+				: '.' + settingsTab.plugin.settings.folderNoteType;
+			if (
+				!settingsTab.plugin.settings.supportedFileTypes.includes(
+					defaultType.replace('.', ''),
+				)
+			) {
 				defaultType = '.ask';
 				settingsTab.plugin.settings.folderNoteType = defaultType;
 			}
@@ -118,14 +132,22 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 		'Specify which file types are allowed as folder notes. Applies to both new and existing folders. Adding many types may affect performance.',
 	);
 	setting0.setDesc(desc0);
-	const list = new ListComponent(setting0.settingEl, settingsTab.plugin.settings.supportedFileTypes || [], ['md', 'canvas']);
+	const list = new ListComponent(
+		setting0.settingEl,
+		settingsTab.plugin.settings.supportedFileTypes || [],
+		['md', 'canvas'],
+	);
 	list.on('update', async (values: string[]) => {
 		settingsTab.plugin.settings.supportedFileTypes = values;
 		await settingsTab.plugin.saveSettings();
 		settingsTab.display();
 	});
 
-	if (!settingsTab.plugin.settings.supportedFileTypes.includes('md') || !settingsTab.plugin.settings.supportedFileTypes.includes('canvas') || !settingsTab.plugin.settings.supportedFileTypes.includes('excalidraw')) {
+	if (
+		!settingsTab.plugin.settings.supportedFileTypes.includes('md') ||
+		!settingsTab.plugin.settings.supportedFileTypes.includes('canvas') ||
+		!settingsTab.plugin.settings.supportedFileTypes.includes('excalidraw')
+	) {
 		setting0.addDropdown((dropdown) => {
 			const options = [
 				{ value: 'md', label: 'Markdown' },
@@ -144,7 +166,12 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 			dropdown.setValue('+');
 			dropdown.onChange(async (value) => {
 				if (value === 'custom') {
-					return new AddSupportedFileModal(settingsTab.app, settingsTab.plugin, settingsTab, list as ListComponent).open();
+					return new AddSupportedFileModal(
+						settingsTab.app,
+						settingsTab.plugin,
+						settingsTab,
+						list as ListComponent,
+					).open();
 				}
 				await list.addValue(value.toLowerCase());
 				settingsTab.display();
@@ -157,7 +184,12 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 				.setButtonText('Add custom file type')
 				.setCta()
 				.onClick(async () => {
-					new AddSupportedFileModal(settingsTab.app, settingsTab.plugin, settingsTab, list as ListComponent).open();
+					new AddSupportedFileModal(
+						settingsTab.app,
+						settingsTab.plugin,
+						settingsTab,
+						list as ListComponent,
+					).open();
 				}),
 		);
 	}
@@ -169,7 +201,11 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 		.addSearch((cb) => {
 			new TemplateSuggest(cb.inputEl, settingsTab.plugin);
 			cb.setPlaceholder('Template path');
-			cb.setValue(settingsTab.plugin.app.vault.getAbstractFileByPath(settingsTab.plugin.settings.templatePath)?.name.replace('.md', '') || '');
+			const templateFile = settingsTab.plugin.app.vault.getAbstractFileByPath(
+				settingsTab.plugin.settings.templatePath,
+			);
+			const templateName = templateFile?.name.replace('.md', '') || '';
+			cb.setValue(templateName);
 			cb.onChange(async (value) => {
 				if (value.trim() === '') {
 					settingsTab.plugin.settings.templatePath = '';
@@ -464,16 +500,26 @@ export async function renderGeneral(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.frontMatterTitle.enabled = value;
 					await settingsTab.plugin.saveSettings();
 					if (value) {
-						settingsTab.plugin.fmtpHandler = new FrontMatterTitlePluginHandler(settingsTab.plugin);
+						settingsTab.plugin.fmtpHandler =
+							new FrontMatterTitlePluginHandler(settingsTab.plugin);
 					} else {
 						if (settingsTab.plugin.fmtpHandler) {
 							settingsTab.plugin.updateAllBreadcrumbs(true);
 						}
 						settingsTab.plugin.app.vault.getFiles().forEach((file) => {
-							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName({ id: '', result: false, path: file.path, pathOnly: false }, false);
+							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName(
+								{
+									id: '',
+									result: false,
+									path: file.path,
+									pathOnly: false,
+								},
+								false,
+							);
 						});
 						settingsTab.plugin.fmtpHandler?.deleteEvent();
-						settingsTab.plugin.fmtpHandler = new FrontMatterTitlePluginHandler(settingsTab.plugin);
+						settingsTab.plugin.fmtpHandler =
+							new FrontMatterTitlePluginHandler(settingsTab.plugin);
 					}
 					settingsTab.display();
 				}),

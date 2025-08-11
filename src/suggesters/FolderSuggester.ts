@@ -1,7 +1,6 @@
 // Credits go to Liam's Periodic Notes Plugin: https://github.com/liamcain/obsidian-periodic-notes and https://github.com/SilentVoid13/Templater
 
-import type { TAbstractFile } from 'obsidian';
-import { TFolder } from 'obsidian';
+import { TFolder, type TAbstractFile } from 'obsidian';
 import { TextInputSuggest } from './Suggest';
 import type FolderNotesPlugin from '../main';
 export enum FileSuggestMode {
@@ -36,13 +35,18 @@ export class FolderSuggest extends TextInputSuggest<TFolder> {
 		if (this.folder) {
 			files = this.folder.children;
 		} else {
-			files = this.plugin.app.vault.getAllLoadedFiles().slice(0,100);
+			const MAX_FILE_SUGGESTIONS = 100;
+			files = this.plugin.app.vault.getAllLoadedFiles().slice(0, MAX_FILE_SUGGESTIONS);
 		}
 		files.forEach((folder: TAbstractFile) => {
 			if (
 				folder instanceof TFolder &&
-                folder.path.toLowerCase().contains(lower_input_str) &&
-                (!this.plugin.settings.excludeFolders.find((f) => f.path === folder.path) || this.whitelistSuggester)
+				folder.path.toLowerCase().contains(lower_input_str) &&
+				(
+					!this.plugin.settings.excludeFolders.find(
+						(f) => f.path === folder.path,
+					) || this.whitelistSuggester
+				)
 			) {
 				folders.push(folder);
 			}

@@ -1,5 +1,4 @@
-import type { TAbstractFile } from 'obsidian';
-import { TFile, TFolder, Vault, AbstractInputSuggest } from 'obsidian';
+import { TFile, TFolder, Vault, AbstractInputSuggest, type TAbstractFile } from 'obsidian';
 import type FolderNotesPlugin from '../main';
 import { getTemplatePlugins } from 'src/template';
 export enum FileSuggestMode {
@@ -39,12 +38,21 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 			let folder: TFolder | TAbstractFile | null = null;
 			if (templaterPlugin) {
 				folder = this.plugin.app.vault.getAbstractFileByPath(
-					templaterPlugin.plugin?.settings?.templates_folder as string,
+					(templaterPlugin as unknown as {
+						plugin?: { settings?: { templates_folder?: string } }
+					}).plugin?.settings?.templates_folder as string,
 				);
 				if (!(folder instanceof TFolder)) {
-					return [{ path: '', name: 'You need to set the Templates folder in the Templater settings first.' } as TFile];
+					return [
+						{
+							path: '',
+							name:
+								// eslint-disable-next-line max-len
+								'You need to set the Templates folder in the Templater settings first.',
+						} as TFile,
+					];
 				}
-			} else {
+			} else if (templateFolder) {
 				folder = this.plugin.app.vault.getAbstractFileByPath(templateFolder) as TFolder;
 			}
 

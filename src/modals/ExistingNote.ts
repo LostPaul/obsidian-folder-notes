@@ -1,5 +1,12 @@
-import type { App, TFile, TFolder, TAbstractFile } from 'obsidian';
-import { Modal, Setting, Platform } from 'obsidian';
+import {
+	Modal,
+	Setting,
+	Platform,
+	type App,
+	type TFile,
+	type TFolder,
+	type TAbstractFile,
+} from 'obsidian';
 import type FolderNotesPlugin from '../main';
 import { turnIntoFolderNote } from 'src/functions/folderNoteFunctions';
 export default class ExistingFolderNoteModal extends Modal {
@@ -8,7 +15,13 @@ export default class ExistingFolderNoteModal extends Modal {
 	file: TFile;
 	folder: TFolder;
 	folderNote: TAbstractFile;
-	constructor(app: App, plugin: FolderNotesPlugin, file: TFile, folder: TFolder, folderNote: TAbstractFile) {
+	constructor(
+		app: App,
+		plugin: FolderNotesPlugin,
+		file: TFile,
+		folder: TFolder,
+		folderNote: TAbstractFile,
+	) {
 		super(app);
 		this.plugin = plugin;
 		this.app = app;
@@ -16,18 +29,22 @@ export default class ExistingFolderNoteModal extends Modal {
 		this.folder = folder;
 		this.folderNote = folderNote;
 	}
-	onOpen() {
+	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.createEl('h2', { text: 'A folder note for this folder already exists' });
 		const setting = new Setting(contentEl);
+		// eslint-disable-next-line max-len
 		setting.infoEl.createEl('p', { text: 'Are you sure you want to turn the note into a folder note and rename the existing folder note?' });
 
 		setting.infoEl.parentElement?.classList.add('fn-delete-confirmation-modal');
 
 		// Create a container for the buttons and the checkbox
+		// eslint-disable-next-line max-len
 		const buttonContainer = setting.infoEl.createEl('div', { cls: 'fn-delete-confirmation-modal-buttons' });
 		if (Platform.isMobileApp) {
-			const confirmButton = buttonContainer.createEl('button', { text: 'Rename and don\'t ask again' });
+			const confirmButton = buttonContainer.createEl('button', {
+				text: 'Rename and don\'t ask again',
+			});
 			confirmButton.classList.add('mod-warning', 'fn-confirmation-modal-button');
 			confirmButton.addEventListener('click', async () => {
 				this.plugin.settings.showRenameConfirmation = false;
@@ -64,7 +81,7 @@ export default class ExistingFolderNoteModal extends Modal {
 		});
 
 	}
-	onClose() {
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

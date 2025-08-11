@@ -2,7 +2,7 @@ import { Setting } from 'obsidian';
 import type { SettingsTab } from './SettingsTab';
 import { createOverviewSettings } from 'src/obsidian-folder-overview/src/settings';
 
-export async function renderFolderOverview(settingsTab: SettingsTab) {
+export async function renderFolderOverview(settingsTab: SettingsTab): Promise<void> {
 	const { plugin } = settingsTab;
 	const defaultOverviewSettings = plugin.settings.defaultOverview;
 	const containerEl = settingsTab.settingsPage;
@@ -10,6 +10,7 @@ export async function renderFolderOverview(settingsTab: SettingsTab) {
 	containerEl.createEl('h3', { text: 'Global settings' });
 	new Setting(containerEl)
 		.setName('Auto-update links without opening the overview')
+		// eslint-disable-next-line max-len
 		.setDesc('If enabled, the links that appear in the graph view will be updated even when you don\'t have the overview open somewhere.')
 		.addToggle((toggle) =>
 			toggle
@@ -35,5 +36,15 @@ export async function renderFolderOverview(settingsTab: SettingsTab) {
 	span.setAttr('style', `color: ${accentColor};`);
 	pEl.appendChild(span);
 
-	createOverviewSettings(containerEl, defaultOverviewSettings, plugin, plugin.settings.defaultOverview, settingsTab.display, undefined, undefined, undefined, settingsTab);
+	createOverviewSettings(
+		containerEl,
+		defaultOverviewSettings,
+		plugin,
+		plugin.settings.defaultOverview,
+		settingsTab.display,
+		undefined,
+		undefined,
+		undefined,
+		settingsTab,
+	);
 }

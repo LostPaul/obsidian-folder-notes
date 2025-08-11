@@ -1,5 +1,4 @@
-import type { App, TFolder } from 'obsidian';
-import { Modal, Setting } from 'obsidian';
+import { Modal, Setting, type App, type TFolder } from 'obsidian';
 import type FolderNotesPlugin from '../main';
 export default class FolderNameModal extends Modal {
 	plugin: FolderNotesPlugin;
@@ -11,7 +10,8 @@ export default class FolderNameModal extends Modal {
 		this.app = app;
 		this.folder = folder;
 	}
-	onOpen() {
+
+	onOpen(): void {
 		const { contentEl } = this;
 		// close when user presses enter
 		contentEl.addEventListener('keydown', (e) => {
@@ -27,14 +27,25 @@ export default class FolderNameModal extends Modal {
 					.setValue(this.folder.name.replace(this.plugin.settings.folderNoteType, ''))
 					.onChange(async (value) => {
 						if (value.trim() !== '') {
-							if (!this.app.vault.getAbstractFileByPath(this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + value.trim())) {
-								this.plugin.app.fileManager.renameFile(this.folder, this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + value.trim());
+							const parentPath = this.folder.path.slice(
+								0,
+								this.folder.path.lastIndexOf('/') + 1,
+							);
+							const newFolderPath = parentPath + value.trim();
+							if (
+								!this.app.vault.getAbstractFileByPath(newFolderPath)
+							) {
+								this.plugin.app.fileManager.renameFile(
+									this.folder,
+									newFolderPath,
+								);
 							}
 						}
 					}),
 			);
 	}
-	onClose() {
+
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

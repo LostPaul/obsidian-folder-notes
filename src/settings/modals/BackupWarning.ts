@@ -5,10 +5,16 @@ export default class BackupWarningModal extends Modal {
 	plugin: FolderNotesPlugin;
 	title: string;
 	desc: string;
-	callback: (...args: any[]) => void;
-	args: any[];
+	callback: (...args: unknown[]) => void;
+	args: unknown[];
 
-	constructor(plugin: FolderNotesPlugin, title: string, description: string, callback: (...args: any[]) => void, args: any[] = []) {
+	constructor(
+		plugin: FolderNotesPlugin,
+		title: string,
+		description: string,
+		callback: (...args: unknown[]) => void,
+		args: unknown[] = [],
+	) {
 		super(plugin.app);
 		this.plugin = plugin;
 		this.title = title;
@@ -17,7 +23,7 @@ export default class BackupWarningModal extends Modal {
 		this.desc = description;
 	}
 
-	onOpen() {
+	onOpen(): void {
 		this.modalEl.addClass('fn-backup-warning-modal');
 		const { contentEl } = this;
 
@@ -25,8 +31,7 @@ export default class BackupWarningModal extends Modal {
 
 		contentEl.createEl('p', { text: this.desc });
 
-		this.insertCustomHtml();
-
+		// eslint-disable-next-line max-len
 		contentEl.createEl('p', { text: 'Make sure to backup your vault before using this feature.' }).style.color = '#fb464c';
 
 		const buttonContainer = contentEl.createDiv({ cls: 'fn-modal-button-container' });
@@ -45,11 +50,7 @@ export default class BackupWarningModal extends Modal {
 			});
 	}
 
-	insertCustomHtml(): void {
-
-	}
-
-	onClose() {
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

@@ -1,5 +1,4 @@
-import type { App, TFile } from 'obsidian';
-import { Modal, Platform } from 'obsidian';
+import { Modal, Platform, type App, type TFile } from 'obsidian';
 import type FolderNotesPlugin from '../main';
 import { deleteFolderNote } from 'src/functions/folderNoteFunctions';
 export default class DeleteConfirmationModal extends Modal {
@@ -12,21 +11,25 @@ export default class DeleteConfirmationModal extends Modal {
 		this.app = app;
 		this.file = file;
 	}
-	onOpen() {
+	onOpen(): void {
 		const { contentEl, plugin } = this;
 		const modalTitle = contentEl.createDiv({ cls: 'fn-modal-title' });
 		const modalContent = contentEl.createDiv({ cls: 'fn-modal-content' });
 		modalTitle.createEl('h2', { text: 'Delete folder note' });
+		// eslint-disable-next-line max-len
 		modalContent.createEl('p', { text: `Are you sure you want to delete the folder note '${this.file.name}' ?` });
 		switch (plugin.settings.deleteFilesAction) {
 			case 'trash':
 				modalContent.createEl('p', { text: 'It will be moved to your system trash.' });
 				break;
 			case 'obsidianTrash':
+				// eslint-disable-next-line max-len
 				modalContent.createEl('p', { text: 'It will be moved to your Obsidian trash, which is located in the ".trash" hidden folder in your vault.' });
 				break;
 			case 'delete':
-				modalContent.createEl('p', { text: 'It will be permanently deleted.' }).setCssStyles({ color: 'red' });
+				modalContent
+					.createEl('p', { text: 'It will be permanently deleted.' })
+					.setCssStyles({ color: 'red' });
 				break;
 		}
 
@@ -47,7 +50,10 @@ export default class DeleteConfirmationModal extends Modal {
 				plugin.saveSettings();
 			});
 		} else {
-			const confirmButton = buttonContainer.createEl('button', { text: 'Delete and don\'t ask again', cls: 'mod-destructive' });
+			const confirmButton = buttonContainer.createEl('button', {
+				text: 'Delete and don\'t ask again',
+				cls: 'mod-destructive',
+			});
 			confirmButton.addEventListener('click', async () => {
 				plugin.settings.showDeleteConfirmation = false;
 				plugin.saveSettings();
@@ -56,19 +62,25 @@ export default class DeleteConfirmationModal extends Modal {
 			});
 		}
 
-		const deleteButton = buttonContainer.createEl('button', { text: 'Delete', cls: 'mod-warning' });
+		const deleteButton = buttonContainer.createEl('button', {
+			text: 'Delete',
+			cls: 'mod-warning',
+		});
 		deleteButton.addEventListener('click', async () => {
 			this.close();
 			deleteFolderNote(plugin, this.file, false);
 		});
 		deleteButton.focus();
 
-		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel', cls: 'mod-cancel' });
+		const cancelButton = buttonContainer.createEl('button', {
+			text: 'Cancel',
+			cls: 'mod-cancel',
+		});
 		cancelButton.addEventListener('click', async () => {
 			this.close();
 		});
 	}
-	onClose() {
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

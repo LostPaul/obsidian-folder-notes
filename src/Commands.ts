@@ -1,11 +1,35 @@
-import type { App, Menu, TAbstractFile, Editor, MarkdownView } from 'obsidian';
-import { TFolder, Notice, TFile, Platform } from 'obsidian';
+import {
+	TFolder,
+	Notice,
+	TFile,
+	Platform,
+	type App,
+	type Menu,
+	type TAbstractFile,
+	type Editor,
+	type MarkdownView,
+} from 'obsidian';
 import type FolderNotesPlugin from './main';
-import { getFolderNote, createFolderNote, deleteFolderNote, turnIntoFolderNote, openFolderNote, extractFolderName, detachFolderNote } from './functions/folderNoteFunctions';
+import {
+	getFolderNote,
+	createFolderNote,
+	deleteFolderNote,
+	turnIntoFolderNote,
+	openFolderNote,
+	extractFolderName,
+	detachFolderNote,
+} from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString, getFileExplorerActiveFolder } from './functions/utils';
-import { deleteExcludedFolder, getDetachedFolder, getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import { hideFolderNoteInFileExplorer, showFolderNoteInFileExplorer } from './functions/styleFunctions';
+import {
+	deleteExcludedFolder,
+	getDetachedFolder,
+	getExcludedFolder,
+} from './ExcludeFolders/functions/folderFunctions';
+import {
+	hideFolderNoteInFileExplorer,
+	showFolderNoteInFileExplorer,
+} from './functions/styleFunctions';
 
 
 
@@ -16,12 +40,13 @@ export class Commands {
 		this.plugin = plugin;
 		this.app = app;
 	}
-	registerCommands() {
+	registerCommands(): void {
 		this.editorCommands();
 		this.fileCommands();
 		this.regularCommands();
 	}
-	regularCommands() {
+
+	regularCommands(): void {
 		this.plugin.addCommand({
 			id: 'turn-into-folder-note',
 			name: 'Use this file as the folder note for its parent folder',
@@ -52,7 +77,8 @@ export class Commands {
 				if (this.plugin.app.vault.getAbstractFileByPath(newPath)) {
 					return new Notice('Folder already exists');
 				}
-				const automaticallyCreateFolderNote = this.plugin.settings.autoCreate;
+				const automaticallyCreateFolderNote =
+					this.plugin.settings.autoCreate;
 				this.plugin.settings.autoCreate = false;
 				this.plugin.saveSettings();
 				await this.plugin.app.vault.createFolder(newPath);
@@ -187,6 +213,7 @@ export class Commands {
 					const blacklist = ['*', '\\', '"', '/', '<', '>', '?', '|', ':'];
 					for (const char of blacklist) {
 						if (text.includes(char)) {
+							// eslint-disable-next-line max-len
 							new Notice('File name cannot contain any of the following characters: * " \\ / < > : | ?');
 							return false;
 						}
@@ -207,13 +234,18 @@ export class Commands {
 						createFolderNote(this.plugin, text, false);
 
 					} else {
-						folder = this.plugin.app.vault.getAbstractFileByPath(folderPath + '/' + text);
+						const folderFullPath = folderPath + '/' + text;
+						folder = this.plugin.app.vault.getAbstractFileByPath(folderFullPath);
 						if (folder instanceof TFolder) {
 							new Notice('Folder note already exists');
 							return false;
 						}
 						if (this.plugin.settings.storageLocation === 'parentFolder') {
-							if (this.app.vault.getAbstractFileByPath(folderPath + '/' + text + this.plugin.settings.folderNoteType)) {
+							if (
+								this.app.vault.getAbstractFileByPath(
+									folderPath + '/' + text + this.plugin.settings.folderNoteType,
+								)
+							) {
 								new Notice('File already exists');
 								return false;
 							}
@@ -221,7 +253,9 @@ export class Commands {
 						this.plugin.app.vault.createFolder(folderPath + '/' + text);
 						createFolderNote(this.plugin, folderPath + '/' + text, false);
 					}
-					const fileName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', text);
+
+					const { folderNoteName } = this.plugin.settings;
+					const fileName = folderNoteName.replace('{{folder_name}}', text);
 					if (fileName !== text) {
 						editor.replaceSelection(`[[${fileName}]]`);
 					} else {
@@ -234,213 +268,243 @@ export class Commands {
 		});
 	}
 
-	fileCommands() {
-		this.plugin.registerEvent(this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
-			let folder: TAbstractFile | TFolder | null = file.parent;
-			if (file instanceof TFile) {
-				if (this.plugin.settings.storageLocation === 'insideFolder') {
-					folder = file.parent;
-				} else {
-					const fileName = extractFolderName(this.plugin.settings.folderNoteName, file.basename);
-					if (fileName) {
-						if (file.parent?.path === '' || file.parent?.path === '/') {
-							folder = this.plugin.app.vault.getAbstractFileByPath(fileName);
-						} else {
-							folder = this.plugin.app.vault.getAbstractFileByPath(file.parent?.path + '/' + fileName);
-						}
-					}
-				}
-
-				if (folder instanceof TFolder) {
-					const folderNote = getFolderNote(this.plugin, folder.path);
-					const excludedFolder = getExcludedFolder(this.plugin, folder.path, true);
-					if (folderNote?.path === file.path && !excludedFolder?.detached) { return; }
-				} else if (file.parent instanceof TFolder) {
-					folder = file.parent;
-				}
-			}
-
-			menu.addItem(async (item) => {
-				if (Platform.isDesktop && !Platform.isTablet && this.plugin.settings.useSubmenus) {
-					item
-						.setTitle('Folder Note Commands')
-						.setIcon('folder-edit');
-				}
-				let subMenu: Menu;
-				if (!Platform.isDesktopApp || !Platform.isDesktop || Platform.isTablet || !this.plugin.settings.useSubmenus) {
-					subMenu = menu;
-					item.setDisabled(true);
-				} else {
-					// @ts-ignore
-					subMenu = item.setSubmenu() as Menu;
-				}
+	fileCommands(): void {
+		this.plugin.registerEvent(
+			this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
+				let folder: TAbstractFile | TFolder | null = file.parent;
 				if (file instanceof TFile) {
-					// @ts-ignore
-					subMenu.addItem((item) => {
-						item.setTitle('Create folder note')
-							.setIcon('edit')
-							.onClick(async () => {
-								if (!folder) return;
-								let newPath = folder.path + '/' + file.basename;
-								if (folder.path === '' || folder.path === '/') {
-									newPath = file.basename;
-								}
-								if (this.plugin.app.vault.getAbstractFileByPath(newPath)) {
-									return new Notice('Folder already exists');
-								}
-								const automaticallyCreateFolderNote = this.plugin.settings.autoCreate;
-								this.plugin.settings.autoCreate = false;
-								this.plugin.saveSettings();
-								await this.plugin.app.vault.createFolder(newPath);
-								const newFolder = this.plugin.app.vault.getAbstractFileByPath(newPath);
-								if (!(newFolder instanceof TFolder)) return;
-								await createFolderNote(this.plugin, newFolder.path, true, '.' + file.extension, false, file);
-								this.plugin.settings.autoCreate = automaticallyCreateFolderNote;
-								this.plugin.saveSettings();
-							});
-					});
-					if (getFolderPathFromString(file.path) === '') return;
-					if (!(folder instanceof TFolder)) return;
-					if (folder.path === '' || folder.path === '/') return;
-					subMenu.addItem((item) => {
-						item.setTitle(`Turn into folder note for ${folder?.name}`)
-							.setIcon('edit')
-							.onClick(() => {
-								if (!folder || !(folder instanceof TFolder)) return;
-								const folderNote = getFolderNote(this.plugin, folder.path);
-								turnIntoFolderNote(this.plugin, file, folder, folderNote);
-							});
-					});
-				}
-				if (!(file instanceof TFolder)) return;
-				const excludedFolder = getExcludedFolder(this.plugin, file.path, false);
-				const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path);
-				if (excludedFolder && !excludedFolder.hideInSettings) {
-					// I'm not sure if I'm ever going to add this because of the possibility that a folder got more than one excluded
-					// subMenu.addItem((item) => {
-					// 	item.setTitle('Manage excluded folder')
-					// 		.setIcon('settings-2')
-					// 		.onClick(() => {
-					// 			if (excludedFolder instanceof ExcludedFolder) {
-					// 				new ExcludedFolderSettings(this.plugin.app, this.plugin, excludedFolder).open();
-					// 			} else if (excludedFolder instanceof ExcludePattern) {
-					// 				new PatternSettings(this.plugin.app, this.plugin, excludedFolder).open();
-					// 			}
-					// 		})
-					// })
-					subMenu.addItem((item) => {
-						item.setTitle('Remove folder from excluded folders')
-							.setIcon('trash')
-							.onClick(() => {
-								this.plugin.settings.excludeFolders = this.plugin.settings.excludeFolders.filter(
-									(folder) => (folder.path !== file.path) || folder.detached);
-								this.plugin.saveSettings(true);
-								new Notice('Successfully removed folder from excluded folders');
-							});
-					});
-					return;
-				}
-				if (detachedExcludedFolder) {
-					subMenu.addItem((item) => {
-						item.setTitle('Remove folder from detached folders')
-							.setIcon('trash')
-							.onClick(() => {
-								deleteExcludedFolder(this.plugin, detachedExcludedFolder);
-							});
-					});
-				}
-				if (detachedExcludedFolder) { return; }
-				subMenu.addItem((item) => {
-					item.setTitle('Exclude folder from folder notes')
-						.setIcon('x-circle')
-						.onClick(() => {
-							const excludedFolder = new ExcludedFolder(file.path, this.plugin.settings.excludeFolders.length, undefined, this.plugin);
-							this.plugin.settings.excludeFolders.push(excludedFolder);
-							this.plugin.saveSettings(true);
-							new Notice('Successfully excluded folder from folder notes');
-						});
-				});
-				if (!(file instanceof TFolder)) return;
-				const folderNote = getFolderNote(this.plugin, file.path);
-				if (folderNote instanceof TFile && !detachedExcludedFolder) {
-					subMenu.addItem((item) => {
-						item.setTitle('Delete folder note')
-							.setIcon('trash')
-							.onClick(() => {
-								deleteFolderNote(this.plugin, folderNote, true);
-							});
-					});
-
-					subMenu.addItem((item) => {
-						item.setTitle('Open folder note')
-							.setIcon('chevron-right-square')
-							.onClick(() => {
-								openFolderNote(this.plugin, folderNote);
-							});
-					});
-
-					subMenu.addItem((item) => {
-						item.setTitle('Detach folder note')
-							.setIcon('unlink')
-							.onClick(() => {
-								detachFolderNote(this.plugin, folderNote);
-							});
-					});
-
-					subMenu.addItem((item) => {
-						item.setTitle('Copy Obsidian URL')
-							.setIcon('link')
-							.onClick(() => {
-								// @ts-ignore
-								this.app.copyObsidianUrl(folderNote);
-							});
-					});
-
-					if (this.plugin.settings.hideFolderNote) {
-						if (excludedFolder?.showFolderNote) {
-							subMenu.addItem((item) => {
-								item.setTitle('Hide folder note in explorer')
-									.setIcon('eye-off')
-									.onClick(() => {
-										hideFolderNoteInFileExplorer(file.path, this.plugin);
-									});
-							});
-						} else {
-							subMenu.addItem((item) => {
-								item.setTitle('Show folder note in explorer')
-									.setIcon('eye')
-									.onClick(() => {
-										showFolderNoteInFileExplorer(file.path, this.plugin);
-									});
-							});
+					if (this.plugin.settings.storageLocation === 'insideFolder') {
+						folder = file.parent;
+					} else {
+						const { folderNoteName } = this.plugin.settings;
+						const fileName = extractFolderName(folderNoteName, file.basename);
+						if (fileName) {
+							if (file.parent?.path === '' || file.parent?.path === '/') {
+								folder = this.plugin.app.vault.getAbstractFileByPath(fileName);
+							} else {
+								folder = this.plugin.app.vault.getAbstractFileByPath(
+									file.parent?.path + '/' + fileName,
+								);
+							}
 						}
 					}
 
-				} else {
-					subMenu.addItem((item) => {
-						item.setTitle('Create markdown folder note')
-							.setIcon('edit')
-							.onClick(() => {
-								createFolderNote(this.plugin, file.path, true, '.md');
-							});
-					});
+					if (folder instanceof TFolder) {
+						const folderNote = getFolderNote(this.plugin, folder.path);
+						const excludedFolder = getExcludedFolder(this.plugin, folder.path, true);
+						if (folderNote?.path === file.path && !excludedFolder?.detached) { return; }
+					} else if (file.parent instanceof TFolder) {
+						folder = file.parent;
+					}
+				}
 
-					this.plugin.settings.supportedFileTypes.forEach((fileType) => {
-						if (fileType === 'md') return;
-						subMenu.addItem((item) => {
-							item.setTitle(`Create ${fileType} folder note`)
+				// eslint-disable-next-line complexity
+				menu.addItem(async (menuItem) => {
+					if (
+						Platform.isDesktop &&
+						!Platform.isTablet &&
+						this.plugin.settings.useSubmenus
+					) {
+						menuItem
+							.setTitle('Folder Note Commands')
+							.setIcon('folder-edit');
+					}
+					let subMenu: Menu;
+					if (
+						!Platform.isDesktopApp ||
+						!Platform.isDesktop ||
+						Platform.isTablet ||
+						!this.plugin.settings.useSubmenus
+					) {
+						subMenu = menu;
+						menuItem.setDisabled(true);
+					} else {
+						subMenu = menuItem.setSubmenu() as Menu;
+					}
+					if (file instanceof TFile) {
+						subMenu.addItem((subItem) => {
+							subItem.setTitle('Create folder note')
 								.setIcon('edit')
-								.onClick(() => {
-									createFolderNote(this.plugin, file.path, true, '.' + fileType);
+								.onClick(async () => {
+									if (!folder) return;
+									let newPath = folder.path + '/' + file.basename;
+									if (folder.path === '' || folder.path === '/') {
+										newPath = file.basename;
+									}
+									if (this.plugin.app.vault.getAbstractFileByPath(newPath)) {
+										return new Notice('Folder already exists');
+									}
+									const automaticallyCreateFolderNote =
+										this.plugin.settings.autoCreate;
+									this.plugin.settings.autoCreate = false;
+									this.plugin.saveSettings();
+									await this.plugin.app.vault.createFolder(newPath);
+									const newFolder = this.plugin.app.vault
+										.getAbstractFileByPath(newPath);
+									if (!(newFolder instanceof TFolder)) return;
+									await createFolderNote(
+										this.plugin,
+										newFolder.path,
+										true,
+										'.' + file.extension,
+										false,
+										file,
+									);
+									this.plugin.settings.autoCreate = automaticallyCreateFolderNote;
+									this.plugin.saveSettings();
 								});
 						});
+						if (getFolderPathFromString(file.path) === '') return;
+						if (!(folder instanceof TFolder)) return;
+						if (folder.path === '' || folder.path === '/') return;
+						subMenu.addItem((item) => {
+							item.setTitle(`Turn into folder note for ${folder?.name}`)
+								.setIcon('edit')
+								.onClick(() => {
+									if (!folder || !(folder instanceof TFolder)) return;
+									const folderNote = getFolderNote(this.plugin, folder.path);
+									turnIntoFolderNote(this.plugin, file, folder, folderNote);
+								});
+						});
+					}
+					if (!(file instanceof TFolder)) return;
+					const excludedFolder = getExcludedFolder(this.plugin, file.path, false);
+					const detachedExcludedFolder = getDetachedFolder(this.plugin, file.path);
+					if (excludedFolder && !excludedFolder.hideInSettings) {
+						// I'm not sure if I'm ever going to add this because of the possibility that a folder got more than one excluded
+						// subMenu.addItem((item) => {
+						// 	item.setTitle('Manage excluded folder')
+						// 		.setIcon('settings-2')
+						// 		.onClick(() => {
+						// 			if (excludedFolder instanceof ExcludedFolder) {
+						// 				new ExcludedFolderSettings(this.plugin.app, this.plugin, excludedFolder).open();
+						// 			} else if (excludedFolder instanceof ExcludePattern) {
+						// 				new PatternSettings(this.plugin.app, this.plugin, excludedFolder).open();
+						// 			}
+						// 		})
+						// })
+						subMenu.addItem((item) => {
+							item.setTitle('Remove folder from excluded folders')
+								.setIcon('trash')
+								.onClick(() => {
+									this.plugin.settings.excludeFolders =
+										this.plugin.settings.excludeFolders.filter(
+											(excluded) =>
+												(excluded.path !== file.path) || excluded.detached,
+										);
+									this.plugin.saveSettings(true);
+									new Notice('Successfully removed folder from excluded folders');
+								});
+						});
+						return;
+					}
+					if (detachedExcludedFolder) {
+						subMenu.addItem((item) => {
+							item.setTitle('Remove folder from detached folders')
+								.setIcon('trash')
+								.onClick(() => {
+									deleteExcludedFolder(this.plugin, detachedExcludedFolder);
+								});
+						});
+					}
+					if (detachedExcludedFolder) { return; }
+					subMenu.addItem((item) => {
+						item.setTitle('Exclude folder from folder notes')
+							.setIcon('x-circle')
+							.onClick(() => {
+								const newExcludedFolder = new ExcludedFolder(
+									file.path,
+									this.plugin.settings.excludeFolders.length,
+									undefined,
+									this.plugin,
+								);
+								this.plugin.settings.excludeFolders.push(newExcludedFolder);
+								this.plugin.saveSettings(true);
+								new Notice('Successfully excluded folder from folder notes');
+							});
 					});
-				}
-			});
-		}));
+					if (!(file instanceof TFolder)) return;
+					const folderNote = getFolderNote(this.plugin, file.path);
+					if (folderNote instanceof TFile && !detachedExcludedFolder) {
+						subMenu.addItem((item) => {
+							item.setTitle('Delete folder note')
+								.setIcon('trash')
+								.onClick(() => {
+									deleteFolderNote(this.plugin, folderNote, true);
+								});
+						});
+
+						subMenu.addItem((item) => {
+							item.setTitle('Open folder note')
+								.setIcon('chevron-right-square')
+								.onClick(() => {
+									openFolderNote(this.plugin, folderNote);
+								});
+						});
+
+						subMenu.addItem((item) => {
+							item.setTitle('Detach folder note')
+								.setIcon('unlink')
+								.onClick(() => {
+									detachFolderNote(this.plugin, folderNote);
+								});
+						});
+
+						subMenu.addItem((item) => {
+							item.setTitle('Copy Obsidian URL')
+								.setIcon('link')
+								.onClick(() => {
+									this.app.copyObsidianUrl(folderNote);
+								});
+						});
+
+						if (this.plugin.settings.hideFolderNote) {
+							if (excludedFolder?.showFolderNote) {
+								subMenu.addItem((item) => {
+									item.setTitle('Hide folder note in explorer')
+										.setIcon('eye-off')
+										.onClick(() => {
+											hideFolderNoteInFileExplorer(file.path, this.plugin);
+										});
+								});
+							} else {
+								subMenu.addItem((item) => {
+									item.setTitle('Show folder note in explorer')
+										.setIcon('eye')
+										.onClick(() => {
+											showFolderNoteInFileExplorer(file.path, this.plugin);
+										});
+								});
+							}
+						}
+
+					} else {
+						subMenu.addItem((item) => {
+							item.setTitle('Create markdown folder note')
+								.setIcon('edit')
+								.onClick(() => {
+									createFolderNote(this.plugin, file.path, true, '.md');
+								});
+						});
+
+						this.plugin.settings.supportedFileTypes.forEach((fileType) => {
+							if (fileType === 'md') return;
+							subMenu.addItem((item) => {
+								item.setTitle(`Create ${fileType} folder note`)
+									.setIcon('edit')
+									.onClick(() => {
+										// eslint-disable-next-line max-len
+										createFolderNote(this.plugin, file.path, true, '.' + fileType);
+									});
+							});
+						});
+					}
+				});
+			}));
 	}
 
-	editorCommands() {
+	editorCommands(): void {
+		// eslint-disable-next-line max-len
 		this.plugin.registerEvent(this.plugin.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
 			const text = editor.getSelection().trim();
 			if (!text || text.trim() === '') return;
@@ -453,6 +517,7 @@ export class Commands {
 						const blacklist = ['*', '\\', '"', '/', '<', '>', '?', '|', ':'];
 						for (const char of blacklist) {
 							if (text.includes(char)) {
+								// eslint-disable-next-line max-len
 								new Notice('File name cannot contain any of the following characters: * " \\ / < > : | ?');
 								return;
 							}
@@ -461,9 +526,11 @@ export class Commands {
 							new Notice('File name cannot end with a dot');
 							return;
 						}
+
 						let folder: TAbstractFile | null;
 						const folderPath = getFolderPathFromString(file.path);
-						const fileName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', text);
+						const { folderNoteName } = this.plugin.settings;
+						const fileName = folderNoteName.replace('{{folder_name}}', text);
 						if (folderPath === '') {
 							folder = this.plugin.app.vault.getAbstractFileByPath(text);
 							if (folder instanceof TFolder) {
@@ -473,12 +540,21 @@ export class Commands {
 							createFolderNote(this.plugin, text, false);
 
 						} else {
-							folder = this.plugin.app.vault.getAbstractFileByPath(folderPath + '/' + text);
+							folder = this.plugin.app.vault.getAbstractFileByPath(
+								folderPath + '/' + text,
+							);
 							if (folder instanceof TFolder) {
 								return new Notice('Folder note already exists');
 							}
 							if (this.plugin.settings.storageLocation === 'parentFolder') {
-								if (this.app.vault.getAbstractFileByPath(folderPath + '/' + fileName + this.plugin.settings.folderNoteType)) {
+								if (
+									this.app.vault.getAbstractFileByPath(
+										folderPath +
+										'/' +
+										fileName +
+										this.plugin.settings.folderNoteType,
+									)
+								) {
 									return new Notice('File already exists');
 								}
 							}
