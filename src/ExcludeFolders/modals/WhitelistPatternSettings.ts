@@ -1,6 +1,6 @@
-import { App, Modal, Setting } from 'obsidian';
-import FolderNotesPlugin from '../../main';
-import { WhitelistedPattern } from '../WhitelistPattern';
+import { Modal, Setting, type App } from 'obsidian';
+import type FolderNotesPlugin from '../../main';
+import type { WhitelistedPattern } from '../WhitelistPattern';
 
 export default class WhitelistPatternSettings extends Modal {
 	plugin: FolderNotesPlugin;
@@ -12,15 +12,18 @@ export default class WhitelistPatternSettings extends Modal {
 		this.app = app;
 		this.pattern = pattern;
 	}
-	onOpen() {
+
+	onOpen(): void {
 		this.display();
 	}
-	display() {
+
+	display(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.createEl('h2', { text: 'Whitelisted pattern settings' });
 		new Setting(contentEl)
 			.setName('Enable folder name sync')
+			// eslint-disable-next-line max-len
 			.setDesc('Choose if the name of a folder note should be renamed when the folder name is changed')
 			.addToggle((toggle) =>
 				toggle
@@ -28,7 +31,7 @@ export default class WhitelistPatternSettings extends Modal {
 					.onChange(async (value) => {
 						this.pattern.enableSync = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -39,7 +42,7 @@ export default class WhitelistPatternSettings extends Modal {
 					.onChange(async (value) => {
 						this.pattern.enableAutoCreate = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -51,7 +54,7 @@ export default class WhitelistPatternSettings extends Modal {
 					.onChange(async (value) => {
 						this.pattern.showInFolderOverview = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 
@@ -65,7 +68,7 @@ export default class WhitelistPatternSettings extends Modal {
 						this.pattern.enableFolderNote = value;
 						await this.plugin.saveSettings(true);
 						this.display();
-					})
+					}),
 			);
 
 		if (this.pattern.enableFolderNote) {
@@ -78,12 +81,12 @@ export default class WhitelistPatternSettings extends Modal {
 						.onChange(async (value) => {
 							this.pattern.disableCollapsing = value;
 							await this.plugin.saveSettings();
-						})
+						}),
 				);
 		}
-
 	}
-	onClose() {
+
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

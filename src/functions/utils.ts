@@ -1,20 +1,21 @@
 import { TFolder, TFile, View } from 'obsidian';
-import { FileExplorerWorkspaceLeaf, FileExplorerView } from 'src/globals';
+import type { FileExplorerWorkspaceLeaf, FileExplorerView } from 'src/globals';
 import { getFolderNote } from './folderNoteFunctions';
-import FolderNotesPlugin from 'src/main';
-import { FileExplorerLeaf } from 'obsidian-typings';
-import FolderOverviewPlugin from 'src/obsidian-folder-overview/src/main';
+import type FolderNotesPlugin from 'src/main';
+import type { FileExplorerLeaf, FileTreeItem, TreeNode } from 'obsidian-typings';
+import type FolderOverviewPlugin from 'src/obsidian-folder-overview/src/main';
 
 export function getFileNameFromPathString(path: string): string {
 	return path.substring(path.lastIndexOf('/') >= 0 ? path.lastIndexOf('/') + 1 : 0);
 }
 
 export function getFolderNameFromPathString(path: string): string {
+	const PARENT_FOLDER_INDEX = -2;
+	const LAST_FOLDER_INDEX = -1;
 	if (path.endsWith('.md') || path.endsWith('.canvas')) {
-		return path.split('/').slice(-2)[0];
-	} else {
-		return path.split('/').slice(-1)[0];
+		return path.split('/').slice(PARENT_FOLDER_INDEX)[0];
 	}
+	return path.split('/').slice(LAST_FOLDER_INDEX)[0];
 }
 
 export function removeExtension(name: string): string {
@@ -30,26 +31,30 @@ export function getFolderPathFromString(path: string): string {
 	const folderPath = path.substring(0, subString);
 	if (folderPath === '') {
 		return '/';
-	} else {
-		return folderPath;
 	}
+	return folderPath;
+
 }
 
 export function getParentFolderPath(path: string): string {
 	return this.getFolderPathFromString(this.getFolderPathFromString(path));
 }
 
-export function getFileExplorer(plugin: FolderNotesPlugin | FolderOverviewPlugin) {
-	return plugin.app.workspace.getLeavesOfType('file-explorer')[0] as any as FileExplorerWorkspaceLeaf;
+export function getFileExplorer(
+	plugin: FolderNotesPlugin | FolderOverviewPlugin,
+): FileExplorerWorkspaceLeaf {
+	// eslint-disable-next-line max-len
+	const leaf = plugin.app.workspace.getLeavesOfType('file-explorer')[0] as unknown as FileExplorerWorkspaceLeaf;
+	return leaf;
 }
 
-export function getFileExplorerView(plugin: FolderNotesPlugin) {
+export function getFileExplorerView(plugin: FolderNotesPlugin): FileExplorerView {
 	return getFileExplorer(plugin).view;
 }
 
-export function getFocusedItem(plugin: FolderNotesPlugin) {
-	const fileExplorer = getFileExplorer(plugin) as any as FileExplorerLeaf;
-	const focusedItem = fileExplorer.view.tree.focusedItem;
+export function getFocusedItem(plugin: FolderNotesPlugin): TreeNode<FileTreeItem> | null {
+	const fileExplorer = getFileExplorer(plugin) as unknown as FileExplorerLeaf;
+	const { focusedItem } = fileExplorer.view.tree;
 	return focusedItem;
 }
 

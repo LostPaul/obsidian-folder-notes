@@ -1,5 +1,5 @@
-import { FuzzySuggestModal, TFile } from 'obsidian';
-import FolderNotesPlugin from 'src/main';
+import { FuzzySuggestModal, type TFile } from 'obsidian';
+import type FolderNotesPlugin from 'src/main';
 import { createFolderNote } from 'src/functions/folderNoteFunctions';
 export class AskForExtensionModal extends FuzzySuggestModal<string> {
 	plugin: FolderNotesPlugin;
@@ -8,7 +8,14 @@ export class AskForExtensionModal extends FuzzySuggestModal<string> {
 	openFile: boolean;
 	useModal: boolean | undefined;
 	existingNote: TFile | undefined;
-	constructor(plugin: FolderNotesPlugin, folderPath: string, openFile: boolean, extension: string, useModal?: boolean, existingNote?: TFile) {
+	constructor(
+		plugin: FolderNotesPlugin,
+		folderPath: string,
+		openFile: boolean,
+		extension: string,
+		useModal?: boolean,
+		existingNote?: TFile,
+	) {
 		super(plugin.app);
 		this.plugin = plugin;
 		this.folderPath = folderPath;
@@ -20,17 +27,26 @@ export class AskForExtensionModal extends FuzzySuggestModal<string> {
 	}
 
 	getItems(): string[] {
-		return this.plugin.settings.supportedFileTypes.filter((item) => item.toLowerCase() !== '.ask');
+		return this.plugin.settings.supportedFileTypes.filter(
+			(item) => item.toLowerCase() !== '.ask',
+		);
 	}
 
 	getItemText(item: string): string {
 		return item;
 	}
 
-	onChooseItem(item: string, evt: MouseEvent | KeyboardEvent) {
+	onChooseItem(item: string, _evt: MouseEvent | KeyboardEvent): void {
 		this.plugin.askModalCurrentlyOpen = false;
 		this.extension = '.' + item;
-		createFolderNote(this.plugin, this.folderPath, this.openFile, this.extension, this.useModal, this.existingNote);
+		createFolderNote(
+			this.plugin,
+			this.folderPath,
+			this.openFile,
+			this.extension,
+			this.useModal,
+			this.existingNote,
+		);
 		this.close();
 	}
 }

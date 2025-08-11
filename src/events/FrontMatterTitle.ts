@@ -1,7 +1,28 @@
-import FolderNotesPlugin from 'src/main';
-import { getDefer, Listener, Events, ApiInterface, DeferInterface, ListenerRef, EventDispatcherInterface } from 'front-matter-plugin-api-provider';
-import { App, TFile, TFolder } from 'obsidian';
+import type FolderNotesPlugin from 'src/main';
+import {
+	type Listener,
+	type Events,
+	type ApiInterface,
+	type DeferInterface,
+	type ListenerRef,
+	type EventDispatcherInterface,
+	getDefer,
+} from 'front-matter-plugin-api-provider';
+import { type App, TFile, TFolder } from 'obsidian';
 import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
+
+interface UpdateData {
+	id: string;
+	result: boolean;
+	path: string;
+	pathOnly: boolean;
+	breadcrumb?: HTMLElement;
+}
+
+interface WrappedUpdateData {
+	data: UpdateData;
+}
+
 export class FrontMatterTitlePluginHandler {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -14,7 +35,7 @@ export class FrontMatterTitlePluginHandler {
 		this.plugin = plugin;
 		this.app = plugin.app;
 
-		(async () => {
+		(async (): Promise<void> => {
 			this.deffer = getDefer(this.app);
 			if (this.deffer.isPluginReady()) {
 				this.api = this.deffer.getApi();
@@ -33,8 +54,8 @@ export class FrontMatterTitlePluginHandler {
 				}
 				const event: Listener<Events, 'manager:update'> = {
 					name: 'manager:update',
-					cb: (data) => {
-						this.fmptUpdateFileName(data as any, true);
+					cb: (data): void => {
+						this.fmptUpdateFileName(data as unknown as UpdateData, true);
 					},
 				};
 				// Keep ref to remove listener
@@ -49,20 +70,18 @@ export class FrontMatterTitlePluginHandler {
 			}
 		})();
 	}
-	deleteEvent() {
+
+	deleteEvent(): void {
 		if (this.eventRef) {
 			this.dispatcher.removeListener(this.eventRef);
 		}
 	}
-	async fmptUpdateFileName(data: {
-		id: string;
-		result: boolean;
-		path: string;
-		pathOnly: boolean;
-		breadcrumb?: HTMLElement;
-	}, isEvent: boolean) {
-		if ((data as any).data) data = (data as any).data;
-		const file = this.app.vault.getAbstractFileByPath(data.path);
+	async fmptUpdateFileName(data: UpdateData, isEvent: boolean): Promise<void> {
+		const hasNestedData = 'data' in (data as unknown as Record<string, unknown>);
+		const actualData: UpdateData = hasNestedData
+			? (data as unknown as WrappedUpdateData).data
+			: data;
+		const file = this.app.vault.getAbstractFileByPath(actualData.path);
 		if (!(file instanceof TFile)) { return; }
 
 		const resolver = this.api?.getResolverFactory()?.createResolver('#feature-id#');
@@ -73,11 +92,11 @@ export class FrontMatterTitlePluginHandler {
 		const folderNote = getFolderNote(this.plugin, folder.path);
 		if (!folderNote) { return; }
 		if (folderNote !== file) { return; }
-		if (!data.pathOnly) {
+		if (!actualData.pathOnly) {
 			this.plugin.changeFolderNameInExplorer(folder, newName);
 		}
 
-		const breadcrumb = data.breadcrumb;
+		const { breadcrumb } = actualData;
 		if (breadcrumb) {
 			this.plugin.changeFolderNameInPath(folder, newName, breadcrumb);
 		}
@@ -96,15 +115,12 @@ export class FrontMatterTitlePluginHandler {
 
 	}
 
-	async fmptUpdateFolderName(data: {
-		id: string;
-		result: boolean;
-		path: string;
-		pathOnly: boolean;
-		breadcrumb?: HTMLElement;
-	}, replacePath: boolean) {
-		if ((data as any).data) data = (data as any).data;
-		const folder = this.app.vault.getAbstractFileByPath(data.path);
+	async fmptUpdateFolderName(data: UpdateData, _replacePath: boolean): Promise<void> {
+		const hasNestedData = 'data' in (data as unknown as Record<string, unknown>);
+		const actualData: UpdateData = hasNestedData
+			? (data as unknown as WrappedUpdateData).data
+			: data;
+		const folder = this.app.vault.getAbstractFileByPath(actualData.path);
 		if (!(folder instanceof TFolder)) { return; }
 		const folderNote = getFolderNote(this.plugin, folder.path);
 		if (!folderNote) { return; }
@@ -113,11 +129,11 @@ export class FrontMatterTitlePluginHandler {
 		const newName = resolver?.resolve(folderNote?.path ?? '');
 		if (!newName) return;
 
-		if (!data.pathOnly) {
+		if (!actualData.pathOnly) {
 			this.plugin.changeFolderNameInExplorer(folder, newName);
 		}
 
-		const breadcrumb = data.breadcrumb;
+		const { breadcrumb } = actualData;
 		if (breadcrumb) {
 			this.plugin.changeFolderNameInPath(folder, newName, breadcrumb);
 		}

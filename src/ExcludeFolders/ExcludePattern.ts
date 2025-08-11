@@ -1,4 +1,4 @@
-import FolderNotesPlugin from '../main';
+import type FolderNotesPlugin from '../main';
 export class ExcludePattern {
 	type: string;
 	id: string;
@@ -15,7 +15,12 @@ export class ExcludePattern {
 	detached: boolean;
 	detachedFilePath?: string;
 	showFolderNote: boolean;
-	constructor(pattern: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
+	constructor(
+		pattern: string,
+		position: number,
+		id: string | undefined,
+		plugin: FolderNotesPlugin,
+	) {
 		this.type = 'pattern';
 		this.id = id || crypto.randomUUID();
 		this.string = pattern;
@@ -25,6 +30,7 @@ export class ExcludePattern {
 		this.disableAutoCreate = plugin.settings.excludePatternDefaultSettings.disableAutoCreate;
 		this.disableFolderNote = plugin.settings.excludePatternDefaultSettings.disableFolderNote;
 		this.enableCollapsing = plugin.settings.excludePatternDefaultSettings.enableCollapsing;
+		// eslint-disable-next-line max-len
 		this.excludeFromFolderOverview = plugin.settings.excludePatternDefaultSettings.excludeFromFolderOverview;
 		this.path = '';
 		this.hideInSettings = false;

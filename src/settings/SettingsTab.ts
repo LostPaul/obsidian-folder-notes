@@ -1,17 +1,20 @@
-import { App, Notice, PluginSettingTab, TFile, TFolder, MarkdownPostProcessorContext } from 'obsidian';
-import FolderNotesPlugin from '../main';
-import { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
-import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
+import {
+	Notice, PluginSettingTab, TFile,
+	TFolder, type App, type MarkdownPostProcessorContext,
+} from 'obsidian';
+import type FolderNotesPlugin from '../main';
+import type { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
+import type { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 import { extractFolderName, getFolderNote } from '../functions/folderNoteFunctions';
-import { defaultOverviewSettings } from '../obsidian-folder-overview/src/FolderOverview';
+import type { defaultOverviewSettings } from '../obsidian-folder-overview/src/FolderOverview';
 import { renderGeneral } from './GeneralSettings';
 import { renderFileExplorer } from './FileExplorerSettings';
 import { renderPath } from './PathSettings';
 import { renderFolderOverview } from './FolderOverviewSettings';
 import { renderExcludeFolders } from './ExcludedFoldersSettings';
 import { getFolderPathFromString } from '../functions/utils';
-import { WhitelistedFolder } from 'src/ExcludeFolders/WhitelistFolder';
-import { WhitelistedPattern } from 'src/ExcludeFolders/WhitelistPattern';
+import type { WhitelistedFolder } from 'src/ExcludeFolders/WhitelistFolder';
+import type { WhitelistedPattern } from 'src/ExcludeFolders/WhitelistPattern';
 
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
@@ -235,7 +238,8 @@ export class SettingsTab extends PluginSettingTab {
 			id: 'path',
 		},
 	};
-	renderSettingsPage(tabId: string) {
+
+	renderSettingsPage(tabId: string): void {
 		this.settingsPage.empty();
 		switch (tabId.toLocaleLowerCase()) {
 			case this.TABS.GENERAL.id:
@@ -256,7 +260,17 @@ export class SettingsTab extends PluginSettingTab {
 		}
 	}
 
-	display(contentEl?: HTMLElement, yaml?: defaultOverviewSettings, plugin?: FolderNotesPlugin, defaultSettings?: boolean, display?: CallableFunction, el?: HTMLElement, ctx?: MarkdownPostProcessorContext, file?: TFile | null, settingsTab?: this) {
+	display(
+		contentEl?: HTMLElement,
+		yaml?: defaultOverviewSettings,
+		plugin?: FolderNotesPlugin,
+		defaultSettings?: boolean,
+		display?: CallableFunction,
+		el?: HTMLElement,
+		ctx?: MarkdownPostProcessorContext,
+		file?: TFile | null,
+		settingsTab?: this,
+	): void {
 		plugin = this?.plugin ?? plugin;
 		if (plugin) {
 			plugin.settingsOpened = true;
@@ -273,13 +287,17 @@ export class SettingsTab extends PluginSettingTab {
 		for (const [tabId, tabInfo] of Object.entries(settingsTab.TABS)) {
 			const tabEl = tabBar.createEl('div', { cls: 'fn-settings-tab' });
 			tabEl.createEl('div', { cls: 'fn-settings-tab-name', text: tabInfo.name });
-			if (plugin && plugin.settings.settingsTab.toLocaleLowerCase() === tabId.toLocaleLowerCase()) {
+			if (
+				plugin &&
+				plugin.settings.settingsTab.toLocaleLowerCase() ===
+					tabId.toLocaleLowerCase()
+			) {
 				tabEl.addClass('fn-settings-tab-active');
 			}
 			tabEl.addEventListener('click', () => {
-				// @ts-ignore
-				for (const tabEl of tabBar.children) {
-					tabEl.removeClass('fn-settings-tab-active');
+				// @ts-expect-error: tabBar.children may not have removeClass method, but we know it works in this context
+				for (const child of tabBar.children) {
+					child.removeClass('fn-settings-tab-active');
 					if (!plugin) { return; }
 					plugin.settings.settingsTab = tabId.toLocaleLowerCase();
 					plugin.saveSettings();
@@ -299,23 +317,31 @@ export class SettingsTab extends PluginSettingTab {
 		}
 	}
 
-	renameFolderNotes() {
+	renameFolderNotes(): void {
 		new Notice('Starting to update folder notes...');
 		const oldTemplate = this.plugin.settings.oldFolderNoteName ?? '{{folder_name}}';
 
 		for (const folder of this.app.vault.getAllLoadedFiles()) {
 			if (folder instanceof TFolder) {
-				const folderNote = getFolderNote(this.plugin, folder.path, undefined, undefined, oldTemplate);
+				const folderNote = getFolderNote(
+					this.plugin,
+					folder.path,
+					undefined,
+					undefined,
+					oldTemplate,
+				);
 				if (!(folderNote instanceof TFile)) { continue; }
 
 				const folderName = extractFolderName(oldTemplate, folderNote.basename) ?? '';
-				const newFolderNoteName = this.plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
+				const newFolderNoteName = this.plugin.settings.folderNoteName
+					.replace('{{folder_name}}', folderName);
 				let newPath = '';
 
 				if (this.plugin.settings.storageLocation === 'parentFolder') {
 					if (getFolderPathFromString(folder.path).trim() === '/') {
 						newPath = `${newFolderNoteName}.${folderNote.extension}`;
 					} else {
+						// eslint-disable-next-line max-len
 						newPath = `${folderNote.parent?.path}/${newFolderNoteName}.${folderNote.extension}`;
 					}
 				} else if (this.plugin.settings.storageLocation === 'insideFolder') {
@@ -331,7 +357,7 @@ export class SettingsTab extends PluginSettingTab {
 		new Notice('Finished updating folder notes');
 	}
 
-	switchStorageLocation(oldMethod: string) {
+	switchStorageLocation(oldMethod: string): void {
 		new Notice('Starting to switch storage location...');
 		this.app.vault.getAllLoadedFiles().forEach((file) => {
 			if (file instanceof TFolder) {
@@ -348,10 +374,10 @@ export class SettingsTab extends PluginSettingTab {
 					} else if (this.plugin.settings.storageLocation === 'insideFolder') {
 						if (getFolderPathFromString(folderNote.path) === file.path) {
 							return;
-						} else {
-							const newPath = `${file.path}/${folderNote.name}`;
-							this.plugin.app.fileManager.renameFile(folderNote, newPath);
 						}
+						const newPath = `${file.path}/${folderNote.name}`;
+						this.plugin.app.fileManager.renameFile(folderNote, newPath);
+
 					}
 				}
 			}

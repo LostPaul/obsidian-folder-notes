@@ -1,19 +1,36 @@
-import { WorkspaceLeaf, App } from 'obsidian';
+import type { WorkspaceLeaf, App } from 'obsidian';
 
-export async function openExcalidrawView(leaf: WorkspaceLeaf) {
-	const { excalidraw, excalidrawEnabled } = await getExcalidrawPlugin(this.app);
-	if (excalidrawEnabled) {
+interface ExcalidrawPlugin {
+	setExcalidrawView(leaf: WorkspaceLeaf): void;
+}
+
+export async function openExcalidrawView(
+	app: App,
+	leaf: WorkspaceLeaf,
+): Promise<void> {
+	const { excalidraw, excalidrawEnabled } = await getExcalidrawPlugin(app);
+	if (excalidrawEnabled && excalidraw) {
 		excalidraw.setExcalidrawView(leaf);
 	}
 }
 
-export async function getExcalidrawPlugin(app: App) {
-	const excalidraw = (app as any).plugins.plugins['obsidian-excalidraw-plugin'];
-	const excalidrawEnabled = (app as any).plugins.enabledPlugins.has(
-		'obsidian-excalidraw-plugin'
+export async function getExcalidrawPlugin(
+	app: App,
+): Promise<{ excalidraw: ExcalidrawPlugin | null; excalidrawEnabled: boolean }> {
+	const { plugins: pluginManager } = app as App & {
+		plugins: {
+			plugins: Record<string, unknown>;
+			enabledPlugins: Set<string>;
+		};
+	};
+	const excalidraw = (
+		pluginManager.plugins[
+			'obsidian-excalidraw-plugin'
+		] as unknown as ExcalidrawPlugin | undefined
 	);
+	const excalidrawEnabled = pluginManager.enabledPlugins.has('obsidian-excalidraw-plugin');
 	return {
-		excalidraw,
+		excalidraw: excalidraw ?? null,
 		excalidrawEnabled,
 	};
 }

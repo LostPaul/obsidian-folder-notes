@@ -1,5 +1,5 @@
-import { App, Modal, TFolder } from 'obsidian';
-import FolderNotesPlugin from '../main';
+import { Modal, type App, type TFolder } from 'obsidian';
+import type FolderNotesPlugin from '../main';
 export default class NewFolderNameModal extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;
@@ -10,7 +10,8 @@ export default class NewFolderNameModal extends Modal {
 		this.app = app;
 		this.folder = folder;
 	}
-	onOpen() {
+
+	onOpen(): void {
 		const { contentEl } = this;
 
 		contentEl.addEventListener('keydown', (e) => {
@@ -36,7 +37,7 @@ export default class NewFolderNameModal extends Modal {
 			},
 		});
 
-		textarea.addEventListener('focus', function() {
+		textarea.addEventListener('focus', function () {
 			this.select();
 		});
 
@@ -49,23 +50,32 @@ export default class NewFolderNameModal extends Modal {
 			this.close();
 		});
 
-		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel', cls: 'mod-cancel' });
+		const cancelButton = buttonContainer.createEl('button', {
+			text: 'Cancel',
+			cls: 'mod-cancel',
+		});
 		cancelButton.addEventListener('click', () => {
 			this.close();
 		});
 	}
-	onClose() {
+
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}
 
-	saveFolderName() {
+	saveFolderName(): void {
 		const textarea = this.contentEl.querySelector('textarea');
 		if (textarea) {
 			const newName = textarea.value.trim();
 			if (newName.trim() !== '') {
-				if (!this.app.vault.getAbstractFileByPath(this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + newName.trim())) {
-					this.plugin.app.fileManager.renameFile(this.folder, this.folder.path.slice(0, this.folder.path.lastIndexOf('/') + 1) + newName.trim());
+				const folderBasePath = this.folder.path.slice(
+					0,
+					this.folder.path.lastIndexOf('/') + 1,
+				);
+				const newFolderPath = folderBasePath + newName.trim();
+				if (!this.app.vault.getAbstractFileByPath(newFolderPath)) {
+					this.plugin.app.fileManager.renameFile(this.folder, newFolderPath);
 				}
 			}
 		}

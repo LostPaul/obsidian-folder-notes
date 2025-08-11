@@ -1,10 +1,18 @@
-import { TAbstractFile, TFolder, TFile } from 'obsidian';
-import FolderNotesPlugin from 'src/main';
-import { createFolderNote, getFolder, getFolderNote, turnIntoFolderNote } from 'src/functions/folderNoteFunctions';
+import { TFolder, TFile, type TAbstractFile } from 'obsidian';
+import type FolderNotesPlugin from 'src/main';
+import {
+	createFolderNote,
+	getFolder,
+	getFolderNote,
+	turnIntoFolderNote,
+} from 'src/functions/folderNoteFunctions';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
-import { removeCSSClassFromFileExplorerEL, addCSSClassToFileExplorerEl } from 'src/functions/styleFunctions';
+import {
+	removeCSSClassFromFileExplorerEL,
+	addCSSClassToFileExplorerEl,
+} from 'src/functions/styleFunctions';
 
-export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin) {
+export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin): Promise<void> {
 	if (!plugin.app.workspace.layoutReady) return;
 
 	const folder = file.parent;
@@ -23,7 +31,7 @@ export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugi
 	}
 }
 
-async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin) {
+async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin): Promise<void> {
 	const folder = getFolder(plugin, file);
 
 	if (!(folder instanceof TFolder) && plugin.settings.autoCreateForFiles) {
@@ -50,7 +58,7 @@ async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin) {
 	}
 }
 
-async function handleFolderCreation(folder: TFolder, plugin: FolderNotesPlugin) {
+async function handleFolderCreation(folder: TFolder, plugin: FolderNotesPlugin): Promise<void> {
 	let openFile = plugin.settings.autoCreateFocusFiles;
 
 	const attachmentFolderPath = plugin.app.vault.getConfig('attachmentFolderPath') as string;

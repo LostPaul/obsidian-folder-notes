@@ -1,4 +1,4 @@
-import { TAbstractFile, TFile, TFolder, View, WorkspaceLeaf } from 'obsidian';
+import type { TAbstractFile, TFile, TFolder, View, WorkspaceLeaf } from 'obsidian';
 
 declare module 'obsidian' {
 	interface Setting {
@@ -40,7 +40,6 @@ interface FileItem {
     el: HTMLDivElement;
     file: TFile;
     fileExplorer: FileExplorerView;
-    info: any;
     selfEl: HTMLDivElement;
     innerEl: HTMLDivElement;
 }
@@ -48,7 +47,6 @@ interface FileItem {
 interface FolderItem {
     el: HTMLDivElement;
     fileExplorer: FileExplorerView;
-    info: any;
     selfEl: HTMLDivElement;
     innerEl: HTMLDivElement;
     file: TFolder;

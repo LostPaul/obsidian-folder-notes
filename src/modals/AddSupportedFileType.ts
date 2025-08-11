@@ -1,6 +1,6 @@
-import { App, Modal, Setting, Notice, SettingTab } from 'obsidian';
-import FolderNotesPlugin from '../main';
-import { ListComponent } from 'src/functions/ListComponent';
+import { Modal, Setting, Notice, type App, type SettingTab } from 'obsidian';
+import type FolderNotesPlugin from '../main';
+import type { ListComponent } from 'src/functions/ListComponent';
 
 export default class AddSupportedFileModal extends Modal {
 	plugin: FolderNotesPlugin;
@@ -16,7 +16,8 @@ export default class AddSupportedFileModal extends Modal {
 		this.list = list;
 		this.settingsTab = settingsTab;
 	}
-	onOpen() {
+
+	onOpen(): void {
 		const { contentEl } = this;
 		// close when user presses enter
 		contentEl.addEventListener('keydown', (e) => {
@@ -34,10 +35,10 @@ export default class AddSupportedFileModal extends Modal {
 						if (value.trim() !== '') {
 							this.name = value.trim();
 						}
-					})
+					}),
 			);
 	}
-	async onClose() {
+	async onClose(): Promise<void> {
 		if (this.name.toLocaleLowerCase() === 'markdown') {
 			this.name = 'md';
 		}
@@ -46,9 +47,9 @@ export default class AddSupportedFileModal extends Modal {
 			contentEl.empty();
 			this.settingsTab.display();
 		} else if (this.plugin.settings.supportedFileTypes.includes(this.name.toLowerCase())) {
-			return new Notice('This extension is already supported');
+			new Notice('This extension is already supported');
+			return;
 		} else {
-			// @ts-ignore
 			await this.list.addValue(this.name.toLowerCase());
 			this.settingsTab.display();
 			this.plugin.saveSettings();

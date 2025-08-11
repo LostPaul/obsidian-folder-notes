@@ -1,6 +1,6 @@
-import { App, Modal, Setting } from 'obsidian';
-import FolderNotesPlugin from '../../main';
-import { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
+import { Modal, Setting, type App } from 'obsidian';
+import type FolderNotesPlugin from '../../main';
+import type { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
 import { updateCSSClassesForFolder } from 'src/functions/styleFunctions';
 export default class ExcludedFolderSettings extends Modal {
 	plugin: FolderNotesPlugin;
@@ -12,10 +12,10 @@ export default class ExcludedFolderSettings extends Modal {
 		this.app = app;
 		this.excludedFolder = excludedFolder;
 	}
-	onOpen() {
+	onOpen(): void {
 		this.display();
 	}
-	display() {
+	display(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.createEl('h2', { text: 'Excluded folder settings' });
@@ -28,7 +28,7 @@ export default class ExcludedFolderSettings extends Modal {
 					.onChange(async (value) => {
 						this.excludedFolder.subFolders = value;
 						await this.plugin.saveSettings(true);
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -40,7 +40,7 @@ export default class ExcludedFolderSettings extends Modal {
 					.onChange(async (value) => {
 						this.excludedFolder.disableSync = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -52,7 +52,7 @@ export default class ExcludedFolderSettings extends Modal {
 					.onChange(async (value) => {
 						this.excludedFolder.excludeFromFolderOverview = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -66,7 +66,7 @@ export default class ExcludedFolderSettings extends Modal {
 						updateCSSClassesForFolder(this.excludedFolder.path, this.plugin);
 						await this.plugin.saveSettings();
 						this.display();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -78,7 +78,7 @@ export default class ExcludedFolderSettings extends Modal {
 					.onChange(async (value) => {
 						this.excludedFolder.disableAutoCreate = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(contentEl)
@@ -91,7 +91,7 @@ export default class ExcludedFolderSettings extends Modal {
 						this.excludedFolder.disableFolderNote = value;
 						await this.plugin.saveSettings(true);
 						this.display();
-					})
+					}),
 			);
 
 		if (!this.excludedFolder.disableFolderNote) {
@@ -104,12 +104,12 @@ export default class ExcludedFolderSettings extends Modal {
 						.onChange(async (value) => {
 							this.excludedFolder.enableCollapsing = value;
 							await this.plugin.saveSettings();
-						})
+						}),
 				);
 		}
-
 	}
-	onClose() {
+
+	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 	}

@@ -1,6 +1,7 @@
+/* eslint-disable max-len */
 import { Setting } from 'obsidian';
-import { SettingsTab } from './SettingsTab';
-export async function renderPath(settingsTab: SettingsTab) {
+import type { SettingsTab } from './SettingsTab';
+export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 	const containerEl = settingsTab.settingsPage;
 	new Setting(containerEl)
 		.setName('Open folder note through path')
@@ -12,7 +13,7 @@ export async function renderPath(settingsTab: SettingsTab) {
 					settingsTab.plugin.settings.openFolderNoteOnClickInPath = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
-				})
+				}),
 		);
 
 	if (settingsTab.plugin.settings.openFolderNoteOnClickInPath) {
@@ -25,7 +26,7 @@ export async function renderPath(settingsTab: SettingsTab) {
 					.onChange(async (value) => {
 						settingsTab.plugin.settings.openSidebar.mobile = value;
 						await settingsTab.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(containerEl)
@@ -37,7 +38,7 @@ export async function renderPath(settingsTab: SettingsTab) {
 					.onChange(async (value) => {
 						settingsTab.plugin.settings.openSidebar.desktop = value;
 						await settingsTab.plugin.saveSettings();
-					})
+					}),
 			);
 	}
 
@@ -56,7 +57,7 @@ export async function renderPath(settingsTab: SettingsTab) {
 						} else {
 							settingsTab.plugin.updateAllBreadcrumbs(true);
 						}
-					})
+					}),
 			);
 	}
 
@@ -76,7 +77,7 @@ export async function renderPath(settingsTab: SettingsTab) {
 						document.body.classList.remove('folder-note-underline-path');
 					}
 					await settingsTab.plugin.saveSettings();
-				})
+				}),
 		);
 
 	new Setting(containerEl)
@@ -93,7 +94,7 @@ export async function renderPath(settingsTab: SettingsTab) {
 						document.body.classList.remove('folder-note-bold-path');
 					}
 					await settingsTab.plugin.saveSettings();
-				})
+				}),
 		);
 
 	new Setting(containerEl)
@@ -110,6 +111,6 @@ export async function renderPath(settingsTab: SettingsTab) {
 						document.body.classList.remove('folder-note-cursive-path');
 					}
 					await settingsTab.plugin.saveSettings();
-				})
+				}),
 		);
 }

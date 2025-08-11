@@ -1,5 +1,5 @@
-import FolderNotesPlugin from 'src/main';
-import { App, EditableFileView, TFolder } from 'obsidian';
+import type FolderNotesPlugin from 'src/main';
+import { EditableFileView, TFolder, type App } from 'obsidian';
 import { getFolder, getFolderNote } from 'src/functions/folderNoteFunctions';
 export class TabManager {
 	plugin: FolderNotesPlugin;
@@ -9,19 +9,18 @@ export class TabManager {
 		this.app = plugin.app;
 	}
 
-	resetTabs() {
+	resetTabs(): void {
 		if (!this.isEnabled()) return;
 
 		this.app.workspace.iterateAllLeaves((leaf) => {
 			if (!(leaf.view instanceof EditableFileView)) return;
 			const file = leaf.view?.file;
 			if (!file) return;
-			// @ts-ignore
 			leaf.tabHeaderInnerTitleEl.setText(file.basename);
 		});
 	}
 
-	updateTabs() {
+	updateTabs(): void {
 		if (!this.isEnabled()) return;
 		this.app.workspace.iterateAllLeaves((leaf) => {
 			if (!(leaf.view instanceof EditableFileView)) return;
@@ -29,12 +28,11 @@ export class TabManager {
 			if (!file) return;
 			const folder = getFolder(this.plugin, file);
 			if (!folder) return;
-			// @ts-ignore
 			leaf.tabHeaderInnerTitleEl.setText(folder.name);
 		});
 	}
 
-	updateTab(folderPath: string) {
+	updateTab(folderPath: string): void {
 		if (!this.isEnabled()) return;
 
 		const folder = this.app.vault.getAbstractFileByPath(folderPath);
@@ -48,13 +46,12 @@ export class TabManager {
 			const file = leaf.view?.file;
 			if (!file) return;
 			if (file.path === folderNote.path) {
-				// @ts-ignore
 				leaf.tabHeaderInnerTitleEl.setText(folder.name);
 			}
 		});
 	}
 
-	isEnabled() {
+	isEnabled(): boolean {
 		if (this.plugin.settings.folderNoteName === '{{folder_name}}') return false;
 		return this.plugin.settings.tabManagerEnabled;
 	}

@@ -1,9 +1,8 @@
 // Credits go to Liam's Periodic Notes Plugin: https://github.com/liamcain/obsidian-periodic-notes and https://github.com/SilentVoid13/Templater
 
-
-import { ISuggestOwner, Scope } from 'obsidian';
-import { createPopper, Instance as PopperInstance } from '@popperjs/core';
-import FolderNotesPlugin from 'src/main';
+import { Scope, type ISuggestOwner } from 'obsidian';
+import { createPopper, type Instance as PopperInstance } from '@popperjs/core';
+import type FolderNotesPlugin from 'src/main';
 
 const wrapAround = (value: number, size: number): number => {
 	return ((value % size) + size) % size;
@@ -20,7 +19,7 @@ class Suggest<T> {
 	constructor(
 		owner: ISuggestOwner<T>,
 		containerEl: HTMLElement,
-		scope: Scope
+		scope: Scope,
 	) {
 		this.owner = owner;
 		this.containerEl = containerEl;
@@ -28,12 +27,12 @@ class Suggest<T> {
 		containerEl.on(
 			'click',
 			'.suggestion-item',
-			this.onSuggestionClick.bind(this)
+			this.onSuggestionClick.bind(this),
 		);
 		containerEl.on(
 			'mousemove',
 			'.suggestion-item',
-			this.onSuggestionMouseover.bind(this)
+			this.onSuggestionMouseover.bind(this),
 		);
 
 		scope.register([], 'ArrowUp', (event) => {
@@ -71,7 +70,7 @@ class Suggest<T> {
 		this.setSelectedItem(item, false);
 	}
 
-	setSuggestions(values: T[]) {
+	setSuggestions(values: T[]): void {
 		this.containerEl.empty();
 		const suggestionEls: HTMLDivElement[] = [];
 
@@ -86,17 +85,17 @@ class Suggest<T> {
 		this.setSelectedItem(0, false);
 	}
 
-	useSelectedItem(event: MouseEvent | KeyboardEvent) {
+	useSelectedItem(event: MouseEvent | KeyboardEvent): void {
 		const currentValue = this.values[this.selectedItem];
 		if (currentValue) {
 			this.owner.selectSuggestion(currentValue, event);
 		}
 	}
 
-	setSelectedItem(selectedIndex: number, scrollIntoView: boolean) {
+	setSelectedItem(selectedIndex: number, scrollIntoView: boolean): void {
 		const normalizedIndex = wrapAround(
 			selectedIndex,
-			this.suggestions.length
+			this.suggestions.length,
 		);
 		const prevSelectedSuggestion = this.suggestions[this.selectedItem];
 		const selectedSuggestion = this.suggestions[normalizedIndex];
@@ -140,7 +139,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 			'.suggestion-container',
 			(event: MouseEvent) => {
 				event.preventDefault();
-			}
+			},
 		);
 	}
 
@@ -155,7 +154,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 
 		if (suggestions.length > 0) {
 			this.suggest.setSuggestions(suggestions);
-			// @ts-ignore
+			// @ts-expect-error App may not exist
 			this.open(app.dom.appContainerEl, this.inputEl);
 		} else {
 			this.close();
@@ -163,7 +162,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 	}
 
 	open(container: HTMLElement, inputEl: HTMLElement): void {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 		this.plugin.app.keymap.pushScope(this.scope);
 
 		container.appendChild(this.suggestEl);
@@ -173,7 +172,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 				{
 					name: 'sameWidth',
 					enabled: true,
-					fn: ({ state, instance }) => {
+					fn: ({ state, instance }): void => {
 						// Note: positioning needs to be calculated twice -
 						// first pass - positioning it according to the width of the popper
 						// second pass - position it with the width bound to the reference element

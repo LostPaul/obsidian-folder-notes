@@ -1,8 +1,6 @@
-// Credits go to Liam's Periodic Notes Plugin: https://github.com/liamcain/obsidian-periodic-notes and https://github.com/SilentVoid13/Templater
-
-import { TAbstractFile, TFile } from 'obsidian';
+import { type TAbstractFile, TFile } from 'obsidian';
 import { TextInputSuggest } from './Suggest';
-import FolderNotesPlugin from '../main';
+import type FolderNotesPlugin from '../main';
 export enum FileSuggestMode {
     TemplateFiles,
     ScriptFiles,
@@ -11,7 +9,7 @@ export enum FileSuggestMode {
 export class FileSuggest extends TextInputSuggest<TFile> {
 	constructor(
         public inputEl: HTMLInputElement,
-        plugin: FolderNotesPlugin
+        plugin: FolderNotesPlugin,
 	) {
 		super(inputEl, plugin);
 	}
