@@ -84,6 +84,9 @@ export default class FolderNotesPlugin extends Plugin {
 		if (this.settings.hideCollapsingIcon) {
 			document.body.classList.add('fn-hide-collapse-icon');
 		}
+		if (this.settings.ignoreAttachmentFolder) {
+			document.body.classList.add('fn-ignore-attachment-folder');
+		}
 		if (!this.settings.highlightFolder) {
 			document.body.classList.add('disable-folder-highlight');
 		}
@@ -433,7 +436,7 @@ export default class FolderNotesPlugin extends Plugin {
 	updateViewDropdown: typeof updateViewDropdown = updateViewDropdown;
 
 	isEmptyFolderNoteFolder(folder: TFolder): boolean {
-		const attachmentFolderPath = this.app.vault.getConfig('attachmentFolderPath') as string;
+		let attachmentFolderPath = this.app.vault.getConfig('attachmentFolderPath') as string;
 		const cleanAttachmentFolderPath = attachmentFolderPath?.replace('./', '') || '';
 		const attachmentsAreInRootFolder = attachmentFolderPath === './'
 			|| attachmentFolderPath === '';
@@ -441,22 +444,27 @@ export default class FolderNotesPlugin extends Plugin {
 		if (folder.children.length === 0) {
 			addCSSClassToFileExplorerEl(folder.path, 'fn-empty-folder', false, this);
 		}
+		attachmentFolderPath = `${folder.path}/${cleanAttachmentFolderPath}`;
 
 		if (folder.children.length === threshold) {
+			addCSSClassToFileExplorerEl(folder.path, 'fn-empty-folder', false, this);
 			return true;
 		} else if (folder.children.length > threshold) {
 			if (attachmentsAreInRootFolder) {
 				return false;
-			} else if (this.settings.ignoreAttachmentFolder
-				&& this.app.vault.getAbstractFileByPath(
-					`${folder.path}/${cleanAttachmentFolderPath}`)) {
-				const folderPath = `${folder.path}/${cleanAttachmentFolderPath}`;
-				const attachmentFolder = this.app.vault.getAbstractFileByPath(folderPath);
-				if (attachmentFolder instanceof TFolder
-					&& folder.children.length <= threshold + 1) {
-					if (!folder.collapsed) {
-						getFileExplorerElement(folder.path, this)?.click();
-					}
+			} else if (
+				this.app.vault.getAbstractFileByPath(attachmentFolderPath) instanceof TFolder
+			) {
+				const attachmentFolder = this.app.vault.getAbstractFileByPath(attachmentFolderPath);
+				if (
+					attachmentFolder instanceof TFolder &&
+					folder.children.length <= threshold + 1
+				) {
+					addCSSClassToFileExplorerEl(folder.path, 'fn-empty-folder', false, this);
+					addCSSClassToFileExplorerEl(
+						folder.path, 'fn-has-attachment-folder',
+						false, this,
+					);
 				}
 				return folder.children.length <= threshold + 1;
 			}

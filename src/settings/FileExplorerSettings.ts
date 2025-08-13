@@ -135,12 +135,14 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 				.setValue(settingsTab.plugin.settings.hideCollapsingIcon)
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.hideCollapsingIcon = value;
-					await settingsTab.plugin.saveSettings();
 					if (value) {
+						console.log(document.body.classList.contains('fn-hide-collapse-icon'));
 						document.body.classList.add('fn-hide-collapse-icon');
 					} else {
+						console.log(document.body.classList.contains('fn-hide-collapse-icon'));
 						document.body.classList.remove('fn-hide-collapse-icon');
 					}
+					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
 				}),
 		);
@@ -170,6 +172,11 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 				toggle
 					.setValue(settingsTab.plugin.settings.ignoreAttachmentFolder)
 					.onChange(async (value) => {
+						if (value) {
+							document.body.classList.add('fn-ignore-attachment-folder');
+						} else {
+							document.body.classList.remove('fn-ignore-attachment-folder');
+						}
 						settingsTab.plugin.settings.ignoreAttachmentFolder = value;
 						await settingsTab.plugin.saveSettings();
 					}),

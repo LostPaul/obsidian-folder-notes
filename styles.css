@@ -223,8 +223,10 @@ li:has(.fv-link-list-item),
 
 .fn-has-no-files .collapse-icon,
 .fn-hide-collapse-icon .has-folder-note.only-has-folder-note .tree-item-icon,
-.fn-hide-empty-collapse-icon .fn-empty-folder .tree-item-icon,
-.only-has-folder-note:not(.is-collapsed):not(.show-folder-note-in-explorer)>.nav-folder-children {
+body.fn-ignore-attachment-folder.fn-hide-collapse-icon .only-has-folder-note .fn-empty-folder.fn-has-attachment-folder .tree-item-icon,
+body.fn-hide-collapse-icon .only-has-folder-note .fn-empty-folder:not(.fn-has-attachment-folder) .tree-item-icon,
+body.fn-hide-empty-collapse-icon :not(.only-has-folder-note) > .fn-empty-folder:not(.fn-has-attachment-folder) .tree-item-icon,
+body.fn-hide-collapse-icon.only-has-folder-note:not(.is-collapsed):not(.show-folder-note-in-explorer)>.nav-folder-children {
     display: none;
 }
 
