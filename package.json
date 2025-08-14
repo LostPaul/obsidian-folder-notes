@@ -18,8 +18,8 @@
 	"devDependencies": {
 		"@eslint/js": "^8.57.1",
 		"@types/node": "^16.11.6",
-		"@typescript-eslint/eslint-plugin": "5.29.0",
-		"@typescript-eslint/parser": "5.29.0",
+		"@typescript-eslint/eslint-plugin": "^8.38.0",
+		"@typescript-eslint/parser": "^8.38.0",
 		"builtin-modules": "3.3.0",
 		"esbuild": "0.14.47",
 		"eslint": "^9.32.0",
