@@ -136,10 +136,8 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.hideCollapsingIcon = value;
 					if (value) {
-						console.log(document.body.classList.contains('fn-hide-collapse-icon'));
 						document.body.classList.add('fn-hide-collapse-icon');
 					} else {
-						console.log(document.body.classList.contains('fn-hide-collapse-icon'));
 						document.body.classList.remove('fn-hide-collapse-icon');
 					}
 					await settingsTab.plugin.saveSettings();
