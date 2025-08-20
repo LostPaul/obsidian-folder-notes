@@ -13,5 +13,7 @@ The plugin can be downloaded by clicking on https://obsidian.md/plugins?id=folde
 
 The easiest option is to install the [BRAT plugin](https://obsidian.md/plugins?id=obsidian42-brat) and then to follow the following guide: https://tfthacker.com/brat-quick-guide & use this link https://github.com/LostPaul/obsidian-folder-notes to install the beta version.
 
+Join the Discord server to chat about the beta and to also get the beta user role.
+
 ## Discord server
 [For regular updates on Folder Notes and my other plugins, join the Discord server to get notified and participate in discussions.](https://discord.gg/4UQEDfQmuH)
