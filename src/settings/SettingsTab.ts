@@ -137,6 +137,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		fmtpIntegration: false,
 		titleSize: 1,
 		isInCallout: false,
+		useWikilinks: true,
 	},
 	useSubmenus: true,
 	syncMove: true,

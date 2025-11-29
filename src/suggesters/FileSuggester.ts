@@ -14,7 +14,6 @@ export class FileSuggest extends TextInputSuggest<TFile> {
 		super(inputEl, plugin);
 	}
 
-
 	get_error_msg(mode: FileSuggestMode): string {
 		switch (mode) {
 			case FileSuggestMode.TemplateFiles:
