@@ -44,7 +44,17 @@ export function getFileExplorer(
 	plugin: FolderNotesPlugin | FolderOverviewPlugin,
 ): FileExplorerWorkspaceLeaf {
 	// eslint-disable-next-line max-len
-	const leaf = plugin.app.workspace.getLeavesOfType('file-explorer')[0] as unknown as FileExplorerWorkspaceLeaf;
+	let leaf = plugin.app.workspace.getLeavesOfType('file-explorer')[0] as unknown as FileExplorerWorkspaceLeaf;
+
+	/* make.md plugin integration */
+	if (leaf.containerEl.lastChild.dataset.type == 'mk-path-view') {
+		plugin.app.workspace.iterateAllLeaves((x) => {
+			if (x.tabHeaderEl.dataset.type == 'file-explorer') {
+				leaf = x;
+			}
+		});
+	}
+
 	return leaf;
 }
 

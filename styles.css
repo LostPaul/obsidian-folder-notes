@@ -8,6 +8,12 @@
     display: none;
 }
 
+/* make.md plugin integration */
+.hide-folder-note .mk-tree-node > .mk-tree-wrapper > .dropzone > .mk-tree-item.is-folder-note {
+    opacity: 40%;
+    display: flex;
+}
+
 .pointer-cursor,
 .has-folder-note .nav-folder-title-content:hover,
 .has-folder-note.view-header-breadcrumb:hover,
