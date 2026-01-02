@@ -30,7 +30,6 @@ import {
 	refreshAllFolderStyles, setActiveFolder, removeActiveFolder,
 } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
-import type { FileExplorerView, InternalPlugin } from 'obsidian-typings';
 import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './obsidian-folder-overview/src/view';
 import { registerOverviewCommands } from './obsidian-folder-overview/src/Commands';
 import { updateOverviewView, updateViewDropdown } from './obsidian-folder-overview/src/main';
@@ -50,9 +49,6 @@ export default class FolderNotesPlugin extends Plugin {
 	settingsOpened = false;
 	askModalCurrentlyOpen = false;
 	fvIndexDB: FvIndexDB;
-
-	private fileExplorerPlugin!: InternalPlugin;
-	private fileExplorerView!: FileExplorerView;
 
 	async onload(): Promise<void> {
 		console.log('loading folder notes plugin');
@@ -173,6 +169,10 @@ export default class FolderNotesPlugin extends Plugin {
 		registerFileExplorerObserver(this);
 		this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
 			return new FolderOverviewView(leaf, this);
+		});
+
+		this.app.workspace.on('layout-change', () => {
+			this.tabManager.updateTabs();
 		});
 
 		if (this.app.plugins.getPlugin('obsidian-front-matter-title-plugin')) {
