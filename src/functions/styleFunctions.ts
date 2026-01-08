@@ -226,7 +226,7 @@ export function showFolderNoteInFileExplorer(path: string, plugin: FolderNotesPl
 
 export function hideFolderNoteInFileExplorer(folderPath: string, plugin: FolderNotesPlugin): void {
 	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter(
-		(folder) => (folder.path !== folderPath) && folder.showFolderNote);
+		(folder) => (folder.path !== folderPath) || !folder.showFolderNote);
 	plugin.saveSettings(false);
 	removeCSSClassFromFileExplorerEL(folderPath, 'show-folder-note-in-explorer', true, plugin);
 	updateCSSClassesForFolder(folderPath, plugin);
