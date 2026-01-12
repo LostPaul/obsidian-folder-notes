@@ -93,7 +93,7 @@ export async function renderExcludeFolders(settingsTab: SettingsTab): Promise<vo
 				);
 				addExcludeFolderListItem(settingsTab, containerEl, excludedFolder);
 				addExcludedFolder(settingsTab.plugin, excludedFolder);
-				settingsTab.display();
+				settingsTab.renderSettingsPage(settingsTab.plugin.settings.settingsTab);
 			});
 		});
 
