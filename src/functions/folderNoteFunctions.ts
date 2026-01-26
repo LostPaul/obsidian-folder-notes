@@ -410,7 +410,7 @@ export async function deleteFolderNote(
 	if (!folder) return;
 
 	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter(
-		(excludedFolder) => (excludedFolder.path !== folder.path) && excludedFolder.showFolderNote);
+		(excludedFolder) => (excludedFolder.path !== folder.path) || !excludedFolder.showFolderNote);
 	plugin.saveSettings(false);
 
 	removeCSSClassFromFileExplorerEL(folder.path, 'has-folder-note', false, plugin);

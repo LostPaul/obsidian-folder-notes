@@ -42,15 +42,17 @@ export function getParentFolderPath(path: string): string {
 
 export function getFileExplorer(
 	plugin: FolderNotesPlugin | FolderOverviewPlugin,
-): FileExplorerWorkspaceLeaf {
+): FileExplorerWorkspaceLeaf | undefined {
 	// eslint-disable-next-line max-len
 	let leaf = plugin.app.workspace.getLeavesOfType('file-explorer')[0] as unknown as FileExplorerWorkspaceLeaf;
 
+	if (!leaf) { return undefined; }
+
 	/* make.md plugin integration */
-	if (leaf.containerEl.lastChild.dataset.type == 'mk-path-view') {
+	if ((leaf.containerEl?.lastChild as HTMLElement)?.dataset?.type == 'mk-path-view') {
 		plugin.app.workspace.iterateAllLeaves((x) => {
-			if (x.tabHeaderEl.dataset.type == 'file-explorer') {
-				leaf = x;
+			if ((x as FileExplorerWorkspaceLeaf).tabHeaderEl?.dataset?.type == 'file-explorer') {
+				leaf = x as FileExplorerWorkspaceLeaf;
 			}
 		});
 	}
@@ -58,12 +60,13 @@ export function getFileExplorer(
 	return leaf;
 }
 
-export function getFileExplorerView(plugin: FolderNotesPlugin): FileExplorerView {
-	return getFileExplorer(plugin).view;
+export function getFileExplorerView(plugin: FolderNotesPlugin): FileExplorerView | undefined {
+	return getFileExplorer(plugin)?.view;
 }
 
 export function getFocusedItem(plugin: FolderNotesPlugin): TreeNode<FileTreeItem> | null {
-	const fileExplorer = getFileExplorer(plugin) as unknown as FileExplorerLeaf;
+	const fileExplorer = getFileExplorer(plugin) as unknown as FileExplorerLeaf | undefined;
+	if (!fileExplorer) { return null; }
 	const { focusedItem } = fileExplorer.view.tree;
 	return focusedItem;
 }

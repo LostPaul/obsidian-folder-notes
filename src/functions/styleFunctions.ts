@@ -14,8 +14,10 @@ import type FolderOverviewPlugin from 'src/obsidian-folder-overview/src/main';
  * @description Refreshes the CSS classes for all folder notes in the file explorer.
  */
 export function refreshAllFolderStyles(forceReload = false, plugin: FolderNotesPlugin): void {
-	if (plugin.activeFileExplorer === getFileExplorer(plugin) && !forceReload) { return; }
-	plugin.activeFileExplorer = getFileExplorer(plugin);
+	const fileExplorer = getFileExplorer(plugin);
+	if (!fileExplorer) { return; }
+	if (plugin.activeFileExplorer === fileExplorer && !forceReload) { return; }
+	plugin.activeFileExplorer = fileExplorer;
 	plugin.app.vault.getAllLoadedFiles().forEach(async (file) => {
 		if (file instanceof TFolder) {
 			await updateCSSClassesForFolder(file.path, plugin);
@@ -226,7 +228,7 @@ export function showFolderNoteInFileExplorer(path: string, plugin: FolderNotesPl
 
 export function hideFolderNoteInFileExplorer(folderPath: string, plugin: FolderNotesPlugin): void {
 	plugin.settings.excludeFolders = plugin.settings.excludeFolders.filter(
-		(folder) => (folder.path !== folderPath) && folder.showFolderNote);
+		(folder) => (folder.path !== folderPath) || !folder.showFolderNote);
 	plugin.saveSettings(false);
 	removeCSSClassFromFileExplorerEL(folderPath, 'show-folder-note-in-explorer', true, plugin);
 	updateCSSClassesForFolder(folderPath, plugin);

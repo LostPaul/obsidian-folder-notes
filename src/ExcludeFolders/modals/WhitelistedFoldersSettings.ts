@@ -40,7 +40,7 @@ export default class WhitelistedFoldersSettings extends Modal {
 						this.plugin.settingsTab, contentEl, whitelistedFolder,
 					);
 					addWhitelistedFolder(this.plugin, whitelistedFolder);
-					this.settingsTab.display();
+					this.settingsTab.renderSettingsPage(this.settingsTab.plugin.settings.settingsTab);
 				});
 			});
 
