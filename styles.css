@@ -23,6 +23,9 @@
     cursor: pointer !important;
 }
 
+.hide-folder-note :not(.show-folder-note-in-explorer).only-has-folder-note .nav-folder-children {
+    display: none !important;
+}
 
 /* ==========================================================================
    Tree Items
