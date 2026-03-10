@@ -113,4 +113,17 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 					await settingsTab.plugin.saveSettings();
 				}),
 		);
+
+	new Setting(containerEl)
+		.setName('Hide folder note name in the path')
+		.setDesc('Only show the folder name in the path and hide the folder note name.')
+		.addToggle((toggle) =>
+			toggle
+				.setValue(settingsTab.plugin.settings.hideFolderNoteNameInPath)
+				.onChange(async (value) => {
+					document.body.classList.toggle('folder-note-hide-name-path', value);
+					settingsTab.plugin.settings.hideFolderNoteNameInPath = value;
+					await settingsTab.plugin.saveSettings();
+				}),
+		);
 }

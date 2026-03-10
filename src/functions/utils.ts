@@ -49,9 +49,9 @@ export function getFileExplorer(
 	if (!leaf) { return undefined; }
 
 	/* make.md plugin integration */
-	if ((leaf.containerEl?.lastChild as HTMLElement)?.dataset?.type == 'mk-path-view') {
+	if ((leaf.containerEl?.lastChild as HTMLElement)?.dataset?.type === 'mk-path-view') {
 		plugin.app.workspace.iterateAllLeaves((x) => {
-			if ((x as FileExplorerWorkspaceLeaf).tabHeaderEl?.dataset?.type == 'file-explorer') {
+			if ((x as FileExplorerWorkspaceLeaf).tabHeaderEl?.dataset?.type === 'file-explorer') {
 				leaf = x as FileExplorerWorkspaceLeaf;
 			}
 		});

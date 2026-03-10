@@ -82,6 +82,7 @@ export interface FolderNotesSettings {
 	fvGlobalSettings: {
 		autoUpdateLinks: boolean;
 	}
+	hideFolderNoteNameInPath: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -206,6 +207,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	fvGlobalSettings: {
 		autoUpdateLinks: false,
 	},
+	hideFolderNoteNameInPath: false,
 };
 
 export class SettingsTab extends PluginSettingTab {

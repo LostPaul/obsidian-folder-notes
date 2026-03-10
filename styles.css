@@ -222,6 +222,10 @@ li:has(.fv-link-list-item),
 .folder-note-cursive-path .has-folder-note.view-header-breadcrumb {
     font-style: italic;
 }
+.folder-note-hide-name-path .hide-folder-note-title-in-path .is-last-separator,
+.folder-note-hide-name-path .hide-folder-note-title-in-path .path-is-folder-note {
+    display: none;
+}
 
 
 /* Collapse Icon Handling */

@@ -1,6 +1,6 @@
 import { Keymap, Platform } from 'obsidian';
 import type FolderNotesPlugin from 'src/main';
-import { getFolderNote } from 'src/functions/folderNoteFunctions';
+import { getFolderNote, getFolderNoteFolder } from 'src/functions/folderNoteFunctions';
 import { handleViewHeaderClick } from './handleClick';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { updateCSSClassesForFolder } from 'src/functions/styleFunctions';
@@ -162,10 +162,23 @@ async function updateFolderNamesInPath(
 	plugin: FolderNotesPlugin,
 	titleContainer: HTMLElement,
 ): Promise<void> {
-	const headers = titleContainer.querySelectorAll('span.view-header-breadcrumb');
+	const titleParent = titleContainer.querySelector('.view-header-title-parent');
 	let path = '';
 	const TRAILING_SLASH_LENGTH = 1;
-	headers.forEach(async (breadcrumb: HTMLElement) => {
+
+	if (titleParent?.childNodes.length === 0) {
+		titleContainer.classList.remove('hide-folder-note-title-in-path');
+	}
+	// eslint-disable-next-line complexity
+	titleParent?.childNodes.forEach(async (breadcrumb: HTMLElement) => {
+		if (!(breadcrumb instanceof HTMLElement)) return;
+		if (breadcrumb.classList.contains('view-header-breadcrumb-separator')) {
+			if (breadcrumb.nextSibling === null) {
+				breadcrumb.classList.add('is-last-separator');
+			}
+			return;
+		}
+
 		path += breadcrumb.getAttribute('old-name') ?? (breadcrumb as HTMLElement).innerText.trim();
 		path += '/';
 		const folderPath = path.slice(0, -TRAILING_SLASH_LENGTH);
@@ -173,6 +186,21 @@ async function updateFolderNamesInPath(
 		const excludedFolder = getExcludedFolder(plugin, folderPath, true);
 		if (excludedFolder?.disableFolderNote) return;
 		const folderNote = getFolderNote(plugin, folderPath);
+		const viewHeaderTitle = titleContainer.querySelector('.view-header-title');
+
+		if (viewHeaderTitle) {
+			const filePath = path + (viewHeaderTitle as HTMLElement).innerText.trim() + '.md';
+			const file = plugin.app.vault.getAbstractFileByPath(
+				filePath);
+			const folder = getFolderNoteFolder(plugin, file?.path ?? '', file?.name ?? '');
+			if (folder && file && file.path === folderNote?.path && file.parent?.path !== '/') {
+				viewHeaderTitle.parentElement?.classList.add('hide-folder-note-title-in-path');
+				viewHeaderTitle.classList.add('path-is-folder-note');
+			} else {
+				viewHeaderTitle.parentElement?.classList.remove('hide-folder-note-title-in-path');
+				viewHeaderTitle.classList.remove('path-is-folder-note');
+			}
+		}
 		if (!folderNote) return;
 		if (folderNote) breadcrumb.classList.add('has-folder-note');
 		breadcrumb?.setAttribute('data-path', path.slice(0, -TRAILING_SLASH_LENGTH));

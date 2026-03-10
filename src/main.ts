@@ -59,37 +59,7 @@ export default class FolderNotesPlugin extends Plugin {
 		this.fvIndexDB = new FvIndexDB(this);
 
 		// Add CSS Classes
-		document.body.classList.add('folder-notes-plugin');
-		if (this.settings.hideFolderNote) { document.body.classList.add('hide-folder-note'); }
-		if (this.settings.hideCollapsingIconForEmptyFolders) {
-			document.body.classList.add('fn-hide-empty-collapse-icon');
-		}
-		if (this.settings.underlineFolder) { document.body.classList.add('folder-note-underline'); }
-		if (this.settings.boldName) { document.body.classList.add('folder-note-bold'); }
-		if (this.settings.cursiveName) { document.body.classList.add('folder-note-cursive'); }
-		if (this.settings.boldNameInPath) { document.body.classList.add('folder-note-bold-path'); }
-		if (this.settings.cursiveNameInPath) {
-			document.body.classList.add('folder-note-cursive-path');
-		}
-		if (this.settings.underlineFolderInPath) {
-			document.body.classList.add('folder-note-underline-path');
-		}
-		if (this.settings.stopWhitespaceCollapsing) {
-			document.body.classList.add('fn-whitespace-stop-collapsing');
-		}
-		if (this.settings.hideCollapsingIcon) {
-			document.body.classList.add('fn-hide-collapse-icon');
-		}
-		if (this.settings.ignoreAttachmentFolder) {
-			document.body.classList.add('fn-ignore-attachment-folder');
-		}
-		if (!this.settings.highlightFolder) {
-			document.body.classList.add('disable-folder-highlight');
-		}
-
-		if (requireApiVersion('1.7.2')) {
-			document.body.classList.add('version-1-7-2');
-		}
+		this.addSettingCssClasses();
 
 		new Commands(this.app, this).registerCommands();
 		registerOverviewCommands(this);
@@ -159,6 +129,43 @@ export default class FolderNotesPlugin extends Plugin {
 				this.handleOverviewBlock(source, el, ctx);
 			},
 		);
+	}
+
+	addSettingCssClasses(): void {
+		document.body.classList.add('folder-notes-plugin');
+		if (this.settings.hideFolderNote) { document.body.classList.add('hide-folder-note'); }
+		if (this.settings.hideCollapsingIconForEmptyFolders) {
+			document.body.classList.add('fn-hide-empty-collapse-icon');
+		}
+		if (this.settings.hideFolderNoteNameInPath) {
+			document.body.classList.add('folder-note-hide-name-path');
+		}
+		if (this.settings.underlineFolder) { document.body.classList.add('folder-note-underline'); }
+		if (this.settings.boldName) { document.body.classList.add('folder-note-bold'); }
+		if (this.settings.cursiveName) { document.body.classList.add('folder-note-cursive'); }
+		if (this.settings.boldNameInPath) { document.body.classList.add('folder-note-bold-path'); }
+		if (this.settings.cursiveNameInPath) {
+			document.body.classList.add('folder-note-cursive-path');
+		}
+		if (this.settings.underlineFolderInPath) {
+			document.body.classList.add('folder-note-underline-path');
+		}
+		if (this.settings.stopWhitespaceCollapsing) {
+			document.body.classList.add('fn-whitespace-stop-collapsing');
+		}
+		if (this.settings.hideCollapsingIcon) {
+			document.body.classList.add('fn-hide-collapse-icon');
+		}
+		if (this.settings.ignoreAttachmentFolder) {
+			document.body.classList.add('fn-ignore-attachment-folder');
+		}
+		if (!this.settings.highlightFolder) {
+			document.body.classList.add('disable-folder-highlight');
+		}
+
+		if (requireApiVersion('1.7.2')) {
+			document.body.classList.add('version-1-7-2');
+		}
 	}
 
 	onLayoutReady(): void {
