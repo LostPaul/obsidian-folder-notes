@@ -20,7 +20,7 @@ import {
 	updateExcludedFolder,
 } from '../ExcludeFolders/functions/folderFunctions';
 import { ExcludedFolder } from '../ExcludeFolders/ExcludeFolder';
-import { openExcalidrawView } from './excalidraw';
+import { getDefaultTemplate, openExcalidrawView } from './excalidraw';
 import { AskForExtensionModal } from 'src/modals/AskForExtension';
 import {
 	addCSSClassToFileExplorerEl,
@@ -35,21 +35,6 @@ import {
 } from 'src/functions/utils';
 
 
-const defaultExcalidrawTemplate = `---
-
-excalidraw-plugin: parsed
-tags: [excalidraw]
-
----
-==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==
-
-
-%%
-# Drawing
-\`\`\`json
-{'type":"excalidraw","version":2,"source":"https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/1.9.20","elements":[],"appState":{"gridSize":null,"viewBackgroundColor":"#ffffff'}}
-\`\`\`
-%%`;
 
 export async function createFolderNote(
 	plugin: FolderNotesPlugin,
@@ -121,7 +106,7 @@ export async function createFolderNote(
 		}
 		await leaf.openFile(folderNote);
 		if (plugin.settings.folderNoteType === '.excalidraw' || extension === '.excalidraw') {
-			openExcalidrawView(plugin.app, leaf);
+			openExcalidrawView(plugin.app, folderNote);
 		}
 	}
 
@@ -192,7 +177,7 @@ async function handleCreateFolderNote(plugin: FolderNotesPlugin, folderNoteType:
 							'==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==',
 						)
 					) {
-						content = defaultExcalidrawTemplate;
+						content = await getDefaultTemplate(plugin.app);
 					}
 				} else {
 					plugin.app.vault.readBinary(templateFile).then(async (data) => {
@@ -208,7 +193,7 @@ async function handleCreateFolderNote(plugin: FolderNotesPlugin, folderNoteType:
 			plugin.settings.folderNoteType === '.excalidraw' ||
 			extension === '.excalidraw'
 		) {
-			content = defaultExcalidrawTemplate;
+			content = await getDefaultTemplate(plugin.app);
 		} else if (plugin.settings.folderNoteType === '.canvas') {
 			content = '{}';
 		}

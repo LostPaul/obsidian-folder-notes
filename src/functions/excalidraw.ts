@@ -1,17 +1,27 @@
-import type { WorkspaceLeaf, App } from 'obsidian';
+import type { WorkspaceLeaf, App, TFile } from 'obsidian';
 
 interface ExcalidrawPlugin {
 	setExcalidrawView(leaf: WorkspaceLeaf): void;
+	openDrawing(file: TFile): void;
+	getBlankDrawing(): Promise<string>;
 }
 
 export async function openExcalidrawView(
 	app: App,
-	leaf: WorkspaceLeaf,
+	file: TFile,
 ): Promise<void> {
 	const { excalidraw, excalidrawEnabled } = await getExcalidrawPlugin(app);
 	if (excalidrawEnabled && excalidraw) {
-		excalidraw.setExcalidrawView(leaf);
+		excalidraw.openDrawing(file);
 	}
+}
+
+export async function getDefaultTemplate(app: App): Promise<string> {
+	const { excalidraw, excalidrawEnabled } = await getExcalidrawPlugin(app);
+	if (excalidrawEnabled && excalidraw) {
+		return excalidraw.getBlankDrawing();
+	}
+	return '';
 }
 
 export async function getExcalidrawPlugin(
