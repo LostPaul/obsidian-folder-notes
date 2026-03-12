@@ -49,6 +49,7 @@ export default class FolderNotesPlugin extends Plugin {
 	settingsOpened = false;
 	askModalCurrentlyOpen = false;
 	fvIndexDB: FvIndexDB;
+	activeConversions: Set<string> = new Set();
 
 	async onload(): Promise<void> {
 		console.log('loading folder notes plugin');
@@ -272,6 +273,163 @@ export default class FolderNotesPlugin extends Plugin {
 			}
 
 			return originalHandleDrop.call(this, evt, ...args);
+		};
+
+		const originalHandlePaste = clipboardProto.handlePaste;
+
+		// eslint-disable-next-line complexity
+		clipboardProto.handlePaste = function (evt: ClipboardEvent, ...args: unknown[]): unknown {
+			if (!plugin.settings.convertToFolderNoteOnPaste) {
+				return originalHandlePaste.call(this, evt, ...args);
+			}
+
+			// Only applies to insideFolder storage mode — other modes don't benefit
+			// from converting on paste since the note lives outside the folder.
+			if (plugin.settings.storageLocation !== 'insideFolder') {
+				return originalHandlePaste.call(this, evt, ...args);
+			}
+
+			const hasFiles = evt.clipboardData && evt.clipboardData.files.length > 0;
+			if (!hasFiles) {
+				return originalHandlePaste.call(this, evt, ...args);
+			}
+
+			const activeFile = plugin.app.workspace.getActiveFile();
+			if (!activeFile || !(activeFile instanceof TFile)) {
+				return originalHandlePaste.call(this, evt, ...args);
+			}
+
+			// Check if the note is already a folder note for its parent folder
+			const parentFolder = activeFile.parent;
+			if (parentFolder instanceof TFolder && parentFolder.path !== '' && parentFolder.path !== '/') {
+				const existingFolderNote = getFolderNote(plugin, parentFolder.path);
+				if (existingFolderNote instanceof TFile && existingFolderNote.path === activeFile.path) {
+					return originalHandlePaste.call(this, evt, ...args);
+				}
+			}
+
+			// Build the folder path from the file name
+			let newFolderPath = activeFile.parent?.path + '/' + activeFile.basename;
+			if (!activeFile.parent || activeFile.parent.path === '' || activeFile.parent.path === '/') {
+				newFolderPath = activeFile.basename;
+			}
+
+			// Don't convert if a folder with that name already exists
+			if (plugin.app.vault.getAbstractFileByPath(newFolderPath)) {
+				return originalHandlePaste.call(this, evt, ...args);
+			}
+
+			// Prevent re-entrance from rapid consecutive pastes
+			if (plugin.activeConversions.has(activeFile.path)) {
+				return originalHandlePaste.call(this, evt, ...args);
+			}
+
+			// Synchronously capture file data from clipboardData before it expires.
+			// clipboardData is only available during the synchronous event dispatch,
+			// but File objects (Blobs) remain valid after the event ends.
+			const now = new Date();
+			const timestamp = now.getFullYear().toString()
+				+ (now.getMonth() + 1).toString().padStart(2, '0')
+				+ now.getDate().toString().padStart(2, '0')
+				+ now.getHours().toString().padStart(2, '0')
+				+ now.getMinutes().toString().padStart(2, '0')
+				+ now.getSeconds().toString().padStart(2, '0');
+
+			const resolvedFilePromises: { name: string; bufferPromise: Promise<ArrayBuffer> }[] = [];
+			for (let i = 0; i < evt.clipboardData!.files.length; i++) {
+				const file = evt.clipboardData!.files[i];
+				// Browsers assign generic names like "image.png" to pasted clipboard images.
+				// Replace with Obsidian's naming convention: "Pasted image YYYYMMDDHHMMSS.ext"
+				let fileName = file.name;
+				const ext = fileName.includes('.') ? fileName.slice(fileName.lastIndexOf('.')) : '';
+				const baseName = ext ? fileName.slice(0, -ext.length) : fileName;
+				if (baseName.toLowerCase() === 'image') {
+					fileName = `Pasted image ${timestamp}${ext}`;
+				}
+				resolvedFilePromises.push({
+					name: fileName,
+					bufferPromise: file.arrayBuffer(),
+				});
+			}
+
+			// Compute the expected path of the moved file for later reference,
+			// so we don't rely on getActiveFile() which may return the wrong file
+			// if the user switches tabs during the async conversion.
+			const folderName = newFolderPath.split('/').pop() || activeFile.basename;
+			const folderNoteName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
+			const expectedMovedPath = `${newFolderPath}/${folderNoteName}.${activeFile.extension}`;
+
+			// Mark this file as being converted to prevent re-entrance
+			const conversionKey = activeFile.path;
+			plugin.activeConversions.add(conversionKey);
+
+			// Suppress the default paste — we handle the attachment ourselves
+			// after converting the note to a folder note.
+			evt.preventDefault();
+
+			// All synchronous work is done. Kick off the async conversion + attachment save.
+			(async () => {
+				// Resolve file buffers
+				const resolvedFiles: { name: string; buffer: ArrayBuffer }[] = [];
+				for (const { name, bufferPromise } of resolvedFilePromises) {
+					resolvedFiles.push({ name, buffer: await bufferPromise });
+				}
+
+				// Temporarily disable autoCreate and autoCreateForFiles so the new folder
+				// and attachment file don't trigger automatic folder note creation.
+				// Only mutate in-memory settings — don't persist to disk.
+				const previousAutoCreate = plugin.settings.autoCreate;
+				const previousAutoCreateForFiles = plugin.settings.autoCreateForFiles;
+				plugin.settings.autoCreate = false;
+				plugin.settings.autoCreateForFiles = false;
+
+				try {
+					await plugin.app.vault.createFolder(newFolderPath);
+					const folder = plugin.app.vault.getAbstractFileByPath(newFolderPath);
+					if (!(folder instanceof TFolder)) {
+						new Notice('Failed to convert note to folder note: folder creation failed');
+						return;
+					}
+					await createFolderNote(plugin, folder.path, false, '.' + activeFile.extension, false, activeFile);
+				} catch (e) {
+					new Notice('Failed to convert note to folder note');
+					throw e;
+				} finally {
+					plugin.settings.autoCreate = previousAutoCreate;
+					plugin.settings.autoCreateForFiles = previousAutoCreateForFiles;
+				}
+
+				// Wait for Obsidian's workspace to settle after the file rename.
+				// The editor needs to re-associate with the moved file.
+				const WORKSPACE_SETTLE_DELAY = 200;
+				await new Promise<void>((resolve) => setTimeout(resolve, WORKSPACE_SETTLE_DELAY));
+
+				// Resolve the moved file by its deterministic path rather than
+				// relying on getActiveFile() which may point to a different tab.
+				const movedFile = plugin.app.vault.getAbstractFileByPath(expectedMovedPath);
+				const sourcePath = movedFile instanceof TFile ? movedFile.path : expectedMovedPath;
+
+				for (const { name, buffer } of resolvedFiles) {
+					const attachmentPath = await plugin.app.fileManager.getAvailablePathForAttachment(name, sourcePath);
+					const createdFile = await plugin.app.vault.createBinary(attachmentPath, buffer);
+
+					const editor = plugin.app.workspace.activeEditor?.editor;
+					if (editor) {
+						const useMarkdownLinks = (plugin.app.vault as any).getConfig?.('useMarkdownLinks') as boolean | undefined;
+						let embedText: string;
+						if (useMarkdownLinks) {
+							embedText = `![${createdFile.basename}](${createdFile.name})`;
+						} else {
+							embedText = `![[${createdFile.name}]]`;
+						}
+						editor.replaceSelection(embedText);
+					}
+				}
+			})().catch((e) => {
+				console.error('Folder Notes: failed to save pasted attachment after folder note conversion', e);
+			}).finally(() => {
+				plugin.activeConversions.delete(conversionKey);
+			});
 		};
 
 		if (this.settings.fvGlobalSettings.autoUpdateLinks) {
