@@ -194,6 +194,8 @@ export default class FolderNotesPlugin extends Plugin {
 
 		// Handle middle mouse button clicks
 		this.registerDomEvent(document, 'auxclick', (evt: MouseEvent) => {
+			const rightClick = 2;
+			if (evt.button === rightClick) return;
 			this.handleFileExplorerClick(evt);
 		}, true);
 
