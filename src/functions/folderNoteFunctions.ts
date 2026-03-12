@@ -27,6 +27,8 @@ import {
 	removeCSSClassFromFileExplorerEL,
 	removeActiveFolder,
 	setActiveFolder,
+	updateCSSClassesForFolder,
+	updateCSSClassesForFolderNote,
 } from 'src/functions/styleFunctions';
 import {
 	getFolderNameFromPathString,
@@ -491,6 +493,7 @@ export function detachFolderNote(plugin: FolderNotesPlugin, file: TFile): void {
 		undefined,
 		plugin,
 	);
+	excludedFolder.showFolderNote = true;
 	excludedFolder.hideInSettings = true;
 	excludedFolder.disableFolderNote = true;
 	excludedFolder.disableSync = true;
@@ -499,6 +502,7 @@ export function detachFolderNote(plugin: FolderNotesPlugin, file: TFile): void {
 	excludedFolder.detached = true;
 	excludedFolder.detachedFilePath = file.path;
 	addExcludedFolder(plugin, excludedFolder);
+	updateCSSClassesForFolderNote(file.path, plugin);
 }
 
 

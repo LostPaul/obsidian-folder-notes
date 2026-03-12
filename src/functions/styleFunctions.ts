@@ -28,6 +28,7 @@ export function refreshAllFolderStyles(forceReload = false, plugin: FolderNotesP
 /**
  * @description Updates the CSS classes for a specific folder in the file explorer.
  */
+// eslint-disable-next-line complexity
 export async function updateCSSClassesForFolder(
 	folderPath: string,
 	plugin: FolderNotesPlugin,
@@ -45,6 +46,7 @@ export async function updateCSSClassesForFolder(
 	if (!folderNote || detachedFolderNote) {
 		removeCSSClassFromFileExplorerEL(folder?.path, 'has-folder-note', false, plugin);
 		removeCSSClassFromFileExplorerEL(folder?.path, 'only-has-folder-note', true, plugin);
+		removeCSSClassFromFileExplorerEL(folderNote?.path, 'is-folder-note', false, plugin);
 		return;
 	}
 
