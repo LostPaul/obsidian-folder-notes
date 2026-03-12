@@ -484,7 +484,6 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.convertToFolderNoteOnPaste = value;
 					await settingsTab.plugin.saveSettings();
-					settingsTab.display();
 				}),
 		);
 

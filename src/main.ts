@@ -49,6 +49,7 @@ export default class FolderNotesPlugin extends Plugin {
 	settingsOpened = false;
 	askModalCurrentlyOpen = false;
 	fvIndexDB: FvIndexDB;
+	activeConversions: Set<string> = new Set();
 
 	async onload(): Promise<void> {
 		console.log('loading folder notes plugin');
@@ -282,6 +283,12 @@ export default class FolderNotesPlugin extends Plugin {
 				return originalHandlePaste.call(this, evt, ...args);
 			}
 
+			// Only applies to insideFolder storage mode — other modes don't benefit
+			// from converting on paste since the note lives outside the folder.
+			if (plugin.settings.storageLocation !== 'insideFolder') {
+				return originalHandlePaste.call(this, evt, ...args);
+			}
+
 			const hasFiles = evt.clipboardData && evt.clipboardData.files.length > 0;
 			if (!hasFiles) {
 				return originalHandlePaste.call(this, evt, ...args);
@@ -309,6 +316,11 @@ export default class FolderNotesPlugin extends Plugin {
 
 			// Don't convert if a folder with that name already exists
 			if (plugin.app.vault.getAbstractFileByPath(newFolderPath)) {
+				return originalHandlePaste.call(this, evt, ...args);
+			}
+
+			// Prevent re-entrance from rapid consecutive pastes
+			if (plugin.activeConversions.has(activeFile.path)) {
 				return originalHandlePaste.call(this, evt, ...args);
 			}
 
@@ -340,9 +352,22 @@ export default class FolderNotesPlugin extends Plugin {
 				});
 			}
 
+			// Compute the expected path of the moved file for later reference,
+			// so we don't rely on getActiveFile() which may return the wrong file
+			// if the user switches tabs during the async conversion.
+			const folderName = newFolderPath.split('/').pop() || activeFile.basename;
+			const folderNoteName = plugin.settings.folderNoteName.replace('{{folder_name}}', folderName);
+			const expectedMovedPath = `${newFolderPath}/${folderNoteName}.${activeFile.extension}`;
+
+			// Mark this file as being converted to prevent re-entrance
+			const conversionKey = activeFile.path;
+			plugin.activeConversions.add(conversionKey);
+
+			// Suppress the default paste — we handle the attachment ourselves
+			// after converting the note to a folder note.
+			evt.preventDefault();
+
 			// All synchronous work is done. Kick off the async conversion + attachment save.
-			// We intentionally do NOT call originalHandlePaste here -- we handle the
-			// attachment ourselves after converting the note to a folder note.
 			(async () => {
 				// Resolve file buffers
 				const resolvedFiles: { name: string; buffer: ArrayBuffer }[] = [];
@@ -350,19 +375,28 @@ export default class FolderNotesPlugin extends Plugin {
 					resolvedFiles.push({ name, buffer: await bufferPromise });
 				}
 
-				// Temporarily disable autoCreate so the new folder doesn't get its own auto-generated folder note
+				// Temporarily disable autoCreate and autoCreateForFiles so the new folder
+				// and attachment file don't trigger automatic folder note creation.
+				// Only mutate in-memory settings — don't persist to disk.
 				const previousAutoCreate = plugin.settings.autoCreate;
+				const previousAutoCreateForFiles = plugin.settings.autoCreateForFiles;
 				plugin.settings.autoCreate = false;
-				plugin.saveSettings();
+				plugin.settings.autoCreateForFiles = false;
 
 				try {
 					await plugin.app.vault.createFolder(newFolderPath);
 					const folder = plugin.app.vault.getAbstractFileByPath(newFolderPath);
-					if (!(folder instanceof TFolder)) return;
+					if (!(folder instanceof TFolder)) {
+						new Notice('Failed to convert note to folder note: folder creation failed');
+						return;
+					}
 					await createFolderNote(plugin, folder.path, false, '.' + activeFile.extension, false, activeFile);
+				} catch (e) {
+					new Notice('Failed to convert note to folder note');
+					throw e;
 				} finally {
 					plugin.settings.autoCreate = previousAutoCreate;
-					plugin.saveSettings();
+					plugin.settings.autoCreateForFiles = previousAutoCreateForFiles;
 				}
 
 				// Wait for Obsidian's workspace to settle after the file rename.
@@ -370,10 +404,10 @@ export default class FolderNotesPlugin extends Plugin {
 				const WORKSPACE_SETTLE_DELAY = 200;
 				await new Promise<void>((resolve) => setTimeout(resolve, WORKSPACE_SETTLE_DELAY));
 
-				// The note has been moved into the new folder. Now save each attachment
-				// using Obsidian's attachment path resolution and insert embed links.
-				const movedFile = plugin.app.workspace.getActiveFile();
-				const sourcePath = movedFile?.path ?? '';
+				// Resolve the moved file by its deterministic path rather than
+				// relying on getActiveFile() which may point to a different tab.
+				const movedFile = plugin.app.vault.getAbstractFileByPath(expectedMovedPath);
+				const sourcePath = movedFile instanceof TFile ? movedFile.path : expectedMovedPath;
 
 				for (const { name, buffer } of resolvedFiles) {
 					const attachmentPath = await plugin.app.fileManager.getAvailablePathForAttachment(name, sourcePath);
@@ -384,7 +418,7 @@ export default class FolderNotesPlugin extends Plugin {
 						const useMarkdownLinks = (plugin.app.vault as any).getConfig?.('useMarkdownLinks') as boolean | undefined;
 						let embedText: string;
 						if (useMarkdownLinks) {
-							embedText = `![${createdFile.basename}](${encodeURI(createdFile.path)})`;
+							embedText = `![${createdFile.basename}](${createdFile.name})`;
 						} else {
 							embedText = `![[${createdFile.name}]]`;
 						}
@@ -393,6 +427,8 @@ export default class FolderNotesPlugin extends Plugin {
 				}
 			})().catch((e) => {
 				console.error('Folder Notes: failed to save pasted attachment after folder note conversion', e);
+			}).finally(() => {
+				plugin.activeConversions.delete(conversionKey);
 			});
 		};
 
