@@ -474,6 +474,10 @@ export default class FolderNotesPlugin extends Plugin {
 						folder.path, 'fn-has-attachment-folder',
 						false, this,
 					);
+					addCSSClassToFileExplorerEl(
+						folder.path, 'fn-has-attachment-folder',
+						true, this,
+					);
 				}
 				return folder.children.length <= threshold + 1;
 			}

@@ -23,9 +23,10 @@
     cursor: pointer !important;
 }
 
-.hide-folder-note :not(.show-folder-note-in-explorer).only-has-folder-note .nav-folder-children {
+.hide-folder-note :not(.show-folder-note-in-explorer):not(.fn-has-attachment-folder).only-has-folder-note .nav-folder-children {
     display: none !important;
 }
+
 
 /* ==========================================================================
    Tree Items
@@ -236,12 +237,13 @@ li:has(.fv-link-list-item),
 
 .fn-has-no-files .collapse-icon,
 .fn-hide-collapse-icon .has-folder-note.only-has-folder-note .tree-item-icon,
-body.fn-ignore-attachment-folder.fn-hide-collapse-icon .only-has-folder-note .fn-empty-folder.fn-has-attachment-folder .tree-item-icon,
+body.fn-hide-collapse-icon.fn-ignore-attachment-folder .only-has-folder-note .fn-empty-folder.fn-has-attachment-folder .tree-item-icon,
 body.fn-hide-collapse-icon .only-has-folder-note .fn-empty-folder:not(.fn-has-attachment-folder) .tree-item-icon,
 body.fn-hide-empty-collapse-icon :not(.only-has-folder-note) > .fn-empty-folder:not(.fn-has-attachment-folder) .tree-item-icon,
 body.fn-hide-collapse-icon.only-has-folder-note:not(.is-collapsed):not(.show-folder-note-in-explorer)>.nav-folder-children {
     display: none;
 }
+
 
 
 /* ==========================================================================
