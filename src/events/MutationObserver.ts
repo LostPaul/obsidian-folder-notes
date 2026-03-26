@@ -188,11 +188,11 @@ async function updateFolderNamesInPath(
 		const folderNote = getFolderNote(plugin, folderPath);
 		const viewHeaderTitle = titleContainer.querySelector('.view-header-title');
 
-		if (viewHeaderTitle) {
+		if (viewHeaderTitle && folderNote) {
 			const filePath = path + (viewHeaderTitle as HTMLElement).innerText.trim() + '.md';
 			const file = plugin.app.vault.getAbstractFileByPath(
 				filePath);
-			const folder = getFolderNoteFolder(plugin, file?.path ?? '', file?.name ?? '');
+			const folder = getFolderNoteFolder(plugin, folderNote, file?.name ?? '');
 			if (folder && file && file.path === folderNote?.path && file.parent?.path !== '/') {
 				viewHeaderTitle.parentElement?.classList.add('hide-folder-note-title-in-path');
 				viewHeaderTitle.classList.add('path-is-folder-note');

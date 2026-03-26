@@ -556,6 +556,13 @@ export function getFolderNoteFolder(
 		filePath = folderNote.path;
 	}
 	const folderName = extractFolderName(plugin.settings.folderNoteName, fileName);
+	if (!plugin.settings.folderNoteName.includes('{{folder_name}}') && plugin.settings.storageLocation === 'insideFolder') {
+		if (folderNote instanceof TFile) {
+			return folderNote.parent;
+		}
+		const file = plugin.app.vault.getAbstractFileByPath(filePath);
+		return file instanceof TFile ? file.parent : null;
+	}
 	if (!folderName) return null;
 	let folderPath = getFolderPathFromString(filePath);
 	if (plugin.settings.storageLocation === 'parentFolder') {
