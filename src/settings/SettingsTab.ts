@@ -83,6 +83,7 @@ export interface FolderNotesSettings {
 		autoUpdateLinks: boolean;
 	}
 	hideFolderNoteNameInPath: boolean;
+	convertToFolderNoteOnPaste: boolean;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -208,6 +209,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		autoUpdateLinks: false,
 	},
 	hideFolderNoteNameInPath: false,
+	convertToFolderNoteOnPaste: false,
 };
 
 export class SettingsTab extends PluginSettingTab {
