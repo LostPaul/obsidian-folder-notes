@@ -9,6 +9,7 @@ import {
 import {
 	type FolderNotesSettings, DEFAULT_SETTINGS, SettingsTab,
 } from './settings/SettingsTab';
+import { setLanguage } from './i18n';
 import { Commands } from './Commands';
 import type { FileExplorerWorkspaceLeaf } from './globals';
 import {
@@ -53,6 +54,7 @@ export default class FolderNotesPlugin extends Plugin {
 	async onload(): Promise<void> {
 		console.log('loading folder notes plugin');
 		await this.loadSettings();
+		setLanguage(this.settings.language ?? 'en');
 		this.settingsTab = new SettingsTab(this.app, this);
 		this.addSettingTab(this.settingsTab);
 		this.saveSettings();

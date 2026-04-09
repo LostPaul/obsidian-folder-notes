@@ -1,11 +1,13 @@
 /* eslint-disable max-len */
 import { Setting } from 'obsidian';
 import type { SettingsTab } from './SettingsTab';
+import { t } from '../i18n';
+
 export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 	const containerEl = settingsTab.settingsPage;
 	new Setting(containerEl)
-		.setName('Open folder note through path')
-		.setDesc('Open a folder note when clicking on a folder name in the path if it is a folder note')
+		.setName(t('openFolderNoteThroughPath'))
+		.setDesc(t('openFolderNoteThroughPathDesc'))
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.openFolderNoteOnClickInPath)
@@ -18,8 +20,8 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 
 	if (settingsTab.plugin.settings.openFolderNoteOnClickInPath) {
 		new Setting(containerEl)
-			.setName('Open sidebar when opening a folder note through path (Mobile only)')
-			.setDesc('Open the sidebar when opening a folder note through the path on mobile')
+			.setName(t('openSidebarMobile'))
+			.setDesc(t('openSidebarMobileDesc'))
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.openSidebar.mobile)
@@ -30,8 +32,8 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 			);
 
 		new Setting(containerEl)
-			.setName('Open sidebar when opening a folder note through path (Desktop only)')
-			.setDesc('Open the sidebar when opening a folder note through the path on desktop')
+			.setName(t('openSidebarDesktop'))
+			.setDesc(t('openSidebarDesktopDesc'))
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.openSidebar.desktop)
@@ -44,8 +46,8 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 
 	if (settingsTab.plugin.settings.frontMatterTitle.enabled) {
 		new Setting(containerEl)
-			.setName('Auto update folder name in the path (front matter title plugin only)')
-			.setDesc('Automatically update the folder name in the path when the front matter title plugin is enabled and the title for a folder note is changed in the front matter. This will not change the file name, only the displayed name in the path.')
+			.setName(t('autoUpdateFolderNameInPath'))
+			.setDesc(t('autoUpdateFolderNameInPathDesc'))
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.frontMatterTitle.path)
@@ -61,11 +63,11 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 			);
 	}
 
-	settingsTab.settingsPage.createEl('h3', { text: 'Style settings' });
+	settingsTab.settingsPage.createEl('h3', { text: t('styleSettings') });
 
 	new Setting(containerEl)
-		.setName('Underline folders in the path')
-		.setDesc('Add an underline to folders that have a folder note in the path above a note')
+		.setName(t('underlineFoldersInPath'))
+		.setDesc(t('underlineFoldersInPathDesc'))
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.underlineFolderInPath)
@@ -81,8 +83,8 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 		);
 
 	new Setting(containerEl)
-		.setName('Bold folders in the path')
-		.setDesc('Make the folder name bold in the path above a note when it has a folder note')
+		.setName(t('boldFoldersInPath'))
+		.setDesc(t('boldFoldersInPathDesc'))
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.boldNameInPath)
@@ -98,8 +100,8 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 		);
 
 	new Setting(containerEl)
-		.setName('Cursive the name of folder notes in the path')
-		.setDesc('Make the folder name cursive in the path above a note when it has a folder note')
+		.setName(t('cursiveFoldersInPath'))
+		.setDesc(t('cursiveFoldersInPathDesc'))
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.cursiveNameInPath)
@@ -115,8 +117,8 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 		);
 
 	new Setting(containerEl)
-		.setName('Hide folder note name in the path')
-		.setDesc('Only show the folder name in the path and hide the folder note name.')
+		.setName(t('hideFolderNoteNameInPath'))
+		.setDesc(t('hideFolderNoteNameInPathDesc'))
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settingsTab.plugin.settings.hideFolderNoteNameInPath)
