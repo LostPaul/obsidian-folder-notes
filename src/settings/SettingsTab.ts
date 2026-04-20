@@ -2,6 +2,7 @@ import {
 	Notice, PluginSettingTab, TFile,
 	TFolder, type App, type MarkdownPostProcessorContext,
 } from 'obsidian';
+import { t } from '../i18n';
 import type FolderNotesPlugin from '../main';
 import type { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
 import type { ExcludedFolder } from 'src/ExcludeFolders/ExcludeFolder';
@@ -83,6 +84,7 @@ export interface FolderNotesSettings {
 		autoUpdateLinks: boolean;
 	}
 	hideFolderNoteNameInPath: boolean;
+	language: string;
 }
 
 export const DEFAULT_SETTINGS: FolderNotesSettings = {
@@ -208,6 +210,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		autoUpdateLinks: false,
 	},
 	hideFolderNoteNameInPath: false,
+	language: 'en',
 };
 
 export class SettingsTab extends PluginSettingTab {
@@ -219,28 +222,30 @@ export class SettingsTab extends PluginSettingTab {
 	constructor(app: App, plugin: FolderNotesPlugin) {
 		super(app, plugin);
 	}
-	TABS = {
-		GENERAL: {
-			name: 'General',
-			id: 'general',
-		},
-		FOLDER_OVERVIEW: {
-			name: 'Folder overview',
-			id: 'folder_overview',
-		},
-		EXCLUDE_FOLDERS: {
-			name: 'Exclude folders',
-			id: 'exclude_folders',
-		},
-		FILE_EXPLORER: {
-			name: 'File explorer',
-			id: 'file_explorer',
-		},
-		PATH: {
-			name: 'Path',
-			id: 'path',
-		},
-	};
+	get TABS() {
+		return {
+			GENERAL: {
+				name: t('tabGeneral'),
+				id: 'general',
+			},
+			FOLDER_OVERVIEW: {
+				name: t('tabFolderOverview'),
+				id: 'folder_overview',
+			},
+			EXCLUDE_FOLDERS: {
+				name: t('tabExcludeFolders'),
+				id: 'exclude_folders',
+			},
+			FILE_EXPLORER: {
+				name: t('tabFileExplorer'),
+				id: 'file_explorer',
+			},
+			PATH: {
+				name: t('tabPath'),
+				id: 'path',
+			},
+		};
+	}
 
 	renderSettingsPage(tabId: string): void {
 		this.settingsPage.empty();
@@ -321,7 +326,7 @@ export class SettingsTab extends PluginSettingTab {
 	}
 
 	renameFolderNotes(): void {
-		new Notice('Starting to update folder notes...');
+		new Notice(t('startingUpdateFolderNotes'));
 		const oldTemplate = this.plugin.settings.oldFolderNoteName ?? '{{folder_name}}';
 
 		for (const folder of this.app.vault.getAllLoadedFiles()) {
@@ -357,11 +362,11 @@ export class SettingsTab extends PluginSettingTab {
 
 		this.plugin.settings.oldFolderNoteName = this.plugin.settings.folderNoteName;
 		this.plugin.saveSettings();
-		new Notice('Finished updating folder notes');
+		new Notice(t('finishedUpdatingFolderNotes'));
 	}
 
 	switchStorageLocation(oldMethod: string): void {
-		new Notice('Starting to switch storage location...');
+		new Notice(t('startingSwitchStorageLocation'));
 		this.app.vault.getAllLoadedFiles().forEach((file) => {
 			if (file instanceof TFolder) {
 				const folderNote = getFolderNote(this.plugin, file.path, oldMethod);
@@ -385,7 +390,7 @@ export class SettingsTab extends PluginSettingTab {
 				}
 			}
 		});
-		new Notice('Finished switching storage location');
+		new Notice(t('finishedSwitchingStorageLocation'));
 	}
 
 	onClose(): void {
