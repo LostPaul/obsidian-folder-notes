@@ -11,6 +11,7 @@ import {
 } from './settings/SettingsTab';
 import { Commands } from './Commands';
 import type { FileExplorerWorkspaceLeaf } from './globals';
+import { getApi, type FolderNotesApi } from './api';
 import {
 	registerFileExplorerObserver, unregisterFileExplorerObserver,
 } from './events/MutationObserver';
@@ -49,10 +50,12 @@ export default class FolderNotesPlugin extends Plugin {
 	settingsOpened = false;
 	askModalCurrentlyOpen = false;
 	fvIndexDB: FvIndexDB;
+	api!: FolderNotesApi;
 
 	async onload(): Promise<void> {
 		console.log('loading folder notes plugin');
 		await this.loadSettings();
+		this.api = getApi(this);
 		this.settingsTab = new SettingsTab(this.app, this);
 		this.addSettingTab(this.settingsTab);
 		this.saveSettings();
