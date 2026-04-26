@@ -30,6 +30,7 @@ import {
 	refreshAllFolderStyles, setActiveFolder, removeActiveFolder,
 } from './functions/styleFunctions';
 import { getExcludedFolder } from './ExcludeFolders/functions/folderFunctions';
+import { getFileExplorer } from './functions/utils';
 import { FOLDER_OVERVIEW_VIEW, FolderOverviewView } from './obsidian-folder-overview/src/view';
 import { registerOverviewCommands } from './obsidian-folder-overview/src/Commands';
 import { updateOverviewView, updateViewDropdown } from './obsidian-folder-overview/src/main';
@@ -174,6 +175,13 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 
 		registerFileExplorerObserver(this);
+
+		const fileExplorer = getFileExplorer(this);
+		if (fileExplorer) {
+			// @ts-expect-error use internal API
+			fileExplorer.view.tree.infinityScroll.rootMargin = 1.5;
+		}
+
 		this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
 			return new FolderOverviewView(leaf, this);
 		});
