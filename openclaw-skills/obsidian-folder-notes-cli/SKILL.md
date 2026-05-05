@@ -21,10 +21,11 @@ From the plugin repository, build the CLI before first use:
 npm run cli-build
 ```
 
-Invoke it either through the built file:
+Set `CLI` to the built file in the plugin repository. Do not assume the skill directory contains the CLI.
 
 ```bash
-node dist/folder-notes-cli.cjs <command> --vault <vault> ...
+CLI="<plugin-repo>/dist/folder-notes-cli.cjs"
+node "$CLI" <command> --vault <vault> ...
 ```
 
 or through the package binary when installed/linked:
@@ -38,51 +39,51 @@ folder-notes <command> --vault <vault> ...
 Create or reuse a folder note and return its path:
 
 ```bash
-node dist/folder-notes-cli.cjs ensure --vault /path/to/vault --folder "Projects/Alpha"
+node "$CLI" ensure --vault /path/to/vault --folder "Projects/Alpha"
 ```
 
 Find the folder note for a folder:
 
 ```bash
-node dist/folder-notes-cli.cjs get --vault /path/to/vault --folder "Projects/Alpha"
+node "$CLI" get --vault /path/to/vault --folder "Projects/Alpha"
 ```
 
 List all folders in the vault that currently have folder notes:
 
 ```bash
-node dist/folder-notes-cli.cjs list --vault /path/to/vault
+node "$CLI" list --vault /path/to/vault
 ```
 
 Use an existing file as the folder note:
 
 ```bash
-node dist/folder-notes-cli.cjs attach --vault /path/to/vault --folder "Projects/Alpha" --file "Projects/Alpha/Brief.md"
+node "$CLI" attach --vault /path/to/vault --folder "Projects/Alpha" --file "Projects/Alpha/Brief.md"
 ```
 
 Delete a folder note. By default this moves it into vault-local trash:
 
 ```bash
-node dist/folder-notes-cli.cjs delete --vault /path/to/vault --folder "Projects/Alpha"
+node "$CLI" delete --vault /path/to/vault --folder "Projects/Alpha"
 ```
 
 Only use permanent deletion when explicitly requested:
 
 ```bash
-node dist/folder-notes-cli.cjs delete --vault /path/to/vault --folder "Projects/Alpha" --permanent
+node "$CLI" delete --vault /path/to/vault --folder "Projects/Alpha" --permanent
 ```
 
 Detach or reattach a folder note by updating plugin settings:
 
 ```bash
-node dist/folder-notes-cli.cjs detach --vault /path/to/vault --folder "Projects/Alpha"
-node dist/folder-notes-cli.cjs reattach --vault /path/to/vault --folder "Projects/Alpha"
+node "$CLI" detach --vault /path/to/vault --folder "Projects/Alpha"
+node "$CLI" reattach --vault /path/to/vault --folder "Projects/Alpha"
 ```
 
 Move or rename a folder while preserving folder-note conventions:
 
 ```bash
-node dist/folder-notes-cli.cjs move-folder --vault /path/to/vault --folder "Projects/Alpha" --to "Archive/Alpha"
-node dist/folder-notes-cli.cjs rename-folder --vault /path/to/vault --folder "Projects/Alpha" --name "Beta"
+node "$CLI" move-folder --vault /path/to/vault --folder "Projects/Alpha" --to "Archive/Alpha"
+node "$CLI" rename-folder --vault /path/to/vault --folder "Projects/Alpha" --name "Beta"
 ```
 
 ## Safety Rules
