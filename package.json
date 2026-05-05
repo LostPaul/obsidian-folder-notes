@@ -3,10 +3,15 @@
 	"version": "1.0.1",
 	"description": "Adds Folder Notes to the default file tree.",
 	"main": "main.js",
+	"bin": {
+		"folder-notes": "./dist/folder-notes-cli.cjs"
+	},
 	"scripts": {
 		"fn-dev": "node esbuild.config.mjs",
 		"dev": "npm run fn-dev",
 		"fn-build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"cli-build": "node esbuild.cli.config.mjs production",
+		"build": "npm run fn-build && npm run cli-build",
 		"fv-build": "tsc -noEmit -skipLibCheck && node ./src/obsidian-folder-overview/esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"folder-overview": "node ./src/obsidian-folder-overview/esbuild.config.mjs",
