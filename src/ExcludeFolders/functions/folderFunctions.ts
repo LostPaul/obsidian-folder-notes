@@ -49,9 +49,9 @@ function aggregateFlags(
 		for (const property of propertiesToCopy) {
 			const value = (matchedFolder as Partial<ExcludedFolder>)[property];
 			if (value === true) {
-				(result as Partial<ExcludedFolder>)[property] = true as never;
+				(result)[property] = true as never;
 			} else if (!value) {
-				(result as Partial<ExcludedFolder>)[property] = false as never;
+				(result)[property] = false as never;
 			}
 		}
 	}
@@ -117,7 +117,7 @@ export function getExcludedFolder(
 	const whitelist = getWhitelistedFolder(
 		plugin,
 		path,
-	) as WhitelistedFolder | WhitelistedPattern | undefined;
+	);
 
 	let skipWhitelist = ignoreWhitelist ?? false;
 	if (excluded?.detached) skipWhitelist = true;

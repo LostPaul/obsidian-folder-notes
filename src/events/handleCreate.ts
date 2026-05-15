@@ -78,6 +78,6 @@ async function handleFolderCreation(folder: TFolder, plugin: FolderNotesPlugin):
 	const folderNote = getFolderNote(plugin, folder.path);
 	if (folderNote) return;
 
-	createFolderNote(plugin, folder.path, openFile, undefined, true);
+	void createFolderNote(plugin, folder.path, openFile, undefined, true);
 	addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
 }

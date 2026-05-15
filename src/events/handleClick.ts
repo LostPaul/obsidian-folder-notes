@@ -33,8 +33,8 @@ export async function handleViewHeaderClick(
 	} else if (event.altKey || Keymap.isModEvent(event) === 'tab') {
 		if (await handleFolderNoteCreation(event, plugin, folderPath)) return;
 	}
-	(event.target as HTMLElement).onclick = null;
-	(event.target as HTMLElement).click();
+	(event.target).onclick = null;
+	(event.target).click();
 }
 
 async function isExcludedFolder(
@@ -58,7 +58,7 @@ async function handleFolderNoteReveal(plugin: FolderNotesPlugin, folderNote: TFi
 	const fileExplorerPlugin = plugin.app.internalPlugins.getEnabledPluginById('file-explorer');
 	if (fileExplorerPlugin && Platform.isMobile && plugin.settings.openSidebar.mobile) {
 		const OPEN_SIDEBAR_DELAY = 200;
-		setTimeout(() => { fileExplorerPlugin.revealInFolder(folderNote); }, OPEN_SIDEBAR_DELAY);
+		window.setTimeout(() => { fileExplorerPlugin.revealInFolder(folderNote); }, OPEN_SIDEBAR_DELAY);
 	} else if (fileExplorerPlugin && Platform.isDesktop && plugin.settings.openSidebar.desktop) {
 		fileExplorerPlugin.revealInFolder(folderNote);
 	}

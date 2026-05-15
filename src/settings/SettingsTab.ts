@@ -211,11 +211,11 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 };
 
 export class SettingsTab extends PluginSettingTab {
-	plugin: FolderNotesPlugin;
-	app: App;
-	excludeFolders: ExcludedFolder[];
+	plugin!: FolderNotesPlugin;
+	app!: App;
+	excludeFolders!: ExcludedFolder[];
 	settingsPage!: HTMLElement;
-	showFolderNameInTabTitleSetting: boolean;
+	showFolderNameInTabTitleSetting!: boolean;
 	constructor(app: App, plugin: FolderNotesPlugin) {
 		super(app, plugin);
 	}
@@ -246,19 +246,19 @@ export class SettingsTab extends PluginSettingTab {
 		this.settingsPage.empty();
 		switch (tabId.toLocaleLowerCase()) {
 			case this.TABS.GENERAL.id:
-				renderGeneral(this);
+				void renderGeneral(this);
 				break;
 			case this.TABS.FOLDER_OVERVIEW.id:
-				renderFolderOverview(this);
+				void renderFolderOverview(this);
 				break;
 			case this.TABS.EXCLUDE_FOLDERS.id:
-				renderExcludeFolders(this);
+				void renderExcludeFolders(this);
 				break;
 			case this.TABS.FILE_EXPLORER.id:
-				renderFileExplorer(this);
+				void renderFileExplorer(this);
 				break;
 			case this.TABS.PATH.id:
-				renderPath(this);
+				void renderPath(this);
 				break;
 		}
 	}
@@ -298,12 +298,11 @@ export class SettingsTab extends PluginSettingTab {
 				tabEl.addClass('fn-settings-tab-active');
 			}
 			tabEl.addEventListener('click', () => {
-				// @ts-expect-error: tabBar.children may not have removeClass method, but we know it works in this context
 				for (const child of tabBar.children) {
-					child.removeClass('fn-settings-tab-active');
+					(child as HTMLElement).classList.remove('fn-settings-tab-active');
 					if (!plugin) { return; }
 					plugin.settings.settingsTab = tabId.toLocaleLowerCase();
-					plugin.saveSettings();
+					void plugin.saveSettings();
 				}
 				tabEl.addClass('fn-settings-tab-active');
 				if (!settingsTab) { return; }
@@ -344,19 +343,19 @@ export class SettingsTab extends PluginSettingTab {
 					if (getFolderPathFromString(folder.path).trim() === '/') {
 						newPath = `${newFolderNoteName}.${folderNote.extension}`;
 					} else {
-						// eslint-disable-next-line max-len
+
 						newPath = `${folderNote.parent?.path}/${newFolderNoteName}.${folderNote.extension}`;
 					}
 				} else if (this.plugin.settings.storageLocation === 'insideFolder') {
 					newPath = `${folder.path}/${newFolderNoteName}.${folderNote.extension}`;
 				}
 
-				this.app.fileManager.renameFile(folderNote, newPath);
+				void this.app.fileManager.renameFile(folderNote, newPath);
 			}
 		}
 
 		this.plugin.settings.oldFolderNoteName = this.plugin.settings.folderNoteName;
-		this.plugin.saveSettings();
+		void this.plugin.saveSettings();
 		new Notice('Finished updating folder notes');
 	}
 
@@ -373,13 +372,13 @@ export class SettingsTab extends PluginSettingTab {
 						} else {
 							newPath = `${getFolderPathFromString(file.path)}/${folderNote.name}`;
 						}
-						this.plugin.app.fileManager.renameFile(folderNote, newPath);
+						void this.plugin.app.fileManager.renameFile(folderNote, newPath);
 					} else if (this.plugin.settings.storageLocation === 'insideFolder') {
 						if (getFolderPathFromString(folderNote.path) === file.path) {
 							return;
 						}
 						const newPath = `${file.path}/${folderNote.name}`;
-						this.plugin.app.fileManager.renameFile(folderNote, newPath);
+						void this.plugin.app.fileManager.renameFile(folderNote, newPath);
 
 					}
 				}

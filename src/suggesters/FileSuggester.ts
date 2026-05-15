@@ -1,17 +1,19 @@
-import { type TAbstractFile, TFile } from 'obsidian';
-import { TextInputSuggest } from './Suggest';
+import { AbstractInputSuggest, type TAbstractFile, TFile } from 'obsidian';
 import type FolderNotesPlugin from '../main';
 export enum FileSuggestMode {
     TemplateFiles,
     ScriptFiles,
 }
 
-export class FileSuggest extends TextInputSuggest<TFile> {
+export class FileSuggest extends AbstractInputSuggest<TFile> {
+	plugin: FolderNotesPlugin;
+
 	constructor(
-        public inputEl: HTMLInputElement,
-        plugin: FolderNotesPlugin,
+		public inputEl: HTMLInputElement,
+		plugin: FolderNotesPlugin,
 	) {
-		super(inputEl, plugin);
+		super(plugin.app, inputEl);
+		this.plugin = plugin;
 	}
 
 	get_error_msg(mode: FileSuggestMode): string {

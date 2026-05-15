@@ -25,7 +25,7 @@ export default class PatternSettings extends Modal {
 
 		new Setting(contentEl)
 			.setName('Disable folder name sync')
-			// eslint-disable-next-line max-len
+
 			.setDesc('Choose if the folder name should be renamed when the file name has been changed')
 			.addToggle((toggle) =>
 				toggle

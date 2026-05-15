@@ -16,8 +16,7 @@ export default class RenameFolderNotesModal extends BackupWarningModal {
 	insertCustomHtml(): void {
 		const { contentEl } = this;
 		new Setting(contentEl)
-			.setName('Old Folder Note Name')
-			// eslint-disable-next-line max-len
+			.setName('Old folder note name')
 			.setDesc('Every folder note that matches this name will be renamed to the new folder note name.')
 			.addText((text) => text
 				.setPlaceholder('Enter the old folder note name')
@@ -28,8 +27,7 @@ export default class RenameFolderNotesModal extends BackupWarningModal {
 			);
 
 		new Setting(contentEl)
-			.setName('New Folder Note Name')
-			// eslint-disable-next-line max-len
+			.setName('New folder note name')
 			.setDesc('Every folder note that matches the old folder note name will be renamed to this name.')
 			.addText((text) => text
 				.setPlaceholder('Enter the new folder note name')

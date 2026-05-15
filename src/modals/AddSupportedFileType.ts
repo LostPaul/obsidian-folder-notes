@@ -38,7 +38,7 @@ export default class AddSupportedFileModal extends Modal {
 					}),
 			);
 	}
-	async onClose(): Promise<void> {
+	onClose(): void {
 		if (this.name.toLocaleLowerCase() === 'markdown') {
 			this.name = 'md';
 		}
@@ -50,10 +50,13 @@ export default class AddSupportedFileModal extends Modal {
 			new Notice('This extension is already supported');
 			return;
 		} else {
-			await this.list.addValue(this.name.toLowerCase());
-			this.settingsTab.display();
-			this.plugin.saveSettings();
-			contentEl.empty();
+			// Run async operations without returning a Promise from onClose
+			void (async (): Promise<void> => {
+				await this.list.addValue(this.name.toLowerCase());
+				this.settingsTab.display();
+				await this.plugin.saveSettings();
+				contentEl.empty();
+			})();
 		}
 	}
 }

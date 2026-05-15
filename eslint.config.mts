@@ -1,17 +1,61 @@
 import tseslint from "typescript-eslint";
+import obsidianmd from "eslint-plugin-obsidianmd";
+import json from "@eslint/json";
 
 export default [
+	...obsidianmd.configs.recommended,
+	{
+		files: ["manifest.json"],
+		language: "json/json",
+		plugins: {
+			json
+		},
+		rules: {
+			"no-irregular-whitespace": "off",
+			"obsidianmd/no-plugin-as-component": "off",
+			"obsidianmd/no-view-references-in-plugin": "off",
+			"obsidianmd/no-unsupported-api": "off",
+			"obsidianmd/prefer-file-manager-trash-file": "off",
+			"obsidianmd/prefer-instanceof": "off",
+			"obsidianmd/validate-manifest": "error"
+		}
+	},
+	{
+		files: ["package.json"],
+		rules: {
+			"no-irregular-whitespace": "off",
+			"depend/ban-dependencies": "off",
+			"obsidianmd/no-plugin-as-component": "off",
+			"obsidianmd/no-view-references-in-plugin": "off",
+			"obsidianmd/no-unsupported-api": "off",
+			"obsidianmd/prefer-file-manager-trash-file": "off",
+			"obsidianmd/prefer-instanceof": "off"
+		}
+	},
+	{
+		files: ["**/*.{js,mjs,cjs}"],
+		...tseslint.configs.disableTypeChecked,
+		rules: {
+			...tseslint.configs.disableTypeChecked.rules,
+			"obsidianmd/no-plugin-as-component": "off",
+			"obsidianmd/no-view-references-in-plugin": "off",
+			"obsidianmd/no-unsupported-api": "off",
+			"obsidianmd/prefer-file-manager-trash-file": "off",
+			"obsidianmd/prefer-instanceof": "off"
+		}
+	},
 	{
 		files: ["**/*.ts"],
 		languageOptions: {
 			parser: tseslint.parser,
 			parserOptions: {
-				sourceType: "module"
+				sourceType: "module",
+				project: "./tsconfig.json"
 			}
 		},
 		ignores: [
 			"**/node_modules/**",
-			"**/dist/**",
+			"**/dist/**"
 		],
 		plugins: {
 			"@typescript-eslint": tseslint.plugin
@@ -143,7 +187,7 @@ export default [
 			],
 			'max-len': [
 				'warn', {
-					code: 100,
+					code: 110,
 					ignoreComments: true,
 				}
 			],

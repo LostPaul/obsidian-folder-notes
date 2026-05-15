@@ -31,7 +31,6 @@ esbuild.build({
 		'@lezer/common',
 		'@lezer/highlight',
 		'@lezer/lr',
-		"f:/Obsidian/test/.obsidian/plugins/obsidian-folder-notes/node_modules/obsidian",
 		...builtins],
 	format: 'cjs',
 	watch: !prod,

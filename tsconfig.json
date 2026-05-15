@@ -3,11 +3,11 @@
     "baseUrl": ".",
     "inlineSourceMap": true,
     "inlineSources": true,
-    "module": "ESNext",
+    "module": "node16",
     "target": "ES6",
     "allowJs": true,
     "noImplicitAny": true,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "importHelpers": true,
     "isolatedModules": true,
     "strictNullChecks": true,
@@ -17,7 +17,10 @@
       "ES6",
       "ES7",
       "ES2021"
-    ]
+    ],
+    "paths": {
+      "@app/*": ["./src/*"]
+    }
   },
   "include": [
     "**/*.ts"

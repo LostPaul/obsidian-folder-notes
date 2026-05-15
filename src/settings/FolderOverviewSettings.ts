@@ -36,11 +36,12 @@ export async function renderFolderOverview(settingsTab: SettingsTab): Promise<vo
 	span.setAttr('style', `color: ${accentColor};`);
 	pEl.appendChild(span);
 
-	createOverviewSettings(
+	void createOverviewSettings(
 		containerEl,
 		defaultOverviewSettings,
 		plugin,
 		plugin.settings.defaultOverview,
+		// eslint-disable-next-line @typescript-eslint/unbound-method
 		settingsTab.display,
 		undefined,
 		undefined,

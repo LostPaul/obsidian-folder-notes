@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable max-len */
 import { Setting, Platform } from 'obsidian';
 import type { SettingsTab } from './SettingsTab';
@@ -10,7 +11,7 @@ import { refreshAllFolderStyles } from '../functions/styleFunctions';
 import BackupWarningModal from './modals/BackupWarning';
 import RenameFolderNotesModal from './modals/RenameFns';
 
-let debounceTimer: NodeJS.Timeout;
+let debounceTimer: ReturnType<typeof setTimeout>;
 
 // eslint-disable-next-line complexity
 export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
@@ -26,9 +27,9 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 					settingsTab.plugin.settings.folderNoteName = value;
 					await settingsTab.plugin.saveSettings();
 
-					clearTimeout(debounceTimer);
+					window.clearTimeout(debounceTimer);
 					const FOLDER_NOTE_NAME_DEBOUNCE_MS = 2000;
-					debounceTimer = setTimeout(() => {
+					debounceTimer = window.setTimeout(() => {
 						if (!value.includes('{{folder_name}}')) {
 							if (!settingsTab.showFolderNameInTabTitleSetting) {
 								settingsTab.display();
@@ -62,8 +63,8 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 
 	if (!settingsTab.plugin.settings.folderNoteName.includes('{{folder_name}}')) {
 		new Setting(containerEl)
-			.setName('Display Folder Name in Tab Title')
-			.setDesc('Use the actual folder name in the tab title instead of the custom folder note name (e.g., "Folder Note").')
+			.setName('Display folder name in tab title')
+			.setDesc('Use the actual folder name in the tab title instead of the custom folder note name (e.g., "folder note").')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.tabManagerEnabled)
@@ -83,12 +84,12 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 
 	new Setting(containerEl)
 		.setName('Default file type for new folder notes')
-		.setDesc('Choose the default file type (canvas, markdown, ...) used when creating new folder notes.')
+		.setDesc('Choose the default file type (canvas, Markdown, ...) used when creating new folder notes.')
 		.addDropdown((dropdown) => {
-			dropdown.addOption('.ask', 'ask for file type');
+			dropdown.addOption('.ask', 'Ask for file type');
 			settingsTab.plugin.settings.supportedFileTypes.forEach((type) => {
 				if (type === '.md' || type === 'md') {
-					dropdown.addOption('.md', 'markdown');
+					dropdown.addOption('.md', 'Markdown');
 				} else {
 					dropdown.addOption('.' + type, type);
 				}
@@ -101,7 +102,7 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 				settingsTab.plugin.settings.folderNoteType !== '.ask'
 			) {
 				settingsTab.plugin.settings.folderNoteType = '.md';
-				settingsTab.plugin.saveSettings();
+				void settingsTab.plugin.saveSettings();
 			}
 
 			let defaultType = settingsTab.plugin.settings.folderNoteType.startsWith('.')
@@ -118,16 +119,16 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 
 			dropdown
 				.setValue(defaultType)
-				.onChange(async (value: '.md' | '.canvas') => {
-					settingsTab.plugin.settings.folderNoteType = value;
-					settingsTab.plugin.saveSettings();
-					settingsTab.display();
+				.onChange(async (value: string) => {
+					settingsTab.plugin.settings.folderNoteType = value as '.md' | '.canvas' | '.ask';
+					void settingsTab.plugin.saveSettings();
+					void settingsTab.display();
 				});
 		});
 
 	const setting0 = new Setting(containerEl);
 	setting0.setName('Supported file types');
-	const desc0 = document.createDocumentFragment();
+	const desc0 = activeDocument.createDocumentFragment();
 	desc0.append(
 		'Specify which file types are allowed as folder notes. Applies to both new and existing folders. Adding many types may affect performance.',
 	);
@@ -137,10 +138,10 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 		settingsTab.plugin.settings.supportedFileTypes || [],
 		['md', 'canvas'],
 	);
-	list.on('update', async (values: string[]) => {
-		settingsTab.plugin.settings.supportedFileTypes = values;
-		await settingsTab.plugin.saveSettings();
-		settingsTab.display();
+	list.on('update', (values: unknown) => {
+		settingsTab.plugin.settings.supportedFileTypes = values as string[];
+		void settingsTab.plugin.saveSettings();
+		void settingsTab.display();
 	});
 
 	if (
@@ -170,12 +171,12 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 						settingsTab.app,
 						settingsTab.plugin,
 						settingsTab,
-						list as ListComponent,
+						list,
 					).open();
 				}
 				await list.addValue(value.toLowerCase());
-				settingsTab.display();
-				settingsTab.plugin.saveSettings();
+				void settingsTab.display();
+				void settingsTab.plugin.saveSettings();
 			});
 		});
 	} else {
@@ -188,7 +189,7 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 						settingsTab.app,
 						settingsTab.plugin,
 						settingsTab,
-						list as ListComponent,
+						list,
 					).open();
 				}),
 		);
@@ -226,7 +227,10 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 				.addOption('insideFolder', 'Inside the folder')
 				.addOption('parentFolder', 'In the parent folder')
 				.setValue(settingsTab.plugin.settings.storageLocation)
-				.onChange(async (value: 'insideFolder' | 'parentFolder' | 'vaultFolder') => {
+				.onChange(async (value: string) => {
+					if (value !== 'insideFolder' && value !== 'parentFolder' && value !== 'vaultFolder') {
+						return;
+					}
 					settingsTab.plugin.settings.storageLocation = value;
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
@@ -282,7 +286,7 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 			);
 	}
 	if (Platform.isDesktopApp) {
-		settingsTab.settingsPage.createEl('h3', { text: 'Keyboard Shortcuts' });
+		settingsTab.settingsPage.createEl('h3', { text: 'Keyboard shortcuts' });
 
 		new Setting(containerEl)
 			.setName('Key for creating folder note')
@@ -308,7 +312,7 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 			.setName('Key for opening folder note')
 			.setDesc('Select the combination to open a folder note')
 			.addDropdown((dropdown) => {
-				dropdown.addOption('click', 'Mouse Click');
+				dropdown.addOption('click', 'Mouse click');
 				if (!Platform.isMacOS) {
 					dropdown.addOption('ctrl', 'Ctrl + Click');
 					dropdown.addOption('alt', 'Alt + Click');
@@ -356,8 +360,9 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 			dropdown.addOption('obsidianTrash', 'Move to Obsidian trash (.trash folder)');
 			dropdown.addOption('delete', 'Delete permanently');
 			dropdown.setValue(settingsTab.plugin.settings.deleteFilesAction);
-			dropdown.onChange(async (value: 'trash' | 'delete' | 'obsidianTrash') => {
-				settingsTab.plugin.settings.deleteFilesAction = value;
+			dropdown.onChange(async (value) => {
+				const v = value as 'trash' | 'delete' | 'obsidianTrash';
+				settingsTab.plugin.settings.deleteFilesAction = v;
 				await settingsTab.plugin.saveSettings();
 				settingsTab.display();
 			});
@@ -450,7 +455,7 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 
 		new Setting(containerEl)
 			.setName('Auto-create for attachment folders')
-			.setDesc('Also automatically create folder notes for attachment folders (e.g., "Attachments", "Media", etc.).')
+			.setDesc('Also automatically create folder notes for attachment folders (e.g., "attachments", "media", etc.).')
 			.addToggle((toggle) =>
 				toggle
 					.setValue(settingsTab.plugin.settings.autoCreateForAttachmentFolder)
@@ -475,13 +480,13 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 				}),
 		);
 
-	settingsTab.settingsPage.createEl('h3', { text: 'Integration & Compatibility' });
+	settingsTab.settingsPage.createEl('h3', { text: 'Integration & compatibility' });
 
-	const desc1 = document.createDocumentFragment();
+	const desc1 = activeDocument.createDocumentFragment();
 
-	const link = document.createElement('a');
+	const link = activeDocument.createElement('a');
 	link.href = 'https://github.com/snezhig/obsidian-front-matter-title';
-	link.textContent = 'front matter title plugin';
+	link.textContent = 'Front matter title plugin';
 	link.target = '_blank';
 
 	desc1.append(
@@ -507,7 +512,7 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 							settingsTab.plugin.updateAllBreadcrumbs(true);
 						}
 						settingsTab.plugin.app.vault.getFiles().forEach((file) => {
-							settingsTab.plugin.fmtpHandler?.fmptUpdateFileName(
+							void settingsTab.plugin.fmtpHandler?.fmptUpdateFileName(
 								{
 									id: '',
 									result: false,
@@ -527,7 +532,7 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 	fmtpSetting.infoEl.appendText('Requires a restart to take effect');
 	fmtpSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
-	settingsTab.settingsPage.createEl('h3', { text: 'Session & Persistence' });
+	settingsTab.settingsPage.createEl('h3', { text: 'Session & persistence' });
 
 	new Setting(containerEl)
 		.setName('Persist tab after restart')

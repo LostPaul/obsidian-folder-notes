@@ -46,9 +46,9 @@ export default class ExistingFolderNoteModal extends Modal {
 				text: 'Rename and don\'t ask again',
 			});
 			confirmButton.classList.add('mod-warning', 'fn-confirmation-modal-button');
-			confirmButton.addEventListener('click', async () => {
+			confirmButton.addEventListener('click', () => {
 				this.plugin.settings.showRenameConfirmation = false;
-				this.plugin.saveSettings();
+				void this.plugin.saveSettings();
 				this.close();
 				turnIntoFolderNote(this.plugin, this.file, this.folder, this.folderNote, true);
 			});
@@ -69,14 +69,14 @@ export default class ExistingFolderNoteModal extends Modal {
 		}
 		const button = buttonContainer.createEl('button', { text: 'Rename' });
 		button.classList.add('mod-warning', 'fn-confirmation-modal-button');
-		button.addEventListener('click', async () => {
-			this.plugin.saveSettings();
+		button.addEventListener('click', () => {
+			void this.plugin.saveSettings();
 			this.close();
 			turnIntoFolderNote(this.plugin, this.file, this.folder, this.folderNote, true);
 		});
 		button.focus();
 		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
-		cancelButton.addEventListener('click', async () => {
+		cancelButton.addEventListener('click', () => {
 			this.close();
 		});
 

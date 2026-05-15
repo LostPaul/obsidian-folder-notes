@@ -23,7 +23,7 @@ export default class WhitelistPatternSettings extends Modal {
 		contentEl.createEl('h2', { text: 'Whitelisted pattern settings' });
 		new Setting(contentEl)
 			.setName('Enable folder name sync')
-			// eslint-disable-next-line max-len
+
 			.setDesc('Choose if the name of a folder note should be renamed when the folder name is changed')
 			.addToggle((toggle) =>
 				toggle

@@ -151,7 +151,7 @@ export async function addCSSClassToFileExplorerEl(
 
 	if (!fileExplorerItem) {
 		if (waitForCreate && count < MAX_RETRIES) {
-			await new Promise((r) => setTimeout(r, RETRY_DELAY));
+			await new Promise((r) => window.setTimeout(r, RETRY_DELAY));
 			addCSSClassToFileExplorerEl(path, cssClass, parent, plugin, waitForCreate, count + 1);
 			return;
 		}
@@ -164,7 +164,7 @@ export async function addCSSClassToFileExplorerEl(
 		}
 	} else {
 		fileExplorerItem.addClass(cssClass);
-		document.querySelectorAll(`[data-path='${CSS.escape(path)}']`).forEach((item) => {
+		activeDocument.querySelectorAll(`[data-path='${CSS.escape(path)}']`).forEach((item) => {
 			item.addClass(cssClass);
 		});
 	}
@@ -183,7 +183,7 @@ export function removeCSSClassFromFileExplorerEL(
 ): void {
 	if (!path) return;
 	const fileExplorerItem = getFileExplorerElement(path, plugin);
-	document.querySelectorAll(`[data-path='${CSS.escape(path)}']`).forEach((item) => {
+	activeDocument.querySelectorAll(`[data-path='${CSS.escape(path)}']`).forEach((item) => {
 		item.removeClass(cssClass);
 	});
 	if (!fileExplorerItem) { return; }

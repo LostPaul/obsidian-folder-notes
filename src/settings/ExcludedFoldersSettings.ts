@@ -17,7 +17,7 @@ export async function renderExcludeFolders(settingsTab: SettingsTab): Promise<vo
 		.setHeading()
 		.setClass('fn-excluded-folder-heading')
 		.setName('Manage excluded folders');
-	const desc3 = document.createDocumentFragment();
+	const desc3 = activeDocument.createDocumentFragment();
 	desc3.append(
 		'Add {regex} at the beginning of the folder name to use a regex pattern.',
 		desc3.createEl('br'),
@@ -28,12 +28,12 @@ export async function renderExcludeFolders(settingsTab: SettingsTab): Promise<vo
 		'Use * after the folder name to exclude folders that start with the folder name.',
 	);
 	manageExcluded.setDesc(desc3);
-	// eslint-disable-next-line max-len
+
 	manageExcluded.infoEl.appendText('The regexes and wildcards are only for the folder name, not the path.');
 	manageExcluded.infoEl.createEl('br');
-	// eslint-disable-next-line max-len
+
 	manageExcluded.infoEl.appendText('If you want to switch to a folder path delete the pattern first.');
-	// eslint-disable-next-line max-len
+
 	manageExcluded.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
 

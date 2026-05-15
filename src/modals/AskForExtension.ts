@@ -39,7 +39,7 @@ export class AskForExtensionModal extends FuzzySuggestModal<string> {
 	onChooseItem(item: string, _evt: MouseEvent | KeyboardEvent): void {
 		this.plugin.askModalCurrentlyOpen = false;
 		this.extension = '.' + item;
-		createFolderNote(
+		void createFolderNote(
 			this.plugin,
 			this.folderPath,
 			this.openFile,

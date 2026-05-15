@@ -18,7 +18,7 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 
 	if (settingsTab.plugin.settings.openFolderNoteOnClickInPath) {
 		new Setting(containerEl)
-			.setName('Open sidebar when opening a folder note through path (Mobile only)')
+			.setName('Open sidebar when opening a folder note through path (mobile only)')
 			.setDesc('Open the sidebar when opening a folder note through the path on mobile')
 			.addToggle((toggle) =>
 				toggle
@@ -30,7 +30,7 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 			);
 
 		new Setting(containerEl)
-			.setName('Open sidebar when opening a folder note through path (Desktop only)')
+			.setName('Open sidebar when opening a folder note through path (desktop only)')
 			.setDesc('Open the sidebar when opening a folder note through the path on desktop')
 			.addToggle((toggle) =>
 				toggle
@@ -72,9 +72,9 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.underlineFolderInPath = value;
 					if (value) {
-						document.body.classList.add('folder-note-underline-path');
+						activeDocument.body.classList.add('folder-note-underline-path');
 					} else {
-						document.body.classList.remove('folder-note-underline-path');
+						activeDocument.body.classList.remove('folder-note-underline-path');
 					}
 					await settingsTab.plugin.saveSettings();
 				}),
@@ -89,9 +89,9 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.boldNameInPath = value;
 					if (value) {
-						document.body.classList.add('folder-note-bold-path');
+						activeDocument.body.classList.add('folder-note-bold-path');
 					} else {
-						document.body.classList.remove('folder-note-bold-path');
+						activeDocument.body.classList.remove('folder-note-bold-path');
 					}
 					await settingsTab.plugin.saveSettings();
 				}),
@@ -106,9 +106,9 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.cursiveNameInPath = value;
 					if (value) {
-						document.body.classList.add('folder-note-cursive-path');
+						activeDocument.body.classList.add('folder-note-cursive-path');
 					} else {
-						document.body.classList.remove('folder-note-cursive-path');
+						activeDocument.body.classList.remove('folder-note-cursive-path');
 					}
 					await settingsTab.plugin.saveSettings();
 				}),
@@ -121,7 +121,7 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 			toggle
 				.setValue(settingsTab.plugin.settings.hideFolderNoteNameInPath)
 				.onChange(async (value) => {
-					document.body.classList.toggle('folder-note-hide-name-path', value);
+					activeDocument.body.classList.toggle('folder-note-hide-name-path', value);
 					settingsTab.plugin.settings.hideFolderNoteNameInPath = value;
 					await settingsTab.plugin.saveSettings();
 				}),

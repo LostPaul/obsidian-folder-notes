@@ -14,9 +14,9 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 					settingsTab.plugin.settings.hideFolderNote = value;
 					await settingsTab.plugin.saveSettings();
 					if (value) {
-						document.body.classList.add('hide-folder-note');
+						activeDocument.body.classList.add('hide-folder-note');
 					} else {
-						document.body.classList.remove('hide-folder-note');
+						activeDocument.body.classList.remove('hide-folder-note');
 					}
 					settingsTab.display();
 				}),
@@ -46,9 +46,9 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 				.setValue(!settingsTab.plugin.settings.stopWhitespaceCollapsing)
 				.onChange(async (value) => {
 					if (!value) {
-						document.body.classList.add('fn-whitespace-stop-collapsing');
+						activeDocument.body.classList.add('fn-whitespace-stop-collapsing');
 					} else {
-						document.body.classList.remove('fn-whitespace-stop-collapsing');
+						activeDocument.body.classList.remove('fn-whitespace-stop-collapsing');
 					}
 					settingsTab.plugin.settings.stopWhitespaceCollapsing = !value;
 					await settingsTab.plugin.saveSettings();
@@ -119,9 +119,9 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.highlightFolder = value;
 					if (!value) {
-						document.body.classList.add('disable-folder-highlight');
+						activeDocument.body.classList.add('disable-folder-highlight');
 					} else {
-						document.body.classList.remove('disable-folder-highlight');
+						activeDocument.body.classList.remove('disable-folder-highlight');
 					}
 					await settingsTab.plugin.saveSettings();
 				}),
@@ -136,9 +136,9 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.hideCollapsingIcon = value;
 					if (value) {
-						document.body.classList.add('fn-hide-collapse-icon');
+						activeDocument.body.classList.add('fn-hide-collapse-icon');
 					} else {
-						document.body.classList.remove('fn-hide-collapse-icon');
+						activeDocument.body.classList.remove('fn-hide-collapse-icon');
 					}
 					await settingsTab.plugin.saveSettings();
 					settingsTab.display();
@@ -155,9 +155,9 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 					settingsTab.plugin.settings.hideCollapsingIconForEmptyFolders = value;
 					await settingsTab.plugin.saveSettings();
 					if (value) {
-						document.body.classList.add('fn-hide-empty-collapse-icon');
+						activeDocument.body.classList.add('fn-hide-empty-collapse-icon');
 					} else {
-						document.body.classList.remove('fn-hide-empty-collapse-icon');
+						activeDocument.body.classList.remove('fn-hide-empty-collapse-icon');
 					}
 					settingsTab.display();
 				},
@@ -171,9 +171,9 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 					.setValue(settingsTab.plugin.settings.ignoreAttachmentFolder)
 					.onChange(async (value) => {
 						if (value) {
-							document.body.classList.add('fn-ignore-attachment-folder');
+							activeDocument.body.classList.add('fn-ignore-attachment-folder');
 						} else {
-							document.body.classList.remove('fn-ignore-attachment-folder');
+							activeDocument.body.classList.remove('fn-ignore-attachment-folder');
 						}
 						settingsTab.plugin.settings.ignoreAttachmentFolder = value;
 						await settingsTab.plugin.saveSettings();
@@ -190,9 +190,9 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.underlineFolder = value;
 					if (value) {
-						document.body.classList.add('folder-note-underline');
+						activeDocument.body.classList.add('folder-note-underline');
 					} else {
-						document.body.classList.remove('folder-note-underline');
+						activeDocument.body.classList.remove('folder-note-underline');
 					}
 					await settingsTab.plugin.saveSettings();
 				}),
@@ -207,9 +207,9 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.boldName = value;
 					if (value) {
-						document.body.classList.add('folder-note-bold');
+						activeDocument.body.classList.add('folder-note-bold');
 					} else {
-						document.body.classList.remove('folder-note-bold');
+						activeDocument.body.classList.remove('folder-note-bold');
 					}
 					await settingsTab.plugin.saveSettings();
 				}),
@@ -224,9 +224,9 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.cursiveName = value;
 					if (value) {
-						document.body.classList.add('folder-note-cursive');
+						activeDocument.body.classList.add('folder-note-cursive');
 					} else {
-						document.body.classList.remove('folder-note-cursive');
+						activeDocument.body.classList.remove('folder-note-cursive');
 					}
 					await settingsTab.plugin.saveSettings();
 				}),

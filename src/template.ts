@@ -55,7 +55,7 @@ export async function applyTemplate(
 			} = getTemplatePlugins(plugin.app);
 			const templateContent = await plugin.app.vault.read(templateFile);
 			// eslint-disable-next-line max-len
-			if (templateContent.includes('==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==')) {
+			if (templateContent.includes('==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this activeDocument. ⚠==')) {
 				return;
 			}
 

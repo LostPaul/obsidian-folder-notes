@@ -80,7 +80,7 @@ export function getFileExplorerActiveFolder(): TFolder | null {
 	const activeFileOrFolder =
 		fe.tree.focusedItem?.file ?? fe.activeDom?.file;
 	if (!(activeFileOrFolder instanceof TFolder)) return null;
-	return activeFileOrFolder as TFolder;
+	return activeFileOrFolder;
 }
 
 export function getFileExplorerActiveFolderNote(): TFile | null {

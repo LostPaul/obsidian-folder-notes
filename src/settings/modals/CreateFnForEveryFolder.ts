@@ -6,7 +6,7 @@ import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions'
 export default class ConfirmationModal extends Modal {
 	plugin: FolderNotesPlugin;
 	app: App;
-	folder: TFolder;
+	folder!: TFolder;
 	extension: string;
 	constructor(app: App, plugin: FolderNotesPlugin) {
 		super(app);
@@ -36,7 +36,7 @@ export default class ConfirmationModal extends Modal {
 		contentEl.createEl('h2', { text: 'Create folder note for every folder' });
 		const setting = new Setting(contentEl);
 		// eslint-disable-next-line max-len
-		setting.infoEl.createEl('p', { text: 'Make sure to backup your vault before using this feature.' }).style.color = '#fb464c';
+		setting.infoEl.createEl('p', { text: 'Make sure to backup your vault before using this feature.' }).addClass('fn-warning-text');
 		// eslint-disable-next-line max-len
 		setting.infoEl.createEl('p', { text: 'This feature will create a folder note for every folder in your vault.' });
 		// eslint-disable-next-line max-len

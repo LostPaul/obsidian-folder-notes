@@ -43,10 +43,10 @@ function initializeFolderNoteFeatures(plugin: FolderNotesPlugin): void {
 }
 
 function initializeBreadcrumbs(plugin: FolderNotesPlugin): void {
-	const titleContainers = document.querySelectorAll('.view-header-title-container');
+	const titleContainers = activeDocument.querySelectorAll('.view-header-title-container');
 	if (!titleContainers.length) return;
 	titleContainers.forEach((container) => {
-		if (!(container instanceof HTMLElement)) return;
+		if (!(container.instanceOf(HTMLElement))) return;
 		scheduleIdle(() => updateFolderNamesInPath(plugin, container), { timeout: 1000 });
 	});
 }
@@ -62,7 +62,7 @@ function observeFolderTitleMutations(plugin: FolderNotesPlugin): void {
 	fileExplorerMutationObserver = new MutationObserver((mutations) => {
 		for (const mutation of mutations) {
 			for (const node of Array.from(mutation.addedNodes)) {
-				if (!(node instanceof HTMLElement)) continue;
+				if (!(node.instanceOf(HTMLElement))) continue;
 				processAddedFolders(node, plugin);
 			}
 		}
@@ -72,7 +72,7 @@ function observeFolderTitleMutations(plugin: FolderNotesPlugin): void {
 }
 
 function initializeAllFolderTitles(plugin: FolderNotesPlugin): void {
-	const allTitles = document.querySelectorAll('.nav-folder-title-content');
+	const allTitles = activeDocument.querySelectorAll('.nav-folder-title-content');
 	for (const title of Array.from(allTitles)) {
 		const folderTitle = title as HTMLElement;
 		const folderEl = folderTitle.closest('.nav-folder-title');
@@ -97,7 +97,7 @@ function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin): void
 		const folderPath = folderEl?.getAttribute('data-path') || '';
 		const RETRY_TIMEOUT = 50;
 		if (!folderEl || !folderPath) {
-			setTimeout(() => {
+			window.setTimeout(() => {
 				const retryFolderEl = folderTitle.closest('.nav-folder-title');
 				const retryFolderPath = retryFolderEl?.getAttribute('data-path') || '';
 				if (retryFolderEl && retryFolderPath) {
@@ -171,7 +171,7 @@ async function updateFolderNamesInPath(
 	}
 	// eslint-disable-next-line complexity
 	titleParent?.childNodes.forEach(async (breadcrumb: HTMLElement) => {
-		if (!(breadcrumb instanceof HTMLElement)) return;
+		if (!(breadcrumb.instanceOf(HTMLElement))) return;
 		if (breadcrumb.classList.contains('view-header-breadcrumb-separator')) {
 			if (breadcrumb.nextSibling === null) {
 				breadcrumb.classList.add('is-last-separator');
@@ -179,7 +179,7 @@ async function updateFolderNamesInPath(
 			return;
 		}
 
-		path += breadcrumb.getAttribute('old-name') ?? (breadcrumb as HTMLElement).innerText.trim();
+		path += breadcrumb.getAttribute('old-name') ?? (breadcrumb).innerText.trim();
 		path += '/';
 		const folderPath = path.slice(0, -TRAILING_SLASH_LENGTH);
 
@@ -206,7 +206,7 @@ async function updateFolderNamesInPath(
 		breadcrumb?.setAttribute('data-path', path.slice(0, -TRAILING_SLASH_LENGTH));
 		if (!breadcrumb.onclick) {
 			breadcrumb.addEventListener('click', (e) => {
-				handleViewHeaderClick(e as MouseEvent, plugin);
+				handleViewHeaderClick(e, plugin);
 			}, { capture: true });
 		}
 
@@ -230,6 +230,6 @@ function scheduleIdle(callback: () => void, options?: { timeout: number }): void
 		};
 		windowWithIdle.requestIdleCallback(callback, options);
 	} else {
-		setTimeout(callback, options?.timeout || DEFAULT_IDLE_TIMEOUT);
+		window.setTimeout(callback, options?.timeout || DEFAULT_IDLE_TIMEOUT);
 	}
 }

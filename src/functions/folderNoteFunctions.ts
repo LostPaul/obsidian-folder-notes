@@ -176,7 +176,7 @@ async function handleCreateFolderNote(plugin: FolderNotesPlugin, folderNoteType:
 					if (
 						extension === '.excalidraw' &&
 						!content.includes(
-							'==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==',
+							'==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this activeDocument. ⚠==',
 						)
 					) {
 						content = await getDefaultTemplate(plugin.app);
@@ -303,12 +303,12 @@ export async function turnIntoFolderNote(
 	}
 
 	if (detachedExcludedFolder) {
-		deleteExcludedFolder(plugin, detachedExcludedFolder);
+		void deleteExcludedFolder(plugin, detachedExcludedFolder);
 	}
 
 	await plugin.app.fileManager.renameFile(file, path);
-	addCSSClassToFileExplorerEl(path, 'is-folder-note', false, plugin, true);
-	addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
+	void addCSSClassToFileExplorerEl(path, 'is-folder-note', false, plugin, true);
+	void addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
 
 	removeActiveFolder(plugin);
 	setActiveFolder(folder.path, plugin);
@@ -502,7 +502,7 @@ export function detachFolderNote(plugin: FolderNotesPlugin, file: TFile): void {
 	excludedFolder.detached = true;
 	excludedFolder.detachedFilePath = file.path;
 	addExcludedFolder(plugin, excludedFolder);
-	updateCSSClassesForFolderNote(file.path, plugin);
+	void updateCSSClassesForFolderNote(file.path, plugin);
 }
 
 

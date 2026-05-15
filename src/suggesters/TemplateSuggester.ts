@@ -47,13 +47,13 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 						{
 							path: '',
 							name:
-								// eslint-disable-next-line max-len
 								'You need to set the Templates folder in the Templater settings first.',
+						// eslint-disable-next-line obsidianmd/no-tfile-tfolder-cast
 						} as TFile,
 					];
 				}
 			} else if (templateFolder) {
-				folder = this.plugin.app.vault.getAbstractFileByPath(templateFolder) as TFolder;
+				folder = this.plugin.app.vault.getAbstractFileByPath(templateFolder);
 			}
 
 			if (!(folder instanceof TFolder)) {
@@ -86,7 +86,7 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 		this.inputEl.value = file.name.replace('.md', '');
 		this.inputEl.trigger('input');
 		this.plugin.settings.templatePath = file.path;
-		this.plugin.saveSettings();
+		void this.plugin.saveSettings();
 		this.close();
 	}
 }
