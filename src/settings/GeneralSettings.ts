@@ -475,6 +475,18 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 				}),
 		);
 
+	new Setting(containerEl)
+		.setName('Convert to folder note on attachment paste')
+		.setDesc('When pasting an attachment into a note that is not a folder note, automatically convert the note into a folder note first. This places the attachment inside the folder note\'s directory.')
+		.addToggle((toggle) =>
+			toggle
+				.setValue(settingsTab.plugin.settings.convertToFolderNoteOnPaste)
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.convertToFolderNoteOnPaste = value;
+					await settingsTab.plugin.saveSettings();
+				}),
+		);
+
 	settingsTab.settingsPage.createEl('h3', { text: 'Integration & Compatibility' });
 
 	const desc1 = document.createDocumentFragment();
