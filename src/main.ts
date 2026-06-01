@@ -255,7 +255,8 @@ export default class FolderNotesPlugin extends Plugin {
 		if (fileExplorerPlugin) {
 			const fileExplorer = fileExplorerPlugin as unknown as FileExplorerPluginLike;
 			const originalRevealInFolder =
-				fileExplorer.revealInFolder as unknown as FileExplorerPluginLike['revealInFolder'];
+				(fileExplorer.revealInFolder as unknown as FileExplorerPluginLike['revealInFolder'])
+					.bind(fileExplorer);
 			fileExplorer.revealInFolder = (file: TAbstractFile): void => {
 				if (file instanceof TFile) {
 					const folder = getFolder(this, file);
