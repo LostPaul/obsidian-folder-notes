@@ -1,4 +1,4 @@
-import { TFolder, TFile, View } from 'obsidian';
+import { TFolder, TFile, View, TAbstractFile } from 'obsidian';
 import type { FileExplorerWorkspaceLeaf, FileExplorerView } from 'src/globals';
 import { getFolderNote } from './folderNoteFunctions';
 import type FolderNotesPlugin from 'src/main';
@@ -37,7 +37,7 @@ export function getFolderPathFromString(path: string): string {
 }
 
 export function getParentFolderPath(path: string): string {
-	return this.getFolderPathFromString(this.getFolderPathFromString(path));
+	return getFolderPathFromString(getFolderPathFromString(path));
 }
 
 export function getFileExplorer(
@@ -71,9 +71,9 @@ export function getFocusedItem(plugin: FolderNotesPlugin): TreeNode<FileTreeItem
 	return focusedItem;
 }
 
-export function getFileExplorerActiveFolder(): TFolder | null {
+export function getFileExplorerActiveFolder(plugin: FolderNotesPlugin): TFolder | null {
 	// Check if the active view is a file explorer.
-	const view = this.app.workspace.getActiveViewOfType(View);
+	const view = plugin.app.workspace.getActiveViewOfType(View);
 	if (view?.getViewType() !== 'file-explorer') return null;
 	// Check if there is a focused or active item in the file explorer.
 	const fe = view as FileExplorerView;
@@ -83,11 +83,25 @@ export function getFileExplorerActiveFolder(): TFolder | null {
 	return activeFileOrFolder;
 }
 
-export function getFileExplorerActiveFolderNote(): TFile | null {
-	const folder = getFileExplorerActiveFolder();
+export function getFileExplorerActiveFolderNote(plugin: FolderNotesPlugin): TFile | null {
+	const folder = getFileExplorerActiveFolder(plugin);
 	if (!folder) return null;
 	// Is there any folder note for the active folder?
-	const folderNote = getFolderNote(this.plugin, folder.path);
+	const folderNote = getFolderNote(plugin, folder.path);
 	if (!(folderNote instanceof TFile)) return null;
 	return folderNote;
+}
+
+
+export function getAttachmentFolderPath(plugin: FolderNotesPlugin): string {
+	const attachmentFolderPath = plugin.app.vault.getConfig('attachmentFolderPath') as string;
+	const cleanAttachmentFolderPath = attachmentFolderPath?.replace('./', '') || '';
+	return cleanAttachmentFolderPath;
+}
+
+export function isFileInAttachmentFolder(plugin: FolderNotesPlugin, file: TAbstractFile): boolean {
+	const attachmentFolderPath = getAttachmentFolderPath(plugin);
+	if (!attachmentFolderPath) return false;
+	return file.path.startsWith(attachmentFolderPath + '/')
+		|| file.path.includes('/' + attachmentFolderPath + '/');
 }

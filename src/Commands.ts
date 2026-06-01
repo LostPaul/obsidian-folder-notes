@@ -128,7 +128,7 @@ export class Commands {
 				id: `create-${type}-folder-note-for-active-file-explorer-folder`,
 				name: `Create ${type} folder note for current active folder in file explorer`,
 				checkCallback: (checking: boolean) => {
-					const folder = getFileExplorerActiveFolder();
+					const folder = getFileExplorerActiveFolder(this.plugin);
 					if (!folder) return false;
 					// Is there already a folder note for the active folder?
 					const folderNote = getFolderNote(this.plugin, folder.path);
@@ -162,7 +162,7 @@ export class Commands {
 			id: 'delete-folder-note-of-active-file-explorer-folder',
 			name: 'Delete folder note of current active folder in file explorer',
 			checkCallback: (checking: boolean) => {
-				const folder = getFileExplorerActiveFolder();
+				const folder = getFileExplorerActiveFolder(this.plugin);
 				if (!folder) return false;
 				// Is there any folder note for the active folder?
 				const folderNote = getFolderNote(this.plugin, folder.path);
@@ -191,7 +191,7 @@ export class Commands {
 			id: 'open-folder-note-of-active-file-explorer-folder',
 			name: 'Open folder note of current active folder in file explorer',
 			checkCallback: (checking: boolean) => {
-				const folder = getFileExplorerActiveFolder();
+				const folder = getFileExplorerActiveFolder(this.plugin);
 				if (!folder) return false;
 				// Is there any folder note for the active folder?
 				const folderNote = getFolderNote(this.plugin, folder.path);

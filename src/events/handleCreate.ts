@@ -11,6 +11,7 @@ import {
 	removeCSSClassFromFileExplorerEL,
 	addCSSClassToFileExplorerEl,
 } from 'src/functions/styleFunctions';
+import { isFileInAttachmentFolder } from '@app/functions/utils';
 
 export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugin): Promise<void> {
 	if (!plugin.app.workspace.layoutReady) return;
@@ -50,7 +51,8 @@ async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin): Promi
 		if (folderNote && folderNote.path === file.path) {
 			addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
 			addCSSClassToFileExplorerEl(file.path, 'is-folder-note', false, plugin);
-		} else if (plugin.settings.autoCreateForFiles) {
+		} else if (plugin.settings.autoCreateForFiles && !isFileInAttachmentFolder(plugin, file)) {
+			if (!plugin.settings.supportedFileTypes.includes(file.extension)) { return; }
 			if (!file.parent) { return; }
 			const newFolder = await plugin.app.fileManager.createNewFolder(file.parent);
 			turnIntoFolderNote(plugin, file, newFolder);
