@@ -89,8 +89,7 @@ export default class FolderNotesPlugin extends Plugin {
 	fvIndexDB!: FvIndexDB;
 
 	async onload(): Promise<void> {
-		// eslint-disable-next-line obsidianmd/rule-custom-message
-		console.log('loading folder notes plugin');
+		console.debug('loading folder notes plugin');
 		await this.loadSettings();
 		this.settingsTab = new SettingsTab(this.app, this);
 		this.addSettingTab(this.settingsTab);

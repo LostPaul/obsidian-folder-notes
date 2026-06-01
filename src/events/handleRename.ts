@@ -375,7 +375,7 @@ function shouldCreateFolderNote(
 	detachedExcludedFolder: ExcludedFolder | undefined,
 ): boolean {
 	return !excludedFolder?.disableFolderNote
-		&& folderName === (newFolder as TFolder)?.name
+		&& folderName === (newFolder)?.name
 		&& !detachedExcludedFolder;
 }
 
@@ -384,7 +384,7 @@ function shouldRemoveFolderNoteClasses(
 	folderName: string,
 	newFolder: TAbstractFile | null,
 ): boolean {
-	return excludedFolder?.disableFolderNote || (folderName !== (newFolder as TFolder)?.name);
+	return excludedFolder?.disableFolderNote || (folderName !== (newFolder)?.name);
 }
 
 function handleFolderNoteCreation(
@@ -424,8 +424,8 @@ function shouldRenameFolderOnFileRename(
 ): boolean {
 	if (!oldFolder) return false;
 
-	const oldFolderAsFolder = oldFolder as TFolder;
-	const newFolderAsFolder = newFolder as TFolder;
+	const oldFolderAsFolder = oldFolder;
+	const newFolderAsFolder = newFolder;
 
 	return (oldFolderName === oldFolderAsFolder.name
 		&& newFolderAsFolder?.path === oldFolderAsFolder.path)

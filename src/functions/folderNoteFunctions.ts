@@ -27,7 +27,6 @@ import {
 	removeCSSClassFromFileExplorerEL,
 	removeActiveFolder,
 	setActiveFolder,
-	updateCSSClassesForFolder,
 	updateCSSClassesForFolderNote,
 } from 'src/functions/styleFunctions';
 import {
@@ -214,7 +213,8 @@ async function handleTurnNoteIntoFolderNote(
 ): Promise<void> {
 	deleteExcludedFolder(plugin, detachedFolder);
 	removeCSSClassFromFileExplorerEL(folderNote?.path, 'is-folder-note', false, plugin);
-	const folder = plugin.app.vault.getAbstractFileByPath(folderPath) as TFolder;
+	const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
+	if (!(folder instanceof TFolder)) return;
 	if (!folderNote || folderNote.basename !== fileName) return;
 	let count = 1;
 	const baseName = removeExtension(folderNote.path);

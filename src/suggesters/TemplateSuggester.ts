@@ -1,12 +1,21 @@
 import { TFile, TFolder, Vault, AbstractInputSuggest, type TAbstractFile } from 'obsidian';
 import type FolderNotesPlugin from '../main';
 import { getTemplatePlugins } from 'src/template';
+
+interface TemplateSuggestion {
+	path: string;
+	name: string;
+	parent?: {
+		path: string;
+	} | null;
+}
+
 export enum FileSuggestMode {
 	TemplateFiles,
 	ScriptFiles,
 }
 
-export class TemplateSuggest extends AbstractInputSuggest<TFile> {
+export class TemplateSuggest extends AbstractInputSuggest<TemplateSuggestion> {
 	constructor(
 		public inputEl: HTMLInputElement,
 		public plugin: FolderNotesPlugin,
@@ -24,10 +33,10 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 		}
 	}
 
-	getSuggestions(input_str: string): TFile[] {
+	getSuggestions(input_str: string): TemplateSuggestion[] {
 		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.app);
 
-		let files: TFile[] = [];
+		let files: TemplateSuggestion[] = [];
 		const lower_input_str = input_str.toLowerCase();
 
 		if ((!templateFolder || templateFolder.trim() === '') && !templaterPlugin) {
@@ -48,8 +57,7 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 							path: '',
 							name:
 								'You need to set the Templates folder in the Templater settings first.',
-						// eslint-disable-next-line obsidianmd/no-tfile-tfolder-cast
-						} as TFile,
+						},
 					];
 				}
 			} else if (templateFolder) {
@@ -71,7 +79,7 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 	}
 
 
-	renderSuggestion(file: TFile, el: HTMLElement): void {
+	renderSuggestion(file: TemplateSuggestion, el: HTMLElement): void {
 		const { templateFolder, templaterPlugin } = getTemplatePlugins(this.app);
 
 		if ((!templateFolder || templateFolder.trim() === '') && !templaterPlugin) {
@@ -82,7 +90,7 @@ export class TemplateSuggest extends AbstractInputSuggest<TFile> {
 	}
 
 
-	selectSuggestion(file: TFile): void {
+	selectSuggestion(file: TemplateSuggestion): void {
 		this.inputEl.value = file.name.replace('.md', '');
 		this.inputEl.trigger('input');
 		this.plugin.settings.templatePath = file.path;
