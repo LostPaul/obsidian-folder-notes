@@ -1,7 +1,7 @@
 {
   "id": "folder-notes",
   "name": "Folder notes",
-  "version": "1.8.23",
+  "version": "1.8.24",
   "minAppVersion": "1.4.10",
   "description": "Create notes within folders that can be accessed without collapsing the folder, similar to the functionality offered in Notion.",
   "author": "Lost Paul",
