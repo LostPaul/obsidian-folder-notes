@@ -298,7 +298,7 @@ export class SettingsTab extends PluginSettingTab {
 				tabEl.addClass('fn-settings-tab-active');
 			}
 			tabEl.addEventListener('click', () => {
-				for (const child of tabBar.children) {
+				for (const child of Array.from(tabBar.children)) {
 					(child as HTMLElement).classList.remove('fn-settings-tab-active');
 					if (!plugin) { return; }
 					plugin.settings.settingsTab = tabId.toLocaleLowerCase();

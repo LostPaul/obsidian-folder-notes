@@ -12,7 +12,7 @@ export class ExcludedFolder {
 	position: number;
 	excludeFromFolderOverview: boolean;
 	hideInSettings: boolean;
-	detached: boolean;
+	detached: boolean = false;
 	detachedFilePath?: string;
 	showFolderNote: boolean;
 	constructor(path: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {

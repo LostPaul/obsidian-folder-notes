@@ -158,6 +158,7 @@ async function setupFolderTitle(
 	});
 }
 
+// eslint-disable-next-line complexity
 async function updateFolderNamesInPath(
 	plugin: FolderNotesPlugin,
 	titleContainer: HTMLElement,
@@ -169,14 +170,14 @@ async function updateFolderNamesInPath(
 	if (titleParent?.childNodes.length === 0) {
 		titleContainer.classList.remove('hide-folder-note-title-in-path');
 	}
-	// eslint-disable-next-line complexity
-	titleParent?.childNodes.forEach(async (breadcrumb: HTMLElement) => {
-		if (!(breadcrumb.instanceOf(HTMLElement))) return;
+
+	for (const breadcrumb of Array.from(titleParent?.childNodes ?? [])) {
+		if (!(breadcrumb instanceof HTMLElement)) continue;
 		if (breadcrumb.classList.contains('view-header-breadcrumb-separator')) {
 			if (breadcrumb.nextSibling === null) {
 				breadcrumb.classList.add('is-last-separator');
 			}
-			return;
+			continue;
 		}
 
 		path += breadcrumb.getAttribute('old-name') ?? (breadcrumb).innerText.trim();
@@ -216,7 +217,7 @@ async function updateFolderNamesInPath(
 				true,
 			);
 		}
-	});
+	}
 }
 
 // Schedules a callback to run when the browser is idle, or after a timeout as a fallback.
@@ -230,6 +231,6 @@ function scheduleIdle(callback: () => void, options?: { timeout: number }): void
 		};
 		windowWithIdle.requestIdleCallback(callback, options);
 	} else {
-		window.setTimeout(callback, options?.timeout || DEFAULT_IDLE_TIMEOUT);
+		globalThis.setTimeout(callback, options?.timeout || DEFAULT_IDLE_TIMEOUT);
 	}
 }

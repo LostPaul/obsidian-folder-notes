@@ -7,8 +7,8 @@ export default class RenameFolderNotesModal extends BackupWarningModal {
 		plugin: FolderNotesPlugin,
 		title: string,
 		description: string,
-		callback: (...args: unknown[]) => void,
-		args: unknown[] = [],
+		callback: (oldMethod: string) => void,
+		args: [string],
 	) {
 		super(plugin, title, description, callback, args);
 	}

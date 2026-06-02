@@ -12,7 +12,7 @@ export class ExcludePattern {
 	enableCollapsing: boolean;
 	excludeFromFolderOverview: boolean;
 	hideInSettings: boolean;
-	detached: boolean;
+	detached: boolean = false;
 	detachedFilePath?: string;
 	showFolderNote: boolean;
 	constructor(

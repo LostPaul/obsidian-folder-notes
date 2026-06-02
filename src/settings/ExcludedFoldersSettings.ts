@@ -17,7 +17,7 @@ export async function renderExcludeFolders(settingsTab: SettingsTab): Promise<vo
 		.setHeading()
 		.setClass('fn-excluded-folder-heading')
 		.setName('Manage excluded folders');
-	const desc3 = activeDocument.createDocumentFragment();
+	const desc3 = document.createDocumentFragment();
 	desc3.append(
 		'Add {regex} at the beginning of the folder name to use a regex pattern.',
 		desc3.createEl('br'),

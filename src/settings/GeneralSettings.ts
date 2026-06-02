@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/unbound-method */
+
 /* eslint-disable max-len */
 import { Setting, Platform } from 'obsidian';
 import type { SettingsTab } from './SettingsTab';
@@ -11,7 +11,7 @@ import { refreshAllFolderStyles } from '../functions/styleFunctions';
 import BackupWarningModal from './modals/BackupWarning';
 import RenameFolderNotesModal from './modals/RenameFns';
 
-let debounceTimer: ReturnType<typeof setTimeout>;
+let debounceTimer: number | undefined;
 
 // eslint-disable-next-line complexity
 export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
@@ -54,7 +54,7 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 						'Rename all existing folder notes',
 						'When you click on "Confirm" all existing folder notes will be renamed to the new folder note name.',
 						settingsTab.renameFolderNotes,
-						[])
+						[settingsTab.plugin.settings.oldFolderNoteName ?? '{{folder_name}}'])
 						.open();
 				}),
 		);
@@ -128,7 +128,7 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 
 	const setting0 = new Setting(containerEl);
 	setting0.setName('Supported file types');
-	const desc0 = activeDocument.createDocumentFragment();
+	const desc0 = document.createDocumentFragment();
 	desc0.append(
 		'Specify which file types are allowed as folder notes. Applies to both new and existing folders. Adding many types may affect performance.',
 	);
@@ -482,7 +482,7 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 
 	settingsTab.settingsPage.createEl('h3', { text: 'Integration & compatibility' });
 
-	const desc1 = activeDocument.createDocumentFragment();
+	const desc1 = document.createDocumentFragment();
 
 	const link = activeDocument.createElement('a');
 	link.href = 'https://github.com/snezhig/obsidian-front-matter-title';

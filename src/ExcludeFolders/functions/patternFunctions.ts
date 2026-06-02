@@ -95,7 +95,6 @@ export function addExcludePatternListItem(
 	const setting = new Setting(containerEl);
 	setting.setClass('fn-exclude-folder-list');
 	setting.addSearch((cb) => {
-		// @ts-expect-error Obsidian's public types don't include containerEl on this control
 		cb.containerEl.addClass('fn-exclude-folder-path');
 		cb.setPlaceholder('Pattern');
 		cb.setValue(pattern.string);

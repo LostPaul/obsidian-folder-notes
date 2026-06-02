@@ -5,14 +5,14 @@ export class WhitelistedFolder {
 	path: string;
 	string: string;
 	subFolders: boolean;
-	enableSync: boolean;
-	enableAutoCreate: boolean;
-	enableFolderNote: boolean;
-	disableCollapsing: boolean;
-	showInFolderOverview: boolean;
-	hideInFileExplorer: boolean;
+	enableSync: boolean = false;
+	enableAutoCreate: boolean = false;
+	enableFolderNote: boolean = false;
+	disableCollapsing: boolean = false;
+	showInFolderOverview: boolean = false;
+	hideInFileExplorer: boolean = false;
 	position: number;
-	hideInSettings: boolean;
+	hideInSettings: boolean = false;
 	constructor(path: string, position: number, id: string | undefined, plugin: FolderNotesPlugin) {
 		this.type = 'folder';
 		this.id = id || crypto.randomUUID();

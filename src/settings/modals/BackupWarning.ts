@@ -5,15 +5,15 @@ export default class BackupWarningModal extends Modal {
 	plugin: FolderNotesPlugin;
 	title: string;
 	desc: string;
-	callback: (...args: unknown[]) => void;
-	args: unknown[];
+	callback: (oldMethod: string) => void;
+	args: [string];
 
 	constructor(
 		plugin: FolderNotesPlugin,
 		title: string,
 		description: string,
-		callback: (...args: unknown[]) => void,
-		args: unknown[] = [],
+		callback: (oldMethod: string) => void,
+		args: [string],
 	) {
 		super(plugin.app);
 		this.plugin = plugin;

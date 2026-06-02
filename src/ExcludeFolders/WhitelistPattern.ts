@@ -6,13 +6,13 @@ export class WhitelistedPattern {
 	path: string;
 	position: number;
 	subFolders: boolean;
-	enableSync: boolean;
-	enableAutoCreate: boolean;
-	enableFolderNote: boolean;
-	disableCollapsing: boolean;
-	showInFolderOverview: boolean;
-	hideInFileExplorer: boolean;
-	hideInSettings: boolean;
+	enableSync: boolean = false;
+	enableAutoCreate: boolean = false;
+	enableFolderNote: boolean = false;
+	disableCollapsing: boolean = false;
+	showInFolderOverview: boolean = false;
+	hideInFileExplorer: boolean = false;
+	hideInSettings: boolean = false;
 	constructor(
 		pattern: string,
 		position: number,

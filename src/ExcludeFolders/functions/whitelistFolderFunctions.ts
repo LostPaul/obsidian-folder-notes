@@ -132,7 +132,6 @@ export function addWhitelistFolderListItem(
 			plugin,
 			true,
 		);
-		// @ts-expect-error Obsidian's public types don't include this property
 		cb.containerEl.addClass('fn-exclude-folder-path');
 		cb.setPlaceholder('Folder path');
 		cb.setValue(whitelistedFolder.path);

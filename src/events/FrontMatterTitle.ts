@@ -25,12 +25,12 @@ interface WrappedUpdateData {
 
 export class FrontMatterTitlePluginHandler {
 	plugin: FolderNotesPlugin;
-	app: App;
+	app!: App;
 	api: ApiInterface | null = null;
 	deffer: DeferInterface | null = null;
 	modifiedFolders: Map<string, TFolder> = new Map();
-	eventRef: ListenerRef<'manager:update'>;
-	dispatcher: EventDispatcherInterface<Events>;
+	eventRef: ListenerRef<'manager:update'> | null = null;
+	dispatcher: EventDispatcherInterface<Events> | null = null;
 	constructor(plugin: FolderNotesPlugin) {
 		this.plugin = plugin;
 		this.app = plugin.app;
@@ -66,13 +66,13 @@ export class FrontMatterTitlePluginHandler {
 				// this.plugin.app.vault.getFiles().forEach((file) => {
 				// 	this.handleRename({ id: '', result: false, path: file.path }, false);
 				// });
-				this.plugin.updateAllBreadcrumbs();
+				plugin.updateAllBreadcrumbs();
 			}
 		})();
 	}
 
 	deleteEvent(): void {
-		if (this.eventRef) {
+		if (this.eventRef && this.dispatcher) {
 			this.dispatcher.removeListener(this.eventRef);
 		}
 	}
