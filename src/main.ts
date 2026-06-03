@@ -221,9 +221,11 @@ export default class FolderNotesPlugin extends Plugin {
 		registerFileExplorerObserver(this);
 
 		const fileExplorer = getFileExplorer(this);
-		if (fileExplorer) {
-			// @ts-expect-error use internal API
-			fileExplorer.view.tree.infinityScroll.rootMargin = 1.5;
+		// @ts-expect-error use internal API
+		const infinityScroll = fileExplorer?.view?.tree?.infinityScroll;
+
+		if (infinityScroll) {
+			infinityScroll.rootMargin = 1.5;
 		}
 
 		this.registerView(FOLDER_OVERVIEW_VIEW, (leaf: WorkspaceLeaf) => {
