@@ -304,13 +304,13 @@ export default class FolderNotesPlugin extends Plugin {
 			clipboardProto.handleDragOver as unknown as ClipboardManagerLike['handleDragOver'];
 		const originalHandleDrop =
 			clipboardProto.handleDrop as unknown as ClipboardManagerLike['handleDrop'];
-
-		clipboardProto.handleDragOver = (evt: DragEvent, ...args: unknown[]): void => {
-			const { dragManager } = clipboardManager.app;
+		const folderNotePlugin = this;
+		clipboardProto.handleDragOver = function (evt: DragEvent, ...args: unknown[]): void {
+			const { dragManager } = (this as ClipboardManagerLike).app;
 			const draggable = dragManager?.draggable;
 
 			if (draggable?.file instanceof TFolder) {
-				const folderNote = getFolderNote(this, draggable.file.path);
+				const folderNote = getFolderNote(folderNotePlugin, draggable.file.path);
 				if (folderNote) {
 					dragManager.setAction(
 						window.i18next.t('interface.drag-and-drop.insert-link-here'),
@@ -319,22 +319,22 @@ export default class FolderNotesPlugin extends Plugin {
 				}
 			}
 
-			originalHandleDragOver(evt, ...args);
+			return originalHandleDragOver.call(this, evt, ...args);
 		};
 
-		clipboardProto.handleDrop = (evt: DragEvent, ...args: unknown[]): void => {
-			const { dragManager } = clipboardManager.app;
+		clipboardProto.handleDrop = function (evt: DragEvent, ...args: unknown[]): void {
+			const { dragManager } = (this as ClipboardManagerLike).app;
 			const draggable = dragManager?.draggable;
 
 			if (draggable?.file instanceof TFolder) {
-				const folderNote = getFolderNote(this, draggable.file.path);
+				const folderNote = getFolderNote(folderNotePlugin, draggable.file.path);
 				if (folderNote) {
 					draggable.file = folderNote;
 					draggable.type = 'file';
 				}
 			}
 
-			originalHandleDrop(evt, ...args);
+			return originalHandleDrop.call(this, evt, ...args);
 		};
 
 		if (this.settings.fvGlobalSettings.autoUpdateLinks) {
