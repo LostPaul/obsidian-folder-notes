@@ -225,6 +225,8 @@ export default class FolderNotesPlugin extends Plugin {
 		const infinityScroll = fileExplorer?.view?.tree?.infinityScroll;
 
 		if (infinityScroll) {
+			// increase infinity scroll buffer to show hidden folder notes
+			// Issue: https://github.com/LostPaul/obsidian-folder-notes/issues/274
 			infinityScroll.rootMargin = 1.5;
 		}
 
