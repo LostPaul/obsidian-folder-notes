@@ -202,8 +202,12 @@ async function updateFolderNamesInPath(
 				viewHeaderTitle.classList.remove('path-is-folder-note');
 			}
 		}
-		if (!folderNote) return;
-		if (folderNote) breadcrumb.classList.add('has-folder-note');
+		if (!folderNote) {
+			breadcrumb.classList.remove('has-folder-note');
+			breadcrumb.removeAttribute('data-path');
+			continue;
+		}
+		breadcrumb.classList.add('has-folder-note');
 		breadcrumb?.setAttribute('data-path', path.slice(0, -TRAILING_SLASH_LENGTH));
 		if (!breadcrumb.onclick) {
 			breadcrumb.addEventListener('click', (e) => {
