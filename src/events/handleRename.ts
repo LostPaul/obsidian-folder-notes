@@ -17,6 +17,7 @@ import {
 import {
 	getFolderPathFromString, removeExtension, getFileNameFromPathString,
 } from 'src/functions/utils';
+import { syncFolderNoteIconFromIconize } from 'src/functions/iconize';
 
 export function handleRename(
 	file: TAbstractFile,
@@ -127,6 +128,7 @@ export async function handleFileMove(
 		markFileAsFolderNote(file, plugin);
 		if (newFolder instanceof TFolder) {
 			markFolderWithFolderNoteClasses(newFolder, plugin);
+			syncFolderNoteIconFromIconize(plugin, newFolder.path, file);
 			if (plugin.app.workspace.getActiveFile()?.path === file.path) {
 				removeActiveFolder(plugin);
 				setActiveFolder(newFolder.path, plugin);
@@ -394,6 +396,7 @@ function handleFolderNoteCreation(
 ): void {
 	addCSSClassToFileExplorerEl(file.path, 'is-folder-note', false, plugin);
 	addCSSClassToFileExplorerEl(newFolder.path, 'has-folder-note', false, plugin);
+	syncFolderNoteIconFromIconize(plugin, newFolder.path, file);
 }
 
 function handleFolderNoteRemoval(
@@ -403,6 +406,7 @@ function handleFolderNoteRemoval(
 ): void {
 	removeCSSClassFromFileExplorerEL(file.path, 'is-folder-note', false, plugin);
 	removeCSSClassFromFileExplorerEL(newFolder?.path || '', 'has-folder-note', false, plugin);
+	syncFolderNoteIconFromIconize(plugin, newFolder?.path || '', file);
 }
 
 function handleSameFolderRename(
@@ -414,6 +418,7 @@ function handleSameFolderRename(
 	addCSSClassToFileExplorerEl(file.path, 'is-folder-note', false, plugin);
 	removeCSSClassFromFileExplorerEL(oldFolder?.path, 'has-folder-note', false, plugin);
 	addCSSClassToFileExplorerEl(newFolder.path, 'has-folder-note', false, plugin);
+	syncFolderNoteIconFromIconize(plugin, newFolder.path, file);
 }
 
 function shouldRenameFolderOnFileRename(
