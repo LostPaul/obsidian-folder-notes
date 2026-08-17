@@ -36,6 +36,7 @@ import { registerOverviewCommands } from './obsidian-folder-overview/src/Command
 import { updateOverviewView, updateViewDropdown } from './obsidian-folder-overview/src/main';
 import { FvIndexDB } from './obsidian-folder-overview/src/utils/IndexDB';
 import { updateAllOverviews } from './obsidian-folder-overview/src/utils/functions';
+import { getApi, type FolderNotesApi } from './api';
 
 interface FileExplorerPluginLike extends Plugin {
 	revealInFolder: (file: TAbstractFile) => void;
@@ -88,6 +89,7 @@ export default class FolderNotesPlugin extends Plugin {
 	settingsOpened = false;
 	askModalCurrentlyOpen = false;
 	fvIndexDB!: FvIndexDB;
+	api!: FolderNotesApi;
 
 	async onload(): Promise<void> {
 		console.debug('loading folder notes plugin');
@@ -95,6 +97,7 @@ export default class FolderNotesPlugin extends Plugin {
 		this.settingsTab = new SettingsTab(this.app, this);
 		this.addSettingTab(this.settingsTab);
 		await this.saveSettings();
+		this.api = getApi(this);
 		this.fvIndexDB = new FvIndexDB(this);
 
 		// Add CSS Classes
