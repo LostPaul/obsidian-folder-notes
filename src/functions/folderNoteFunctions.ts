@@ -306,7 +306,9 @@ export async function turnIntoFolderNote(
 		void deleteExcludedFolder(plugin, detachedExcludedFolder);
 	}
 
-	await plugin.app.fileManager.renameFile(file, path);
+	if (file.path !== path) {
+		await plugin.app.fileManager.renameFile(file, path);
+	}
 	void addCSSClassToFileExplorerEl(path, 'is-folder-note', false, plugin, true);
 	void addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
 
