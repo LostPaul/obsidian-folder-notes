@@ -17,7 +17,10 @@ import {
 import {
 	getFolderPathFromString, removeExtension, getFileNameFromPathString,
 } from 'src/functions/utils';
-import { syncFolderNoteIconFromIconize } from 'src/functions/iconize';
+import {
+	clearFolderNoteIconFromIconize,
+	syncFolderNoteIconFromIconize,
+} from 'src/functions/iconize';
 
 export function handleRename(
 	file: TAbstractFile,
@@ -280,8 +283,11 @@ export async function handleFileRename(
 		return;
 	}
 
-	// Handle folder note removal
-	if (shouldRemoveFolderNoteClasses(excludedFolder, folderName, newFolder)) {
+	// Handle folder note removal only if this file actually was
+	// the folder note before it was renamed.
+	const wasFolderNote = isFolderNoteNameForFolder(plugin, oldFileName, oldFolder);
+
+	if (wasFolderNote && shouldRemoveFolderNoteClasses(excludedFolder, folderName, newFolder)) {
 		handleFolderNoteRemoval(file, newFolder, plugin);
 	}
 
@@ -389,6 +395,21 @@ function shouldRemoveFolderNoteClasses(
 	return excludedFolder?.disableFolderNote || (folderName !== (newFolder)?.name);
 }
 
+function isFolderNoteNameForFolder(
+	plugin: FolderNotesPlugin,
+	fileName: string,
+	folder: TAbstractFile | null,
+): boolean {
+	if (!(folder instanceof TFolder)) return false;
+
+	const expectedName = plugin.settings.folderNoteName.replace(
+		'{{folder_name}}',
+		folder.name,
+	);
+
+	return fileName === expectedName;
+}
+
 function handleFolderNoteCreation(
 	file: TFile,
 	newFolder: TAbstractFile,
@@ -404,9 +425,21 @@ function handleFolderNoteRemoval(
 	newFolder: TAbstractFile | null,
 	plugin: FolderNotesPlugin,
 ): void {
-	removeCSSClassFromFileExplorerEL(file.path, 'is-folder-note', false, plugin);
-	removeCSSClassFromFileExplorerEL(newFolder?.path || '', 'has-folder-note', false, plugin);
-	syncFolderNoteIconFromIconize(plugin, newFolder?.path || '', file);
+	removeCSSClassFromFileExplorerEL(
+		file.path,
+		'is-folder-note',
+		false,
+		plugin,
+	);
+
+	removeCSSClassFromFileExplorerEL(
+		newFolder?.path || '',
+		'has-folder-note',
+		false,
+		plugin,
+	);
+
+	clearFolderNoteIconFromIconize(plugin, file);
 }
 
 function handleSameFolderRename(

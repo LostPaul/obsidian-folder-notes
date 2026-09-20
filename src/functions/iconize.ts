@@ -101,3 +101,37 @@ export function syncFolderNoteIconFromIconize(
 		scheduleIconizeRefresh(plugin);
 	}
 }
+
+/**
+ * Removes the icon that was mirrored onto a Folder Note once the file
+ * stops being that folder's Folder Note.
+ */
+export function clearFolderNoteIconFromIconize(
+	plugin: FolderNotesPlugin,
+	folderNote: TFile | null | undefined,
+): void {
+	if (!folderNote) return;
+
+	const iconize = getIconizePlugin(plugin);
+	if (!iconize) return;
+
+	const noteIcon = iconize.getIconNameFromPath(folderNote.path);
+	const noteColor = iconize.getIconColor?.(folderNote.path);
+
+	let changed = false;
+
+	if (noteIcon) {
+		iconize.removeFolderIcon(folderNote.path);
+		iconize.api?.removeIconInPath?.(folderNote.path);
+		changed = true;
+	}
+
+	if (noteColor !== undefined && iconize.removeIconColor) {
+		iconize.removeIconColor(folderNote.path);
+		changed = true;
+	}
+
+	if (changed) {
+		scheduleIconizeRefresh(plugin);
+	}
+}
