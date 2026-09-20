@@ -4,6 +4,7 @@ import { getFolderNote, getFolderNoteFolder } from 'src/functions/folderNoteFunc
 import { handleViewHeaderClick } from './handleClick';
 import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions';
 import { updateCSSClassesForFolder } from 'src/functions/styleFunctions';
+import { syncFolderNoteIconFromIconize } from 'src/functions/iconize';
 
 let fileExplorerMutationObserver: MutationObserver | null = null;
 
@@ -65,8 +66,9 @@ function observeFolderTitleMutations(plugin: FolderNotesPlugin): void {
 			// Obsidian can rebuild the parent folder title when its children change.
 			const folderPath = getAffectedFolderPath(mutation.target);
 			if (folderPath) affectedFolderPaths.add(folderPath);
-
+			syncIconizeFolderNoteFromMutation(mutation.target, plugin);
 			for (const node of Array.from(mutation.addedNodes)) {
+				syncIconizeFolderNoteFromMutation(node, plugin);
 				if (!(node.instanceOf(HTMLElement))) continue;
 				processAddedFolders(node, plugin);
 			}
@@ -78,6 +80,18 @@ function observeFolderTitleMutations(plugin: FolderNotesPlugin): void {
 	});
 
 	fileExplorerMutationObserver.observe(document, { childList: true, subtree: true });
+}
+
+function syncIconizeFolderNoteFromMutation(node: Node, plugin: FolderNotesPlugin): void {
+	if (!(node.instanceOf(Element))) return;
+
+	const folderEl = node.closest('.nav-folder-title');
+	if (!folderEl) return;
+
+	const folderPath = folderEl.getAttribute('data-path') || '';
+	if (!folderPath) return;
+
+	syncFolderNoteIconFromIconize(plugin, folderPath, getFolderNote(plugin, folderPath));
 }
 
 function getAffectedFolderPath(target: Node): string | null {
@@ -131,8 +145,10 @@ async function setupFolderTitle(
 	plugin: FolderNotesPlugin,
 	folderPath: string,
 ): Promise<void> {
-	if (folderTitle.dataset.initialized === 'true') return;
+	// if (folderTitle.dataset.initialized === 'true') return;
 	if (!folderPath) return;
+	syncFolderNoteIconFromIconize(plugin, folderPath, getFolderNote(plugin, folderPath));
+	if (folderTitle.dataset.initialized === 'true') return;
 
 	folderTitle.dataset.initialized = 'true';
 	await updateCSSClassesForFolder(folderPath, plugin);

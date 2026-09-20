@@ -34,6 +34,7 @@ import {
 	getFolderPathFromString,
 	removeExtension,
 } from 'src/functions/utils';
+import { syncFolderNoteIconFromIconize } from 'src/functions/iconize';
 
 
 
@@ -122,6 +123,7 @@ export async function createFolderNote(
 	if (!(folder instanceof TFolder)) return;
 	addCSSClassToFileExplorerEl(path, 'is-folder-note', false, plugin, true);
 	addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
+	syncFolderNoteIconFromIconize(plugin, folder.path, folderNote);
 }
 
 function getArgs(
@@ -309,6 +311,7 @@ export async function turnIntoFolderNote(
 	await plugin.app.fileManager.renameFile(file, path);
 	void addCSSClassToFileExplorerEl(path, 'is-folder-note', false, plugin, true);
 	void addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
+	syncFolderNoteIconFromIconize(plugin, folder.path, file);
 
 	removeActiveFolder(plugin);
 	setActiveFolder(folder.path, plugin);
