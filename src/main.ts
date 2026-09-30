@@ -617,10 +617,17 @@ export default class FolderNotesPlugin extends Plugin {
 		fileExplorerItem = fileExplorerItem?.querySelector('div.nav-folder-title-content');
 		if (!fileExplorerItem) { return; }
 		if (this.settings.frontMatterTitle.explorer && this.settings.frontMatterTitle.enabled) {
-			(fileExplorerItem).innerText = newName;
+			// Skip redundant writes: the file explorer mutation observer re-applies
+			// folder names when Obsidian rewrites the title text, and writing the
+			// same value again would trigger the observer once more.
+			if (fileExplorerItem.innerText !== newName) {
+				(fileExplorerItem).innerText = newName;
+			}
 			(fileExplorerItem).setAttribute('old-name', folder.name);
 		} else {
-			(fileExplorerItem).innerText = folder.name;
+			if (fileExplorerItem.innerText !== folder.name) {
+				(fileExplorerItem).innerText = folder.name;
+			}
 			(fileExplorerItem).removeAttribute('old-name');
 		}
 	}
