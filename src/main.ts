@@ -88,6 +88,9 @@ export default class FolderNotesPlugin extends Plugin {
 	settingsOpened = false;
 	askModalCurrentlyOpen = false;
 	fvIndexDB!: FvIndexDB;
+	// Folder overview edit buttons that already have a click listener, mapped to the latest
+	// handler, so the MutationObserver in handleOverviewBlock doesn't add a listener per mutation.
+	private overviewEditHandlers: WeakMap<Node, () => void> = new WeakMap();
 
 	async onload(): Promise<void> {
 		console.debug('loading folder notes plugin');
@@ -480,21 +483,25 @@ export default class FolderNotesPlugin extends Plugin {
 	handleOverviewBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext): void {
 		const observer = new MutationObserver(() => {
 			const editButton = el.parentElement?.childNodes.item(1);
-			if (editButton) {
-				editButton.addEventListener('click', (e) => {
-					e.stopImmediatePropagation();
-					e.preventDefault();
-					e.stopPropagation();
-					new FolderOverviewSettings(
-						this.app,
-						this,
-						parseYaml(source) as defaultOverviewSettings,
-						ctx,
-						el,
-						this.settings.defaultOverview,
-					).open();
-				}, { capture: true });
-			}
+			if (!editButton) return;
+			const hasListener = this.overviewEditHandlers.has(editButton);
+			this.overviewEditHandlers.set(editButton, () => {
+				new FolderOverviewSettings(
+					this.app,
+					this,
+					parseYaml(source) as defaultOverviewSettings,
+					ctx,
+					el,
+					this.settings.defaultOverview,
+				).open();
+			});
+			if (hasListener) return;
+			editButton.addEventListener('click', (e) => {
+				e.stopImmediatePropagation();
+				e.preventDefault();
+				e.stopPropagation();
+				this.overviewEditHandlers.get(editButton)?.();
+			}, { capture: true });
 		});
 
 		observer.observe(el, {
