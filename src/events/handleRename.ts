@@ -3,6 +3,7 @@ import type FolderNotesPlugin from 'src/main';
 import {
 	extractFolderName, getFolderNote, getFolderNoteFolder,
 	getFolderNameFromNoteName, getFolderNoteNameTemplates, getMatchingFolderNoteNameTemplate,
+	hasPreferredFolderNote,
 } from '../functions/folderNoteFunctions';
 import {
 	getExcludedFolder, addExcludedFolder,
@@ -250,7 +251,39 @@ export async function handleFolderRename(
 		folderNote.path = `${file.path}/${folderNote.name}`;
 		newPath = `${file.path}/${fileName}.${folderNote.extension}`;
 	}
-	plugin.app.fileManager.renameFile(folderNote, newPath);
+	await plugin.app.fileManager.renameFile(folderNote, newPath);
+	await renameOtherFolderNoteNames(file, oldPath, template, plugin);
+}
+
+// A folder can hold more than one file with a folder note name, e.g. Folder.md next to
+// Folder.local.md. Only one of them is the folder note; rename the others along with it.
+async function renameOtherFolderNoteNames(
+	folder: TFolder,
+	oldPath: string,
+	renamedTemplate: string,
+	plugin: FolderNotesPlugin,
+): Promise<void> {
+	const oldFolderName = getFileNameFromPathString(oldPath);
+	let noteFolderPath = folder.path;
+	if (plugin.settings.storageLocation === 'parentFolder') {
+		noteFolderPath = getFolderPathFromString(folder.path);
+		if (noteFolderPath !== getFolderPathFromString(oldPath)) { return; }
+	}
+	const noteFolder = plugin.app.vault.getAbstractFileByPath(noteFolderPath || '/');
+	if (!(noteFolder instanceof TFolder)) { return; }
+
+	for (const template of getFolderNoteNameTemplates(plugin)) {
+		if (template === renamedTemplate || !template.includes('{{folder_name}}')) { continue; }
+		const oldName = template.replace('{{folder_name}}', oldFolderName);
+		const sibling = noteFolder.children.find((child) => child instanceof TFile
+			&& child.basename === oldName
+			&& plugin.settings.supportedFileTypes.includes(child.extension));
+		if (!(sibling instanceof TFile)) { continue; }
+		const newName = `${template.replace('{{folder_name}}', folder.name)}.${sibling.extension}`;
+		const newPath = noteFolder.path === '/' ? newName : `${noteFolder.path}/${newName}`;
+		if (plugin.app.vault.getAbstractFileByPath(newPath)) { continue; }
+		await plugin.app.fileManager.renameFile(sibling, newPath);
+	}
 }
 
 // eslint-disable-next-line complexity
@@ -270,6 +303,15 @@ export async function handleFileRename(
 	const excludedFolder = getExcludedFolder(plugin, newFolder?.path || '', true);
 	const detachedExcludedFolder = getDetachedFolder(plugin, newFolder?.path || '');
 	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
+
+	// The name fits, but another file with a higher priority name is the folder note
+	if (folderName === newFolder?.name && newFolder instanceof TFolder) {
+		const actualFolderNote = getFolderNote(plugin, newFolder.path);
+		if (actualFolderNote && actualFolderNote.path !== file.path) {
+			removeCSSClassFromFileExplorerEL(file.path, 'is-folder-note', false, plugin);
+			return;
+		}
+	}
 
 	// Handle folder note creation
 	if (shouldCreateFolderNote(excludedFolder, folderName, newFolder, detachedExcludedFolder)) {
@@ -296,7 +338,10 @@ export async function handleFileRename(
 	}
 
 	// Handle folder rename on file rename
-	if (shouldRenameFolderOnFileRename(oldFolderName, oldFolder, newFolder, folderNote)) {
+	if (
+		shouldRenameFolderOnFileRename(oldFolderName, oldFolder, newFolder, folderNote)
+		&& !hasPreferredFolderNote(plugin, oldFolder!.path, oldFileName)
+	) {
 		return renameFolderOnFileRename(file, oldPath, oldFolder!, plugin);
 	}
 }

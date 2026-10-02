@@ -41,6 +41,7 @@ export interface FolderNotesSettings {
 	oldFolderNoteName: string | undefined;
 	folderNoteName: string;
 	alternativeFolderNoteNames: string[];
+	preferAlternativeFolderNoteNames: boolean;
 	newFolderNoteName: string;
 	folderNoteType: string;
 	disableFolderHighlighting: boolean;
@@ -111,6 +112,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	oldFolderNoteName: undefined,
 	folderNoteName: '{{folder_name}}',
 	alternativeFolderNoteNames: [],
+	preferAlternativeFolderNoteNames: false,
 	folderNoteType: '.md',
 	disableFolderHighlighting: false,
 	newFolderNoteName: '{{folder_name}}',

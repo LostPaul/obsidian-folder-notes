@@ -491,14 +491,35 @@ export function getFolderNote(
 	return null;
 }
 
-// The folder note name template first, then the alternative names in the order the user set them.
-// New folder notes always get the first one; the others are only recognized.
+// All recognized folder note name templates, highest priority first: the folder note name
+// template and then the alternative names in the order the user set them, or the alternatives
+// first when they are preferred. New folder notes always get the folder note name template.
 export function getFolderNoteNameTemplates(plugin: FolderNotesPlugin): string[] {
 	const { folderNoteName } = plugin.settings;
 	const alternatives = (plugin.settings.alternativeFolderNoteNames ?? [])
 		.map((name) => name.trim())
 		.filter((name) => name !== '' && name !== folderNoteName);
-	return [folderNoteName, ...alternatives];
+	return plugin.settings.preferAlternativeFolderNoteNames
+		? [...alternatives, folderNoteName]
+		: [folderNoteName, ...alternatives];
+}
+
+// True when the folder has a file for a template with a higher priority than the one fileName
+// matches, so fileName is (or was) not the folder note even though its name fits.
+export function hasPreferredFolderNote(
+	plugin: FolderNotesPlugin,
+	folderPath: string,
+	fileName: string,
+): boolean {
+	const folderName = getFolderNameFromPathString(folderPath);
+	const templates = getFolderNoteNameTemplates(plugin);
+	const index = templates.findIndex(
+		(template) => template.replace('{{folder_name}}', folderName) === fileName,
+	);
+	if (index <= 0) return false;
+	return templates.slice(0, index).some(
+		(template) => getFolderNote(plugin, folderPath, undefined, undefined, template),
+	);
 }
 
 export function getMatchingFolderNoteNameTemplate(

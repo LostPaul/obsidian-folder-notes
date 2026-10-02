@@ -78,6 +78,19 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 				}),
 		);
 
+	new Setting(containerEl)
+		.setName('Prefer alternative folder note names')
+		.setDesc('When a folder has both, use the file with an alternative name as folder note, e.g. Folder.local.md over Folder.md. The other file stays a normal note.')
+		.addToggle((toggle) =>
+			toggle
+				.setValue(settingsTab.plugin.settings.preferAlternativeFolderNoteNames)
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.preferAlternativeFolderNoteNames = value;
+					await settingsTab.plugin.saveSettings();
+					refreshAllFolderStyles(true, settingsTab.plugin);
+				}),
+		);
+
 	if (!settingsTab.plugin.settings.folderNoteName.includes('{{folder_name}}')) {
 		new Setting(containerEl)
 			.setName('Display folder name in tab title')
