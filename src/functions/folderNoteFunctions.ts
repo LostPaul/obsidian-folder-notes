@@ -477,15 +477,51 @@ export function getFolderNote(
 	const folder = getFolderInfo(folderPath);
 	if (!folder) return null;
 
-	let fileName = resolveFileName(plugin, folder, file, oldFolderNoteName);
-	if (!fileName) return null;
+	const fileNames = resolveFileNames(plugin, folder, file, oldFolderNoteName);
+	if (fileNames.length === 0) return null;
 
 	adjustFolderPathForStorage(folder, folderPath, plugin, storageLocation);
 
-	const path = buildFullPath(folder, fileName);
 	const primaryType = normalizeFolderNoteType(plugin.settings.folderNoteType);
 
-	return findFolderNoteFile(plugin, path, primaryType);
+	for (const fileName of fileNames) {
+		const folderNote = findFolderNoteFile(plugin, buildFullPath(folder, fileName), primaryType);
+		if (folderNote) return folderNote;
+	}
+	return null;
+}
+
+// The folder note name template first, then the alternative names in the order the user set them.
+// New folder notes always get the first one; the others are only recognized.
+export function getFolderNoteNameTemplates(plugin: FolderNotesPlugin): string[] {
+	const { folderNoteName } = plugin.settings;
+	const alternatives = (plugin.settings.alternativeFolderNoteNames ?? [])
+		.map((name) => name.trim())
+		.filter((name) => name !== '' && name !== folderNoteName);
+	return [folderNoteName, ...alternatives];
+}
+
+export function getMatchingFolderNoteNameTemplate(
+	plugin: FolderNotesPlugin,
+	folderName: string,
+	fileName: string,
+): string | null {
+	return getFolderNoteNameTemplates(plugin).find(
+		(template) => template.replace('{{folder_name}}', folderName) === fileName,
+	) ?? null;
+}
+
+// Name of the folder a (possible) folder note belongs to. Falls back to the primary template
+// when the file name matches none of the templates for that folder.
+export function getFolderNameFromNoteName(
+	plugin: FolderNotesPlugin,
+	fileName: string,
+	folder: TAbstractFile | null,
+): string {
+	if (folder && getMatchingFolderNoteNameTemplate(plugin, folder.name, fileName)) {
+		return folder.name;
+	}
+	return extractFolderName(plugin.settings.folderNoteName, fileName) || fileName;
 }
 
 
@@ -517,34 +553,33 @@ export function getFolder(
 	storageLocation?: string,
 ): TFolder | TAbstractFile | null {
 	if (!file) return null;
-	let folderName = extractFolderName(plugin.settings.folderNoteName, file.basename);
-	if (
-		plugin.settings.folderNoteName === file.basename &&
-		plugin.settings.storageLocation === 'insideFolder'
-	) {
-		folderName = file.parent?.name ?? '';
-	}
-	if (!folderName) return null;
-	let folderPath = getFolderPathFromString(file.path);
-	let folder: TFolder | TAbstractFile | null = null;
-
-	if (
-		(plugin.settings.storageLocation === 'parentFolder' ||
-			storageLocation === 'parentFolder') &&
-		storageLocation !== 'insideFolder'
-	) {
-		if (folderPath.trim() === '' || folderPath === '/') {
-			folderPath = folderName;
-		} else {
-			folderPath = `${folderPath}/${folderName}`;
+	for (const template of getFolderNoteNameTemplates(plugin)) {
+		let folderName = extractFolderName(template, file.basename);
+		if (
+			template === file.basename &&
+			plugin.settings.storageLocation === 'insideFolder'
+		) {
+			folderName = file.parent?.name ?? '';
 		}
-		folder = plugin.app.vault.getAbstractFileByPath(folderPath);
-	} else {
-		folder = plugin.app.vault.getAbstractFileByPath(folderPath);
-	}
+		if (!folderName) continue;
+		let folderPath = getFolderPathFromString(file.path);
 
-	if (!folder) { return null; }
-	return folder;
+		if (
+			(plugin.settings.storageLocation === 'parentFolder' ||
+				storageLocation === 'parentFolder') &&
+			storageLocation !== 'insideFolder'
+		) {
+			if (folderPath.trim() === '' || folderPath === '/') {
+				folderPath = folderName;
+			} else {
+				folderPath = `${folderPath}/${folderName}`;
+			}
+		}
+
+		const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
+		if (folder) { return folder; }
+	}
+	return null;
 }
 
 export function getFolderNoteFolder(
@@ -560,7 +595,6 @@ export function getFolderNoteFolder(
 		fileName = folderNote.basename;
 		filePath = folderNote.path;
 	}
-	const folderName = extractFolderName(plugin.settings.folderNoteName, fileName);
 	if (!plugin.settings.folderNoteName.includes('{{folder_name}}') && plugin.settings.storageLocation === 'insideFolder') {
 		if (folderNote instanceof TFile) {
 			return folderNote.parent;
@@ -568,20 +602,21 @@ export function getFolderNoteFolder(
 		const file = plugin.app.vault.getAbstractFileByPath(filePath);
 		return file instanceof TFile ? file.parent : null;
 	}
-	if (!folderName) return null;
-	let folderPath = getFolderPathFromString(filePath);
-	if (plugin.settings.storageLocation === 'parentFolder') {
-		if (folderPath.trim() === '') {
-			folderPath = folderName;
-		} else {
-			folderPath = `${folderPath}/${folderName}`;
+	for (const template of getFolderNoteNameTemplates(plugin)) {
+		const folderName = extractFolderName(template, fileName);
+		if (!folderName) continue;
+		let folderPath = getFolderPathFromString(filePath);
+		if (plugin.settings.storageLocation === 'parentFolder') {
+			if (folderPath.trim() === '') {
+				folderPath = folderName;
+			} else {
+				folderPath = `${folderPath}/${folderName}`;
+			}
 		}
-	} else {
-		folderPath = getFolderPathFromString(filePath);
+		const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
+		if (folder) { return folder; }
 	}
-	const folder = plugin.app.vault.getAbstractFileByPath(folderPath);
-	if (!folder) { return null; }
-	return folder;
+	return null;
 }
 
 function getFolderInfo(folderPath: string): { path: string; name: string } | null {
@@ -592,16 +627,21 @@ function getFolderInfo(folderPath: string): { path: string; name: string } | nul
 	};
 }
 
-function resolveFileName(
+function resolveFileNames(
 	plugin: FolderNotesPlugin,
 	folder: { path: string; name: string },
 	file?: TFile,
 	oldFolderNoteName?: string,
-): string | null {
-	const templateName = oldFolderNoteName ?? plugin.settings.folderNoteName;
-	if (!templateName) return null;
-	const nameSource = file ? file.basename : folder.name;
-	return templateName.replace('{{folder_name}}', nameSource);
+): string[] {
+	if (file || oldFolderNoteName) {
+		const templateName = oldFolderNoteName ?? plugin.settings.folderNoteName;
+		if (!templateName) return [];
+		const nameSource = file ? file.basename : folder.name;
+		return [templateName.replace('{{folder_name}}', nameSource)];
+	}
+	return getFolderNoteNameTemplates(plugin)
+		.filter((template) => template)
+		.map((template) => template.replace('{{folder_name}}', folder.name));
 }
 
 function adjustFolderPathForStorage(

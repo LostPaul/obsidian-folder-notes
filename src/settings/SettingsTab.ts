@@ -40,6 +40,7 @@ export interface FolderNotesSettings {
 	focusExistingTab: boolean;
 	oldFolderNoteName: string | undefined;
 	folderNoteName: string;
+	alternativeFolderNoteNames: string[];
 	newFolderNoteName: string;
 	folderNoteType: string;
 	disableFolderHighlighting: boolean;
@@ -109,6 +110,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 	focusExistingTab: false,
 	oldFolderNoteName: undefined,
 	folderNoteName: '{{folder_name}}',
+	alternativeFolderNoteNames: [],
 	folderNoteType: '.md',
 	disableFolderHighlighting: false,
 	newFolderNoteName: '{{folder_name}}',

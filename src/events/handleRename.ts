@@ -2,6 +2,7 @@ import { TFile, TFolder, Notice, type TAbstractFile } from 'obsidian';
 import type FolderNotesPlugin from 'src/main';
 import {
 	extractFolderName, getFolderNote, getFolderNoteFolder,
+	getFolderNameFromNoteName, getFolderNoteNameTemplates, getMatchingFolderNoteNameTemplate,
 } from '../functions/folderNoteFunctions';
 import {
 	getExcludedFolder, addExcludedFolder,
@@ -156,10 +157,9 @@ function getArgs(plugin: FolderNotesPlugin, file: TFile, oldPath: string): {
 	oldFolder: TAbstractFile | null;
 	folderNote: TFile | null | undefined;
 } {
-	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename)
-		|| file.basename;
 	const oldFileName = removeExtension(getFileNameFromPathString(oldPath));
 	const newFolder = getFolderNoteFolder(plugin, file, file.basename);
+	const folderName = getFolderNameFromNoteName(plugin, file.basename, newFolder);
 	let excludedFolder = getExcludedFolder(plugin, newFolder?.path || '', true);
 	const oldFolder = getFolderNoteFolder(plugin, oldPath, oldFileName);
 	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
@@ -212,14 +212,17 @@ function renameExistingFolderNote(
 export async function handleFolderRename(
 	file: TFolder, oldPath: string, plugin: FolderNotesPlugin,
 ): Promise<void> {
-	const fileName = plugin.settings.folderNoteName.replace('{{folder_name}}', file.name);
-	const oldFileName = plugin.settings.folderNoteName
-		.replace('{{folder_name}}', getFileNameFromPathString(oldPath));
-
-	if (fileName === oldFileName) { return; }
-
 	const folderNote = getFolderNote(plugin, oldPath);
 	if (!(folderNote instanceof TFile)) return;
+
+	// Keep the name form the folder note already has, e.g. an alternative name stays alternative
+	const oldFolderName = getFileNameFromPathString(oldPath);
+	const template = getMatchingFolderNoteNameTemplate(plugin, oldFolderName, folderNote.basename)
+		?? plugin.settings.folderNoteName;
+	const fileName = template.replace('{{folder_name}}', file.name);
+	const oldFileName = template.replace('{{folder_name}}', oldFolderName);
+
+	if (fileName === oldFileName) { return; }
 
 
 	const excludedFolder = getExcludedFolder(plugin, file.path, true);
@@ -261,11 +264,9 @@ export async function handleFileRename(
 	if (oldFileName === newFileName) { return; }
 
 	const oldFolder = getFolderNoteFolder(plugin, oldPath, oldFileName);
-	const folderName = extractFolderName(plugin.settings.folderNoteName, file.basename)
-		|| file.basename;
-	const oldFolderName = extractFolderName(plugin.settings.folderNoteName, oldFileName)
-		|| oldFileName;
 	const newFolder = getFolderNoteFolder(plugin, file, file.basename);
+	const folderName = getFolderNameFromNoteName(plugin, file.basename, newFolder);
+	const oldFolderName = getFolderNameFromNoteName(plugin, oldFileName, oldFolder);
 	const excludedFolder = getExcludedFolder(plugin, newFolder?.path || '', true);
 	const detachedExcludedFolder = getDetachedFolder(plugin, newFolder?.path || '');
 	const folderNote = getFolderNote(plugin, oldPath, plugin.settings.storageLocation, file);
@@ -306,7 +307,7 @@ async function renameFolderOnFileRename(
 	oldFolder: TAbstractFile,
 	plugin: FolderNotesPlugin,
 ): Promise<void> {
-	const newFolderName = extractFolderName(plugin.settings.folderNoteName, file.basename);
+	const newFolderName = getNewFolderName(plugin, file.basename, oldPath, oldFolder);
 	if (!newFolderName) {
 		removeCSSClassFromFileExplorerEL(oldFolder.path, 'has-folder-note', false, plugin);
 		removeCSSClassFromFileExplorerEL(file.path, 'is-folder-note', false, plugin);
@@ -339,6 +340,31 @@ async function renameFolderOnFileRename(
 		return;
 	}
 	plugin.app.fileManager.renameFile(oldFolder, newFolderPath);
+}
+
+// A new name that still fits the folder (e.g. "Folder" renamed to "Folder.local") keeps it.
+// Otherwise the template of the old name goes first, so "Old.local" renamed to "New.local"
+// renames the folder to "New" and not to "New.local".
+function getNewFolderName(
+	plugin: FolderNotesPlugin,
+	newFileName: string,
+	oldPath: string,
+	oldFolder: TAbstractFile,
+): string | null {
+	if (getMatchingFolderNoteNameTemplate(plugin, oldFolder.name, newFileName)) {
+		return oldFolder.name;
+	}
+	const oldFileName = removeExtension(getFileNameFromPathString(oldPath));
+	const oldTemplate = getMatchingFolderNoteNameTemplate(plugin, oldFolder.name, oldFileName);
+	const templates = getFolderNoteNameTemplates(plugin);
+	const orderedTemplates = oldTemplate
+		? [oldTemplate, ...templates.filter((template) => template !== oldTemplate)]
+		: templates;
+	for (const template of orderedTemplates) {
+		const folderName = extractFolderName(template, newFileName);
+		if (folderName) { return folderName; }
+	}
+	return null;
 }
 
 function updateExcludedFolderPath(

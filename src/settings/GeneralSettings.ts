@@ -61,6 +61,23 @@ export async function renderGeneral(settingsTab: SettingsTab): Promise<void> {
 	nameSetting.infoEl.appendText('Requires a restart to take effect');
 	nameSetting.infoEl.style.color = settingsTab.app.vault.getConfig('accentColor') as string || '#7d5bed';
 
+	new Setting(containerEl)
+		.setName('Alternative folder note names')
+		.setDesc('Other names that are also recognized as folder notes, one template per line, e.g. {{folder_name}}.local. They are checked in order after the template above; new folder notes always use the template above.')
+		.addTextArea((text) =>
+			text
+				.setPlaceholder('{{folder_name}}.local')
+				.setValue((settingsTab.plugin.settings.alternativeFolderNoteNames ?? []).join('\n'))
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.alternativeFolderNoteNames = value
+						.split('\n')
+						.map((name) => name.trim())
+						.filter((name) => name !== '');
+					await settingsTab.plugin.saveSettings();
+					refreshAllFolderStyles(true, settingsTab.plugin);
+				}),
+		);
+
 	if (!settingsTab.plugin.settings.folderNoteName.includes('{{folder_name}}')) {
 		new Setting(containerEl)
 			.setName('Display folder name in tab title')
