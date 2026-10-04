@@ -70,6 +70,8 @@ interface ActiveEditorLike {
 	editMode?: EditModeLike;
 }
 
+const OVERVIEW_UPDATE_DEBOUNCE_MS = 2000;
+
 type LegacySettingsData = Partial<FolderNotesSettings> & {
 	allowWhitespaceCollapsing?: boolean;
 	defaultOverview?: defaultOverviewSettings;
@@ -92,6 +94,9 @@ export default class FolderNotesPlugin extends Plugin {
 	// handler, so the MutationObserver in handleOverviewBlock doesn't add a listener per mutation.
 	private overviewEditHandlers: WeakMap<Node, () => void> = new WeakMap();
 	private fileExplorerClickComponents: Map<Document, Component> = new Map();
+	private updateAllOverviewsDebounced = debounce(() => {
+		void updateAllOverviews(this);
+	}, OVERVIEW_UPDATE_DEBOUNCE_MS, true);
 
 	async onload(): Promise<void> {
 		console.debug('loading folder notes plugin');
@@ -405,11 +410,10 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	handleVaultChange(): void {
+		// Obsidian fires 'create' for every existing file while the vault loads.
+		if (!this.app.workspace.layoutReady) return;
 		if (!this.settings.fvGlobalSettings.autoUpdateLinks) return;
-		const DEBOUNCE_DELAY = 2000;
-		debounce(() => {
-			void updateAllOverviews(this);
-		}, DEBOUNCE_DELAY, true)();
+		this.updateAllOverviewsDebounced();
 	}
 
 	handleFileExplorerClick(evt: MouseEvent): void {
