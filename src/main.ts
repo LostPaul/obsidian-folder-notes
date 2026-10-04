@@ -2,7 +2,7 @@ import {
 	type App, type TAbstractFile,
 	type MarkdownPostProcessorContext,
 	type WorkspaceLeaf,
-	Plugin, TFile, TFolder,
+	Component, Plugin, TFile, TFolder,
 	parseYaml, Notice, Keymap,
 	requireApiVersion, Platform, debounce,
 } from 'obsidian';
@@ -91,6 +91,7 @@ export default class FolderNotesPlugin extends Plugin {
 	// Folder overview edit buttons that already have a click listener, mapped to the latest
 	// handler, so the MutationObserver in handleOverviewBlock doesn't add a listener per mutation.
 	private overviewEditHandlers: WeakMap<Node, () => void> = new WeakMap();
+	private fileExplorerClickComponents: Map<Document, Component> = new Map();
 
 	async onload(): Promise<void> {
 		console.debug('loading folder notes plugin');
@@ -178,45 +179,71 @@ export default class FolderNotesPlugin extends Plugin {
 		);
 	}
 
-	addSettingCssClasses(): void {
-		activeDocument.body.classList.add('folder-notes-plugin');
-		if (this.settings.hideFolderNote) { activeDocument.body.classList.add('hide-folder-note'); }
-		if (this.settings.hideCollapsingIconForEmptyFolders) {
-			activeDocument.body.classList.add('fn-hide-empty-collapse-icon');
-		}
-		if (this.settings.hideFolderNoteNameInPath) {
-			activeDocument.body.classList.add('folder-note-hide-name-path');
-		}
-		if (this.settings.underlineFolder) {
-			activeDocument.body.classList.add('folder-note-underline');
-		}
-		if (this.settings.boldName) { activeDocument.body.classList.add('folder-note-bold'); }
-		if (this.settings.cursiveName) { activeDocument.body.classList.add('folder-note-cursive'); }
-		if (this.settings.boldNameInPath) {
-			activeDocument.body.classList.add('folder-note-bold-path');
-		}
-		if (this.settings.cursiveNameInPath) {
-			activeDocument.body.classList.add('folder-note-cursive-path');
-		}
-		if (this.settings.underlineFolderInPath) {
-			activeDocument.body.classList.add('folder-note-underline-path');
-		}
-		if (this.settings.stopWhitespaceCollapsing) {
-			activeDocument.body.classList.add('fn-whitespace-stop-collapsing');
-		}
-		if (this.settings.hideCollapsingIcon) {
-			activeDocument.body.classList.add('fn-hide-collapse-icon');
-		}
-		if (this.settings.ignoreAttachmentFolder) {
-			activeDocument.body.classList.add('fn-ignore-attachment-folder');
-		}
-		if (!this.settings.highlightFolder) {
-			activeDocument.body.classList.add('disable-folder-highlight');
-		}
+	private getSettingCssClasses(): Record<string, boolean> {
+		return {
+			'folder-notes-plugin': true,
+			'hide-folder-note': this.settings.hideFolderNote,
+			'fn-hide-empty-collapse-icon': this.settings.hideCollapsingIconForEmptyFolders,
+			'folder-note-hide-name-path': this.settings.hideFolderNoteNameInPath,
+			'folder-note-underline': this.settings.underlineFolder,
+			'folder-note-bold': this.settings.boldName,
+			'folder-note-cursive': this.settings.cursiveName,
+			'folder-note-bold-path': this.settings.boldNameInPath,
+			'folder-note-cursive-path': this.settings.cursiveNameInPath,
+			'folder-note-underline-path': this.settings.underlineFolderInPath,
+			'fn-whitespace-stop-collapsing': this.settings.stopWhitespaceCollapsing,
+			'fn-hide-collapse-icon': this.settings.hideCollapsingIcon,
+			'fn-ignore-attachment-folder': this.settings.ignoreAttachmentFolder,
+			'disable-folder-highlight': !this.settings.highlightFolder,
+			'version-1-7-2': requireApiVersion('1.7.2'),
+		};
+	}
 
-		if (requireApiVersion('1.7.2')) {
-			activeDocument.body.classList.add('version-1-7-2');
-		}
+	addSettingCssClasses(doc: Document = this.app.workspace.containerEl.ownerDocument): void {
+		Object.entries(this.getSettingCssClasses()).forEach(([name, enabled]) => {
+			doc.body.classList.toggle(name, enabled);
+		});
+	}
+
+	private removeSettingCssClasses(doc: Document): void {
+		doc.body.classList.remove(...Object.keys(this.getSettingCssClasses()));
+	}
+
+	private registerFileExplorerClickEvents(): void {
+		const { workspace } = this.app;
+		this.registerEvent(workspace.on('window-open', (workspaceWindow) => {
+			this.registerFileExplorerDocument(workspaceWindow.doc);
+		}));
+		this.registerEvent(workspace.on('window-close', (workspaceWindow) => {
+			const component = this.fileExplorerClickComponents.get(workspaceWindow.doc);
+			if (component) this.removeChild(component);
+		}));
+
+		// Focus can be in a pop-out while the plugin loads, so always include the main document.
+		this.registerFileExplorerDocument(workspace.containerEl.ownerDocument);
+		workspace.iterateAllLeaves((leaf) => {
+			this.registerFileExplorerDocument(leaf.view.containerEl.ownerDocument);
+		});
+	}
+
+	private registerFileExplorerDocument(doc: Document): void {
+		if (this.fileExplorerClickComponents.has(doc)) return;
+
+		const component = this.addChild(new Component());
+		this.fileExplorerClickComponents.set(doc, component);
+		this.addSettingCssClasses(doc);
+		component.register(() => {
+			this.removeSettingCssClasses(doc);
+			this.fileExplorerClickComponents.delete(doc);
+		});
+		component.registerDomEvent(doc, 'click', (evt: MouseEvent) => {
+			this.handleFileExplorerClick(evt);
+		}, true);
+		component.registerDomEvent(doc, 'auxclick', (evt: MouseEvent) => {
+			const rightClick = 2;
+			if (evt.button === rightClick) return;
+			this.handleFileExplorerClick(evt);
+		}, true);
 	}
 
 	onLayoutReady(): void {
@@ -224,6 +251,7 @@ export default class FolderNotesPlugin extends Plugin {
 			return;
 		}
 
+		this.registerFileExplorerClickEvents();
 		registerFileExplorerObserver(this);
 
 		const fileExplorer = getFileExplorer(this);
@@ -248,17 +276,6 @@ export default class FolderNotesPlugin extends Plugin {
 		}
 		this.tabManager = new TabManager(this);
 		this.tabManager.updateTabs();
-
-		this.registerDomEvent(activeDocument, 'click', (evt: MouseEvent) => {
-			this.handleFileExplorerClick(evt);
-		}, true);
-
-		// Handle middle mouse button clicks
-		this.registerDomEvent(activeDocument, 'auxclick', (evt: MouseEvent) => {
-			const rightClick = 2;
-			if (evt.button === rightClick) return;
-			this.handleFileExplorerClick(evt);
-		}, true);
 
 		const fileExplorerPlugin = this.app.internalPlugins.getEnabledPluginById('file-explorer');
 		if (fileExplorerPlugin) {
@@ -669,10 +686,7 @@ export default class FolderNotesPlugin extends Plugin {
 
 	onunload(): void {
 		unregisterFileExplorerObserver();
-		activeDocument.body.classList.remove('folder-notes-plugin');
-		activeDocument.body.classList.remove('folder-note-underline');
-		activeDocument.body.classList.remove('hide-folder-note');
-		activeDocument.body.classList.remove('fn-whitespace-stop-collapsing');
+		this.removeSettingCssClasses(this.app.workspace.containerEl.ownerDocument);
 		removeActiveFolder(this);
 		if (this.fmtpHandler) {
 			this.fmtpHandler.deleteEvent();
