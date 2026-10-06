@@ -282,6 +282,17 @@ body.fn-hide-collapse-icon.only-has-folder-note:not(.is-collapsed):not(.show-fol
     display: flex;
 }
 
+.fn-advanced-settings {
+    margin-top: var(--size-4-4);
+}
+
+.fn-advanced-settings > summary {
+    cursor: pointer;
+    font-size: var(--h3-size);
+    font-weight: var(--h3-weight);
+    padding: var(--size-4-2) 0;
+}
+
 
 /* ==========================================================================
    Suggestion Container

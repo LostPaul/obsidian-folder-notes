@@ -156,8 +156,11 @@ export class FrontMatterTitlePluginHandler {
 	}
 
 	async getNewFileName(file: TFile): Promise<string | null> {
+		return this.resolveTitle(file?.path ?? '');
+	}
+
+	resolveTitle(path: string): string | null {
 		const resolver = this.api?.getResolverFactory()?.createResolver('#feature-id#');
-		const changedName = resolver?.resolve(file?.path ?? '');
-		return changedName ?? null;
+		return resolver?.resolve(path) ?? null;
 	}
 }

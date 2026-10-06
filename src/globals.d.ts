@@ -30,8 +30,9 @@ interface FileExplorerWorkspaceLeaf extends WorkspaceLeaf {
 }
 
 interface FileExplorerViewFileItem extends TAbstractFile {
-	titleEl: HTMLElement
-	selfEl: HTMLElement
+	titleEl: HTMLElement;
+	selfEl: HTMLElement;
+	setCollapsed?: (collapsed: boolean) => void;
 }
 
 type FileOrFolderItem = FolderItem | FileItem;
@@ -60,10 +61,15 @@ interface FolderItem {
 
 interface TreeItem {
     focusedItem: FileOrFolderItem;
+	infinityScroll?: {
+		rootMargin: number;
+		scrollIntoView: (item: FileExplorerViewFileItem, margin: number) => void;
+	};
     setFocusedItem: (item: FileOrFolderItem, moveViewport: boolean) => void;
     selectedDoms: Set<FileOrFolderItem>;
 }
 interface FileExplorerView extends View {
+	autoRevealFile?: boolean;
 	fileItems: { [path: string]: FileExplorerViewFileItem };
     activeDom: FileOrFolderItem;
     tree: TreeItem;

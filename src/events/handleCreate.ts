@@ -35,11 +35,9 @@ export async function handleCreate(file: TAbstractFile, plugin: FolderNotesPlugi
 async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin): Promise<void> {
 	const folder = getFolder(plugin, file);
 
-	if (!(folder instanceof TFolder) && plugin.settings.autoCreateForFiles) {
-		if (!file.parent) { return; }
-		const newFolder = await plugin.app.fileManager.createNewFolder(file.parent);
-		turnIntoFolderNote(plugin, file, newFolder);
-	} else if (folder instanceof TFolder) {
+	if (!(folder instanceof TFolder)) {
+		await createFolderForFile(file, plugin);
+	} else {
 		if (folder.children.length >= 1) {
 			removeCSSClassFromFileExplorerEL(folder.path, 'fn-empty-folder', false, plugin);
 		}
@@ -51,13 +49,25 @@ async function handleFileCreation(file: TFile, plugin: FolderNotesPlugin): Promi
 		if (folderNote && folderNote.path === file.path) {
 			addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
 			addCSSClassToFileExplorerEl(file.path, 'is-folder-note', false, plugin);
-		} else if (plugin.settings.autoCreateForFiles && !isFileInAttachmentFolder(plugin, file)) {
-			if (!plugin.settings.supportedFileTypes.includes(file.extension)) { return; }
-			if (!file.parent) { return; }
-			const newFolder = await plugin.app.fileManager.createNewFolder(file.parent);
-			turnIntoFolderNote(plugin, file, newFolder);
+		} else {
+			await createFolderForFile(file, plugin);
 		}
 	}
+}
+
+async function createFolderForFile(file: TFile, plugin: FolderNotesPlugin): Promise<void> {
+	if (!plugin.settings.autoCreateForFiles) { return; }
+	if (!plugin.settings.supportedFileTypes.includes(file.extension)) { return; }
+	if (isFileInAttachmentFolder(plugin, file)) { return; }
+
+	const { parent } = file;
+	if (!parent) { return; }
+
+	const folderPath = parent.isRoot() ? file.basename : `${parent.path}/${file.basename}`;
+	if (plugin.app.vault.getAbstractFileByPath(folderPath)) { return; }
+
+	const newFolder = await plugin.app.vault.createFolder(folderPath);
+	turnIntoFolderNote(plugin, file, newFolder);
 }
 
 async function handleFolderCreation(folder: TFolder, plugin: FolderNotesPlugin): Promise<void> {

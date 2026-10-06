@@ -60,15 +60,31 @@ function observeFolderTitleMutations(plugin: FolderNotesPlugin): void {
 		fileExplorerMutationObserver.disconnect();
 	}
 	fileExplorerMutationObserver = new MutationObserver((mutations) => {
+		const affectedFolderPaths = new Set<string>();
 		for (const mutation of mutations) {
+			// Obsidian can rebuild the parent folder title when its children change.
+			const folderPath = getAffectedFolderPath(mutation.target);
+			if (folderPath) affectedFolderPaths.add(folderPath);
+
 			for (const node of Array.from(mutation.addedNodes)) {
 				if (!(node.instanceOf(HTMLElement))) continue;
 				processAddedFolders(node, plugin);
 			}
 		}
+
+		affectedFolderPaths.forEach((folderPath) => {
+			void updateCSSClassesForFolder(folderPath, plugin);
+		});
 	});
 
 	fileExplorerMutationObserver.observe(document, { childList: true, subtree: true });
+}
+
+function getAffectedFolderPath(target: Node): string | null {
+	if (!(target.instanceOf(HTMLElement))) return null;
+	const folder = target.closest('.nav-folder');
+	const folderTitle = folder?.querySelector('.nav-folder-title');
+	return folderTitle?.getAttribute('data-path') ?? null;
 }
 
 function initializeAllFolderTitles(plugin: FolderNotesPlugin): void {

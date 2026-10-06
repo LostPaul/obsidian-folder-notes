@@ -1,6 +1,9 @@
 /* eslint-disable max-len */
 import { Setting } from 'obsidian';
 import type { SettingsTab } from './SettingsTab';
+
+const MAX_FILE_EXPLORER_REVEAL_MARGIN = 10;
+
 export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void> {
 	const containerEl = settingsTab.settingsPage;
 
@@ -228,6 +231,25 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 					} else {
 						activeDocument.body.classList.remove('folder-note-cursive');
 					}
+					await settingsTab.plugin.saveSettings();
+				}),
+		);
+
+	const advancedSettings = containerEl.createEl('details', {
+		cls: 'fn-advanced-settings',
+	});
+	advancedSettings.createEl('summary', { text: 'Advanced' });
+
+	new Setting(advancedSettings)
+		.setName('File explorer reveal margin')
+		.setDesc('Controls the margin around a folder when revealing a hidden folder note in the file explorer. Increase this if the revealed folder is not shown correctly.')
+		.addSlider((slider) =>
+			slider
+				.setLimits(0, MAX_FILE_EXPLORER_REVEAL_MARGIN, 1)
+				.setDynamicTooltip()
+				.setValue(settingsTab.plugin.settings.fileExplorerRevealMargin)
+				.onChange(async (value) => {
+					settingsTab.plugin.settings.fileExplorerRevealMargin = value;
 					await settingsTab.plugin.saveSettings();
 				}),
 		);

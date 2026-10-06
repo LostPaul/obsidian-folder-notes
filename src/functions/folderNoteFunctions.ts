@@ -306,7 +306,9 @@ export async function turnIntoFolderNote(
 		void deleteExcludedFolder(plugin, detachedExcludedFolder);
 	}
 
-	await plugin.app.fileManager.renameFile(file, path);
+	if (file.path !== path) {
+		await plugin.app.fileManager.renameFile(file, path);
+	}
 	void addCSSClassToFileExplorerEl(path, 'is-folder-note', false, plugin, true);
 	void addCSSClassToFileExplorerEl(folder.path, 'has-folder-note', false, plugin);
 
@@ -447,19 +449,22 @@ function findFolderNoteFile(
 		(type) => type !== primaryType.replace('.', ''),
 	);
 
-	for (let type of supportedFileTypes) {
-		if (type === 'excalidraw' || type === '.excalidraw') {
-			type = '.md';
-		}
-		if (!type.startsWith('.')) {
-			type = '.' + type;
-		}
-		folderNote = plugin.app.vault.getAbstractFileByPath(path + type);
-		if (folderNote instanceof TFile) {
-			return folderNote;
+	for (const type of supportedFileTypes) {
+		for (const extension of getLookupExtensions(type)) {
+			folderNote = plugin.app.vault.getAbstractFileByPath(path + extension);
+			if (folderNote instanceof TFile) {
+				return folderNote;
+			}
 		}
 	}
 	return null;
+}
+
+// Excalidraw drawings are normally kept as markdown, but the Excalidraw plugin can also
+// be set up to store them as raw .excalidraw files, so both have to be looked up.
+function getLookupExtensions(type: string): string[] {
+	const extension = type.startsWith('.') ? type : '.' + type;
+	return extension === '.excalidraw' ? ['.md', '.excalidraw'] : [extension];
 }
 
 export function getFolderNote(

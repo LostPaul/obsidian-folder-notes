@@ -1,4 +1,5 @@
 import type FolderNotesPlugin from '../main';
+import { generateId } from '../functions/generateId';
 export class WhitelistedPattern {
 	type: string;
 	id: string;
@@ -20,7 +21,7 @@ export class WhitelistedPattern {
 		plugin: FolderNotesPlugin,
 	) {
 		this.type = 'pattern';
-		this.id = id || crypto.randomUUID();
+		this.id = id || generateId();
 		this.subFolders = plugin.settings.excludePatternDefaultSettings.subFolders;
 		this.position = position;
 		this.string = pattern;

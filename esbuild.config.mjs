@@ -1,6 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from 'builtin-modules'
+import { devVaultBuildPlugin } from './scripts/dev-vault-sync.mjs';
 
 const banner =
 	`/*
@@ -40,4 +41,5 @@ esbuild.build({
 	treeShaking: true,
 	outfile: 'main.js',
 	conditions: ['types'],
+	plugins: [devVaultBuildPlugin()],
 }).catch(() => process.exit(1));

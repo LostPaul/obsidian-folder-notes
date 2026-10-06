@@ -1,4 +1,5 @@
 import type FolderNotesPlugin from '../main';
+import { generateId } from '../functions/generateId';
 export class ExcludePattern {
 	type: string;
 	id: string;
@@ -22,7 +23,7 @@ export class ExcludePattern {
 		plugin: FolderNotesPlugin,
 	) {
 		this.type = 'pattern';
-		this.id = id || crypto.randomUUID();
+		this.id = id || generateId();
 		this.string = pattern;
 		this.position = position;
 		this.subFolders = plugin.settings.excludePatternDefaultSettings.subFolders;
