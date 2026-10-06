@@ -36,6 +36,7 @@ import { registerOverviewCommands } from './obsidian-folder-overview/src/Command
 import { updateOverviewView, updateViewDropdown } from './obsidian-folder-overview/src/main';
 import { FvIndexDB } from './obsidian-folder-overview/src/utils/IndexDB';
 import { updateAllOverviews } from './obsidian-folder-overview/src/utils/functions';
+import { getApi, type FolderNotesApi } from './api';
 
 interface FileExplorerPluginLike extends Plugin {
 	revealInFolder: (file: TAbstractFile) => void;
@@ -90,6 +91,7 @@ export default class FolderNotesPlugin extends Plugin {
 	settingsOpened = false;
 	askModalCurrentlyOpen = false;
 	fvIndexDB!: FvIndexDB;
+	api!: FolderNotesApi;
 	// Folder overview edit buttons that already have a click listener, mapped to the latest
 	// handler, so the MutationObserver in handleOverviewBlock doesn't add a listener per mutation.
 	private overviewEditHandlers: WeakMap<Node, () => void> = new WeakMap();
@@ -104,6 +106,7 @@ export default class FolderNotesPlugin extends Plugin {
 		this.settingsTab = new SettingsTab(this.app, this);
 		this.addSettingTab(this.settingsTab);
 		await this.saveSettings();
+		this.api = getApi(this);
 		this.fvIndexDB = new FvIndexDB(this);
 
 		// Add CSS Classes
