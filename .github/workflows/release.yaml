@@ -30,6 +30,21 @@ jobs:
           BRANCH_NAME=$(git name-rev --name-only $GITHUB_SHA | sed 's|^remotes/origin/||' | sed 's|^origin/||')
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
+      # Use the section for this version in release-notes/release.md; fail if it is missing
+      - name: Write release notes
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          awk -v v="$VERSION" '$1 == "##" { p = ($2 == v); next } p' release-notes/release.md > "$RUNNER_TEMP/release-notes.md" 2>/dev/null \
+            || : > "$RUNNER_TEMP/release-notes.md"
+          if [ -z "$(sed '/<!--/,/-->/d' "$RUNNER_TEMP/release-notes.md" | tr -d '[:space:]')" ]; then
+            echo "::error::Add a \"## $VERSION\" section with release notes to release-notes/release.md, then tag again."
+            if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+              git push origin --delete "$GITHUB_REF"
+              echo "::error::The tag was deleted on GitHub. Delete it locally too: git tag -d $VERSION"
+            fi
+            exit 1
+          fi
+
       # Checkout the main branch to update manifest.json
       - name: Checkout main branch to update manifest
         run: |
@@ -76,5 +91,8 @@ jobs:
         uses: ncipollo/release-action@v1.12.0
         with:
           artifacts: "main.js,manifest.json,styles.css"
+          bodyFile: ${{ runner.temp }}/release-notes.md
+          allowUpdates: true
+          omitBodyDuringUpdate: true
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}

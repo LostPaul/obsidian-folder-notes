@@ -7,6 +7,9 @@ on:
       - "[0-9]+.[0-9]+.[0-9]+-[0-9]+-beta"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,6 +39,20 @@ jobs:
           VERSION=${{ env.VERSION }}
           RELEASE_VERSION=${VERSION%-beta}
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+
+      # Use the section for this version in release-notes/beta.md; fail if it is missing
+      - name: Write release notes
+        run: |
+          awk -v v="$VERSION" '$1 == "##" { p = ($2 == v); next } p' release-notes/beta.md > "$RUNNER_TEMP/release-notes.md" 2>/dev/null \
+            || : > "$RUNNER_TEMP/release-notes.md"
+          if [ -z "$(sed '/<!--/,/-->/d' "$RUNNER_TEMP/release-notes.md" | tr -d '[:space:]')" ]; then
+            echo "::error::Add a \"## $VERSION\" section with release notes to release-notes/beta.md, then tag again."
+            if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+              git push origin --delete "$GITHUB_REF"
+              echo "::error::The tag was deleted on GitHub. Delete it locally too: git tag -d $VERSION"
+            fi
+            exit 1
+          fi
 
       # Update manifest-beta.json in main branch
       - name: Checkout main branch to update manifest-beta.json
@@ -76,6 +93,9 @@ jobs:
         with:
           name: Beta release ${{ env.RELEASE_NAME }}
           prerelease: true
+          bodyFile: ${{ runner.temp }}/release-notes.md
+          allowUpdates: true
+          omitBodyDuringUpdate: true
           artifacts: "main.js,manifest.json,styles.css"
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.VERSION }}
