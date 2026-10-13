@@ -99,3 +99,18 @@ jobs:
           artifacts: "main.js,manifest.json,styles.css"
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.VERSION }}
+
+      - name: Announce on Discord
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_BETA }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then echo "No DISCORD_WEBHOOK_BETA secret set, skipping"; exit 0; fi
+          VERSION=${GITHUB_REF#refs/tags/}
+          NOTES=$(sed '/<!--/,/-->/d' "$RUNNER_TEMP/release-notes.md" \
+            | sed -E "s|#([0-9]+)|[#\1](https://github.com/$GITHUB_REPOSITORY/issues/\1)|g")
+          jq -n --arg title "Folder Notes ${VERSION%-beta} (beta)" \
+            --arg url "https://github.com/$GITHUB_REPOSITORY/releases/tag/$VERSION" \
+            --arg notes "$NOTES" \
+            '{embeds: [{title: $title, url: $url, description: $notes[:4000], color: 15105570}]}' \
+            | curl -fsS -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK"
