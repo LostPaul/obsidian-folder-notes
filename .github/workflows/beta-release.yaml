@@ -6,12 +6,38 @@ on:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+-[0-9]+-beta"
   workflow_dispatch:
+    inputs:
+      discord_test:
+        description: "Only post a test announcement to the beta Discord channel"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
 
 jobs:
+  discord-test:
+    if: ${{ inputs.discord_test }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Post test announcement
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_BETA }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then echo "::error::The DISCORD_WEBHOOK_BETA secret is not set"; exit 1; fi
+          VERSION=$(awk '$1 == "##" { print $2; exit }' release-notes/beta.md)
+          NOTES=$(awk '$1 == "##" { n++; next } n == 1' release-notes/beta.md \
+            | sed -E "s|#([0-9]+)|[#\1](https://github.com/$GITHUB_REPOSITORY/issues/\1)|g")
+          jq -n --arg title "Test: Folder Notes ${VERSION%-beta} (beta)" \
+            --arg url "https://github.com/$GITHUB_REPOSITORY/releases" \
+            --arg notes "$NOTES" \
+            '{embeds: [{title: $title, url: $url, description: $notes[:4000], color: 15105570}]}' \
+            | curl -fsS -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK"
+
   build:
+    if: ${{ !inputs.discord_test }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current branch
