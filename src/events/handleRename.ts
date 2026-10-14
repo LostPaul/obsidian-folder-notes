@@ -285,7 +285,7 @@ export async function handleFileRename(
 
 	// Handle folder note removal
 	if (shouldRemoveFolderNoteClasses(excludedFolder, folderName, newFolder)) {
-		handleFolderNoteRemoval(file, newFolder, plugin);
+		handleFolderNoteRemoval(file, newFolder, excludedFolder, plugin);
 	}
 
 	// Early return if sync is disabled
@@ -401,10 +401,14 @@ function handleFolderNoteCreation(
 function handleFolderNoteRemoval(
 	file: TFile,
 	newFolder: TAbstractFile | null,
+	excludedFolder: ExcludedFolder | undefined,
 	plugin: FolderNotesPlugin,
 ): void {
 	removeCSSClassFromFileExplorerEL(file.path, 'is-folder-note', false, plugin);
-	removeCSSClassFromFileExplorerEL(newFolder?.path || '', 'has-folder-note', false, plugin);
+	if (!newFolder) return;
+	if (excludedFolder?.disableFolderNote || !getFolderNote(plugin, newFolder.path)) {
+		removeCSSClassFromFileExplorerEL(newFolder.path, 'has-folder-note', false, plugin);
+	}
 }
 
 function handleSameFolderRename(
