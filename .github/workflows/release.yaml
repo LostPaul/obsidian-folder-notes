@@ -101,6 +101,7 @@ jobs:
         continue-on-error: true
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_RELEASE }}
+          DISCORD_ROLE: ${{ vars.DISCORD_ROLE_RELEASE }}
         run: |
           if [ -z "$DISCORD_WEBHOOK" ]; then echo "No DISCORD_WEBHOOK_RELEASE secret set, skipping"; exit 0; fi
           VERSION=${GITHUB_REF#refs/tags/}
@@ -108,6 +109,6 @@ jobs:
             | sed -E "s|#([0-9]+)|[#\1](https://github.com/$GITHUB_REPOSITORY/issues/\1)|g")
           jq -n --arg title "Folder Notes $VERSION" \
             --arg url "https://github.com/$GITHUB_REPOSITORY/releases/tag/$VERSION" \
-            --arg notes "$NOTES" \
-            '{embeds: [{title: $title, url: $url, description: $notes[:4000], color: 3066993}]}' \
+            --arg notes "$NOTES" --arg role "$DISCORD_ROLE" --argjson ping true \
+            '{embeds: [{title: $title, url: $url, description: $notes[:4000], color: 3066993}]} + (if $role == "" then {} else {content: "<@&\($role)>", allowed_mentions: {roles: (if $ping then [$role] else [] end)}} end)' \
             | curl -fsS -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK"
