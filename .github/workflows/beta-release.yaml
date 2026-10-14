@@ -33,7 +33,7 @@ jobs:
             | sed -E "s|#([0-9]+)|[#\1](https://github.com/$GITHUB_REPOSITORY/issues/\1)|g")
           jq -n --arg title "Test: Folder Notes ${VERSION%-beta} (beta)" \
             --arg url "https://github.com/$GITHUB_REPOSITORY/releases" \
-            --arg notes "$NOTES" --arg role "$DISCORD_ROLE" --argjson ping false \
+            --arg notes "$NOTES" --arg role "$DISCORD_ROLE" --argjson ping true \
             '{embeds: [{title: $title, url: $url, description: $notes[:4000], color: 15105570}]} + (if $role == "" then {} else {content: "<@&\($role)>", allowed_mentions: {roles: (if $ping then [$role] else [] end)}} end)' \
             | curl -fsS -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK"
 
