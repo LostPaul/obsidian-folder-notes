@@ -201,7 +201,11 @@ async function updateFolderNamesInPath(
 		const folderPath = path.slice(0, -TRAILING_SLASH_LENGTH);
 
 		const excludedFolder = getExcludedFolder(plugin, folderPath, true);
-		if (excludedFolder?.disableFolderNote) return;
+		if (excludedFolder?.disableFolderNote) {
+			breadcrumb.classList.remove('has-folder-note');
+			breadcrumb.removeAttribute('data-path');
+			continue;
+		}
 		const folderNote = getFolderNote(plugin, folderPath);
 		const viewHeaderTitle = titleContainer.querySelector('.view-header-title');
 
