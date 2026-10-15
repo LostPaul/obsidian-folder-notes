@@ -6,7 +6,8 @@ Text inside comments like this one is not shown on GitHub.
 -->
 
 ## 1.8.27-3-beta
-- Fix for #335: underline disappearing after naming a new note
+- Fix for #335: folder styling disappearing after naming a new note in the folder
+- Fix for #332: folders after an excluded folder no longer lose their link in the path
 
 ## 1.8.27-2-beta
 - Fix for #93: no more freezing when moving or renaming large folders
