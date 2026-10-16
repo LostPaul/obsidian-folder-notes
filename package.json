@@ -28,7 +28,7 @@
 		"front-matter-plugin-api-provider": "^0.1.4-alpha",
 		"globals": "^16.3.0",
 		"jiti": "^2.5.1",
-		"obsidian": "latest",
+		"obsidian": "^1.14.4",
 		"obsidian-typings": "^2.2.0",
 		"tslib": "2.4.0",
 		"typescript": "^6.0.3",
