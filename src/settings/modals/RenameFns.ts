@@ -34,7 +34,7 @@ export default class RenameFolderNotesModal extends BackupWarningModal {
 				.setValue(this.plugin.settings.folderNoteName || '')
 				.onChange(async (value) => {
 					this.plugin.settings.folderNoteName = value;
-					this.plugin.settingsTab.display();
+					this.plugin.settingsTab.refresh();
 				}),
 			);
 	}
