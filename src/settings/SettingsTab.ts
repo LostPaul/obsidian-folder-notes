@@ -1,6 +1,6 @@
 import {
-	Notice, PluginSettingTab, TFile,
-	TFolder, type App, type MarkdownPostProcessorContext,
+	Notice, PluginSettingTab, TFile, TFolder, requireApiVersion,
+	type App, type SettingDefinitionItem,
 } from 'obsidian';
 import type FolderNotesPlugin from '../main';
 import type { ExcludePattern } from 'src/ExcludeFolders/ExcludePattern';
@@ -16,6 +16,7 @@ import { getFolderPathFromString } from '../functions/utils';
 import type { WhitelistedFolder } from 'src/ExcludeFolders/WhitelistFolder';
 import type { WhitelistedPattern } from 'src/ExcludeFolders/WhitelistPattern';
 import { generateId } from '../functions/generateId';
+import { getFolderNotesSettingDefinitions, SETTING_EFFECTS } from './SettingDefinitions';
 
 export interface FolderNotesSettings {
 	syncFolderName: boolean;
@@ -266,24 +267,76 @@ export class SettingsTab extends PluginSettingTab {
 		}
 	}
 
-	display(
-		contentEl?: HTMLElement,
-		yaml?: defaultOverviewSettings,
-		plugin?: FolderNotesPlugin,
-		defaultSettings?: boolean,
-		display?: CallableFunction,
-		el?: HTMLElement,
-		ctx?: MarkdownPostProcessorContext,
-		file?: TFile | null,
-		settingsTab?: this,
-	): void {
-		plugin = this?.plugin ?? plugin;
-		if (plugin) {
-			plugin.settingsOpened = true;
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		return getFolderNotesSettingDefinitions(this);
+	}
+
+	getControlValue(key: string): unknown {
+		const { settings } = this.plugin;
+		switch (key) {
+			case 'createKey':
+				return settings.ctrlKey ? 'ctrl' : 'alt';
+			case 'openKey':
+				if (settings.openByClick) return 'click';
+				return settings.openWithCtrl ? 'ctrl' : 'alt';
 		}
-		settingsTab = this ?? settingsTab;
+		if (key.startsWith('!')) {
+			return !this.getControlValue(key.slice(1));
+		}
+		return key.split('.').reduce<unknown>(
+			(obj, part) => (obj as Record<string, unknown> | undefined)?.[part],
+			settings,
+		);
+	}
+
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		const { settings } = this.plugin;
+		if (key === 'createKey') {
+			settings.ctrlKey = value === 'ctrl';
+			settings.altKey = value === 'alt';
+		} else if (key === 'openKey') {
+			settings.openByClick = value === 'click';
+			settings.openWithCtrl = value === 'ctrl';
+			settings.openWithAlt = value === 'alt';
+		} else {
+			const path = (key.startsWith('!') ? key.slice(1) : key).split('.');
+			const last = path.pop() as string;
+			const target = path.reduce<Record<string, unknown>>(
+				(obj, part) => obj[part] as Record<string, unknown>,
+				settings as unknown as Record<string, unknown>,
+			);
+			target[last] = key.startsWith('!') ? !value : value;
+		}
+		await this.save();
+		SETTING_EFFECTS[key]?.(this, value);
+		if (this.usesSettingDefinitions()) {
+			this.refreshDomState();
+		}
+	}
+
+	async save(): Promise<void> {
+		this.plugin.settingsOpened = true;
+		await this.plugin.saveSettings();
+	}
+
+	usesSettingDefinitions(): boolean {
+		return requireApiVersion('1.13.0');
+	}
+
+	refresh(): void {
+		if (this.usesSettingDefinitions()) {
+			this.update();
+		} else {
+			this.display();
+		}
+	}
+
+	display(): void {
+		const { plugin } = this;
+		const settingsTab = this;
+		plugin.settingsOpened = true;
 		const { containerEl } = settingsTab;
-		if (plugin && !plugin.settings.persistentSettingsTab.afterChangingTab) {
+		if (!plugin.settings.persistentSettingsTab.afterChangingTab) {
 			plugin.settings.settingsTab = this.TABS.GENERAL.id;
 		}
 
@@ -294,7 +347,6 @@ export class SettingsTab extends PluginSettingTab {
 			const tabEl = tabBar.createEl('div', { cls: 'fn-settings-tab' });
 			tabEl.createEl('div', { cls: 'fn-settings-tab-name', text: tabInfo.name });
 			if (
-				plugin &&
 				plugin.settings.settingsTab.toLocaleLowerCase() ===
 					tabId.toLocaleLowerCase()
 			) {
@@ -303,22 +355,18 @@ export class SettingsTab extends PluginSettingTab {
 			tabEl.addEventListener('click', () => {
 				for (const child of Array.from(tabBar.children)) {
 					(child as HTMLElement).classList.remove('fn-settings-tab-active');
-					if (!plugin) { return; }
 					plugin.settings.settingsTab = tabId.toLocaleLowerCase();
 					void plugin.saveSettings();
 				}
 				tabEl.addClass('fn-settings-tab-active');
-				if (!settingsTab) { return; }
 				settingsTab.renderSettingsPage(tabId);
 			});
 		}
 		settingsTab.settingsPage = containerEl.createDiv({ cls: 'fn-settings-page' });
-		if (plugin) {
-			if (plugin.settings.persistentSettingsTab) {
-				settingsTab.renderSettingsPage(plugin.settings.settingsTab);
-			} else {
-				settingsTab.renderSettingsPage(this.TABS.GENERAL.id);
-			}
+		if (plugin.settings.persistentSettingsTab) {
+			settingsTab.renderSettingsPage(plugin.settings.settingsTab);
+		} else {
+			settingsTab.renderSettingsPage(this.TABS.GENERAL.id);
 		}
 	}
 
