@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import {
-	Platform, SettingPage,
+	Platform,
 	type Setting, type SettingDefinitionItem, type SettingGroupItem,
 	type SettingDefinitionList, type SettingDefinitionPage,
 } from 'obsidian';
@@ -23,7 +23,7 @@ import { deletePattern, updatePattern } from 'src/ExcludeFolders/functions/patte
 import ExcludedFolderSettings from 'src/ExcludeFolders/modals/ExcludeFolderSettings';
 import PatternSettings from 'src/ExcludeFolders/modals/PatternSettings';
 import WhitelistedFoldersSettings from 'src/ExcludeFolders/modals/WhitelistedFoldersSettings';
-import { renderOverviewDefaults } from './FolderOverviewSettings';
+import { overviewDefaultsItems } from './OverviewDefinitions';
 
 const MAX_FILE_EXPLORER_REVEAL_MARGIN = 10;
 
@@ -224,7 +224,7 @@ function folderNotesPage(tab: SettingsTab): SettingDefinitionPage {
 	const { settings } = tab.plugin;
 	return {
 		type: 'page',
-		name: 'Folder notes',
+		name: 'General',
 		desc: 'Name template, file types, template, and storage location.',
 		items: [
 			{
@@ -488,18 +488,6 @@ function pathPage(tab: SettingsTab): SettingDefinitionPage {
 	};
 }
 
-function createOverviewDefaultsPage(tab: SettingsTab): SettingPage {
-	class OverviewDefaultsPage extends SettingPage {
-		display(): void {
-			this.containerEl.empty();
-			renderOverviewDefaults(tab, this.containerEl);
-		}
-	}
-	const page = new OverviewDefaultsPage();
-	page.title = 'Default overview settings';
-	return page;
-}
-
 function folderOverviewPage(tab: SettingsTab): SettingDefinitionPage {
 	return {
 		type: 'page',
@@ -516,7 +504,7 @@ function folderOverviewPage(tab: SettingsTab): SettingDefinitionPage {
 						type: 'page',
 						name: 'Default overview settings',
 						desc: 'Style, title, included file types, sorting, and links for new folder overviews.',
-						page: () => createOverviewDefaultsPage(tab),
+						items: overviewDefaultsItems(tab),
 					},
 				],
 			},
@@ -693,12 +681,12 @@ export function getFolderNotesSettingDefinitions(tab: SettingsTab): SettingDefin
 		{
 			type: 'group',
 			heading: 'Configuration',
-			items: [folderNotesPage(tab), behaviorPage(tab), automationPage(tab)],
+			items: [folderNotesPage(tab), behaviorPage(tab), automationPage(tab), folderOverviewPage(tab)],
 		},
 		{
 			type: 'group',
-			heading: 'Display',
-			items: [fileExplorerPage(tab), pathPage(tab), folderOverviewPage(tab)],
+			heading: 'Styling',
+			items: [fileExplorerPage(tab), pathPage(tab)],
 		},
 		{
 			type: 'group',

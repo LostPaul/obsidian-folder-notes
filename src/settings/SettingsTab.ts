@@ -279,6 +279,8 @@ export class SettingsTab extends PluginSettingTab {
 			case 'openKey':
 				if (settings.openByClick) return 'click';
 				return settings.openWithCtrl ? 'ctrl' : 'alt';
+			case 'overviewSortOrder':
+				return settings.defaultOverview.sortByAsc ? 'asc' : 'desc';
 		}
 		if (key.startsWith('!')) {
 			return !this.getControlValue(key.slice(1));
@@ -298,6 +300,8 @@ export class SettingsTab extends PluginSettingTab {
 			settings.openByClick = value === 'click';
 			settings.openWithCtrl = value === 'ctrl';
 			settings.openWithAlt = value === 'alt';
+		} else if (key === 'overviewSortOrder') {
+			settings.defaultOverview.sortByAsc = value === 'asc';
 		} else {
 			const path = (key.startsWith('!') ? key.slice(1) : key).split('.');
 			const last = path.pop() as string;
@@ -307,7 +311,14 @@ export class SettingsTab extends PluginSettingTab {
 			);
 			target[last] = key.startsWith('!') ? !value : value;
 		}
-		await this.save();
+		if (key === 'defaultOverview.showEmptyFolders') {
+			settings.defaultOverview.onlyIncludeSubfolders = false;
+		}
+		if (key.startsWith('defaultOverview.') || key === 'overviewSortOrder') {
+			await this.saveOverviewDefaults();
+		} else {
+			await this.save();
+		}
 		SETTING_EFFECTS[key]?.(this, value);
 		if (this.usesSettingDefinitions()) {
 			this.refreshDomState();
@@ -317,6 +328,11 @@ export class SettingsTab extends PluginSettingTab {
 	async save(): Promise<void> {
 		this.plugin.settingsOpened = true;
 		await this.plugin.saveSettings();
+	}
+
+	async saveOverviewDefaults(): Promise<void> {
+		await this.save();
+		this.plugin.updateOverviewView(this.plugin);
 	}
 
 	usesSettingDefinitions(): boolean {
