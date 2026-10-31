@@ -139,7 +139,7 @@ export function addWhitelistedPatternListItem(
 					updateWhitelistedFolder(plugin, oldPattern, oldPattern);
 				}
 			}
-			settings.display();
+			settings.refresh();
 		});
 	});
 
@@ -168,7 +168,7 @@ export function addWhitelistedPatternListItem(
 					updateWhitelistedFolder(plugin, oldPattern, oldPattern);
 				}
 			}
-			settings.display();
+			settings.refresh();
 		});
 	});
 

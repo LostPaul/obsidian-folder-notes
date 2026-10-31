@@ -181,7 +181,7 @@ export function addWhitelistFolderListItem(
 					updateWhitelistedFolder(plugin, oldWhitelistedFolder, oldWhitelistedFolder);
 				}
 			}
-			settings.display();
+			settings.refresh();
 		});
 
 	new ButtonComponent(buttonContainer)
@@ -206,7 +206,7 @@ export function addWhitelistFolderListItem(
 				}
 			}
 
-			settings.display();
+			settings.refresh();
 		});
 
 	new ButtonComponent(buttonContainer)

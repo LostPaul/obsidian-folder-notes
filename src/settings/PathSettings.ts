@@ -12,7 +12,7 @@ export async function renderPath(settingsTab: SettingsTab): Promise<void> {
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.openFolderNoteOnClickInPath = value;
 					await settingsTab.plugin.saveSettings();
-					settingsTab.display();
+					settingsTab.refresh();
 				}),
 		);
 

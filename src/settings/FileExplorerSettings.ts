@@ -21,7 +21,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 					} else {
 						activeDocument.body.classList.remove('hide-folder-note');
 					}
-					settingsTab.display();
+					settingsTab.refresh();
 				}),
 		);
 
@@ -82,7 +82,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 				.onChange(async (value) => {
 					settingsTab.plugin.settings.useSubmenus = value;
 					await settingsTab.plugin.saveSettings();
-					settingsTab.display();
+					settingsTab.refresh();
 				}),
 		);
 
@@ -144,7 +144,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 						activeDocument.body.classList.remove('fn-hide-collapse-icon');
 					}
 					await settingsTab.plugin.saveSettings();
-					settingsTab.display();
+					settingsTab.refresh();
 				}),
 		);
 
@@ -162,7 +162,7 @@ export async function renderFileExplorer(settingsTab: SettingsTab): Promise<void
 					} else {
 						activeDocument.body.classList.remove('fn-hide-empty-collapse-icon');
 					}
-					settingsTab.display();
+					settingsTab.refresh();
 				},
 				));
 

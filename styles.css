@@ -368,3 +368,7 @@ body.fn-hide-collapse-icon.only-has-folder-note:not(.is-collapsed):not(.show-fol
         display: block;
     }
 }
+
+.fn-restart-note {
+    color: var(--text-accent);
+}
