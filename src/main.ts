@@ -1,3 +1,4 @@
+import { OverviewBlockLifecycle } from './obsidian-folder-overview/src/utils/OverviewBlockLifecycle';
 import {
 	type App, type TAbstractFile,
 	type MarkdownPostProcessorContext,
@@ -90,9 +91,6 @@ export default class FolderNotesPlugin extends Plugin {
 	settingsOpened = false;
 	askModalCurrentlyOpen = false;
 	fvIndexDB!: FvIndexDB;
-	// Folder overview edit buttons that already have a click listener, mapped to the latest
-	// handler, so the MutationObserver in handleOverviewBlock doesn't add a listener per mutation.
-	private overviewEditHandlers: WeakMap<Node, () => void> = new WeakMap();
 	private fileExplorerClickComponents: Map<Document, Component> = new Map();
 	private updateAllOverviewsDebounced = debounce(() => {
 		void updateAllOverviews(this);
@@ -502,35 +500,16 @@ export default class FolderNotesPlugin extends Plugin {
 	}
 
 	handleOverviewBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext): void {
-		const observer = new MutationObserver(() => {
-			const editButton = el.parentElement?.childNodes.item(1);
-			if (!editButton) return;
-			const hasListener = this.overviewEditHandlers.has(editButton);
-			this.overviewEditHandlers.set(editButton, () => {
-				new FolderOverviewSettings(
-					this.app,
-					this,
-					parseYaml(source) as defaultOverviewSettings,
-					ctx,
-					el,
-					this.settings.defaultOverview,
-				).open();
-			});
-			if (hasListener) return;
-			editButton.addEventListener('click', (e) => {
-				e.stopImmediatePropagation();
-				e.preventDefault();
-				e.stopPropagation();
-				this.overviewEditHandlers.get(editButton)?.();
-			}, { capture: true });
+		const lifecycle = new OverviewBlockLifecycle(el, () => {
+			new FolderOverviewSettings(
+				this.app, this, parseYaml(source), ctx, el,
+				this.settings.defaultOverview,
+			).open();
 		});
-
-		observer.observe(el, {
-			childList: true,
-			subtree: true,
-		});
+		ctx.addChild(lifecycle);
 
 		try {
+			if (lifecycle.disposed) return;
 			if (this.app.workspace.layoutReady) {
 				const { defaultOverview } = this.settings;
 				const folderOverview = new FolderOverview(
@@ -543,6 +522,7 @@ export default class FolderNotesPlugin extends Plugin {
 				void folderOverview.create(this, el, ctx);
 			} else {
 				this.app.workspace.onLayoutReady(() => {
+					if (lifecycle.disposed) return;
 					const folderOverview = new FolderOverview(
 						this,
 						ctx,
