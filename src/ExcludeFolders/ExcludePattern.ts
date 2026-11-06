@@ -7,6 +7,8 @@ export class ExcludePattern {
 	path: string;
 	position: number;
 	subFolders: boolean;
+	// Also applies the pattern to every folder below a folder whose name matches it
+	includeSubfolders?: boolean;
 	disableSync: boolean;
 	disableAutoCreate: boolean;
 	disableFolderNote: boolean;
@@ -27,6 +29,8 @@ export class ExcludePattern {
 		this.string = pattern;
 		this.position = position;
 		this.subFolders = plugin.settings.excludePatternDefaultSettings.subFolders;
+		// eslint-disable-next-line max-len
+		this.includeSubfolders = plugin.settings.excludePatternDefaultSettings.includeSubfolders ?? false;
 		this.disableSync = plugin.settings.excludePatternDefaultSettings.disableSync;
 		this.disableAutoCreate = plugin.settings.excludePatternDefaultSettings.disableAutoCreate;
 		this.disableFolderNote = plugin.settings.excludePatternDefaultSettings.disableFolderNote;
