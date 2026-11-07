@@ -2,6 +2,14 @@
 ### Folder note name template
 The entered text is going to be the name of all folder notes and when file name matches this text it becomes a folder note. {{folder_name}} is a placeholder for the name of the folder linked to the file. If you change the text every existing folder note which matched the old text won't be a folder note anymore and you have to use the button "Rename existing folder notes" to rename all folder notes.
 
+### Alternative folder note names
+Extra name templates, one per line, that are also recognized as folder notes, for example `{{folder_name}}.local`. The plugin looks for a file matching the folder note name template first and then tries these in order, so `Folder.md` wins over `Folder.local.md` when both exist. New folder notes and "Rename existing folder notes" only use the folder note name template. When you rename a folder, its folder note keeps the name form it has (`Folder.local.md` becomes `New name.local.md`), and other files with a folder note name for that folder are renamed along with it.
+
+### Prefer alternative folder note names
+When enabled, the alternative names are checked before the folder note name template, so `Folder.local.md` wins over `Folder.md`. The other file stays a normal note in the folder.
+
+This is useful when some folder notes should stay out of version control: name them `{{folder_name}}.local` and ignore `*.local.md` in `.gitignore`.
+
 ### Supported file types
 Only the file types you select will be selected will be recognized as folder notes. This means you that a file that matches the name of a folder and normally would be a folder note but has an extension that isn't included in the supported file types list won't be a folder note and you can't open it by click on the folder name.
 
