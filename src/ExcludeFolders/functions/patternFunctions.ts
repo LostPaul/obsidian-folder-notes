@@ -75,6 +75,18 @@ export function getExcludedFoldersByPattern(
 		.filter((pattern) => matchesPatternSpec(pattern.string, folderName)) as ExcludePattern[];
 }
 
+export function getExcludedFoldersByAncestorPattern(
+	plugin: FolderNotesPlugin,
+	ancestorFolderNames: string[],
+): ExcludePattern[] {
+	return (plugin.settings.excludeFolders
+		.filter((s) => s.type === 'pattern') as ExcludePattern[])
+		.filter((pattern) => pattern.includeSubfolders)
+		.filter((pattern) => ancestorFolderNames.some(
+			(ancestorFolderName) => matchesPatternSpec(pattern.string, ancestorFolderName),
+		));
+}
+
 export function getExcludedFolderByPattern(
 	plugin: FolderNotesPlugin,
 	folderName: string,

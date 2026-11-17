@@ -9,11 +9,20 @@ import ExcludedFolderSettings from '../modals/ExcludeFolderSettings';
 import {
 	updatePattern,
 	getExcludedFoldersByPattern,
+	getExcludedFoldersByAncestorPattern,
 	addExcludePatternListItem,
 } from './patternFunctions';
 import { getWhitelistedFolder } from './whitelistFolderFunctions';
 import type { WhitelistedFolder } from '../WhitelistFolder';
 import type { WhitelistedPattern } from '../WhitelistPattern';
+
+// Names of the folders above the folder at `path` (or above the folder of a note at `path`)
+function getAncestorFolderNames(path: string): string[] {
+	const segments = path.split('/');
+	segments.pop();
+	if (path.endsWith('.md') || path.endsWith('.canvas')) segments.pop();
+	return segments.filter((segment) => segment !== '');
+}
 
 function combineExcluded(
 	plugin: FolderNotesPlugin,
@@ -22,7 +31,12 @@ function combineExcluded(
 	pathOnly?: boolean,
 ): Array<ExcludedFolder | ExcludePattern> {
 	const folderName = getFolderNameFromPathString(path);
-	const matchedPatterns = pathOnly ? [] : getExcludedFoldersByPattern(plugin, folderName);
+	const matchedPatterns = pathOnly
+		? []
+		: [
+			...getExcludedFoldersByPattern(plugin, folderName),
+			...getExcludedFoldersByAncestorPattern(plugin, getAncestorFolderNames(path)),
+		];
 	const excludedByPath = getExcludedFoldersByPath(plugin, path);
 	let combined = [...matchedPatterns, ...excludedByPath];
 	if (!includeDetached) combined = combined.filter((f) => !f.detached);

@@ -181,6 +181,7 @@ export const DEFAULT_SETTINGS: FolderNotesSettings = {
 		path: '',
 		id: generateId(),
 		subFolders: true,
+		includeSubfolders: false,
 		disableSync: true,
 		disableAutoCreate: true,
 		disableFolderNote: false,
