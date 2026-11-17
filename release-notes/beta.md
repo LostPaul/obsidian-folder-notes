@@ -5,6 +5,12 @@ section at the top before tagging; the release fails if the section is missing o
 Text inside comments like this one is not shown on GitHub.
 -->
 
+## 1.8.27-4-beta
+- Settings now support Obsidian's new settings API, with sub-pages for each section
+- New "Include subfolders" toggle for exclude patterns, so a pattern also covers the subfolders of a matching folder (#362, thanks @mnaoumov)
+- Folder overview: fix for #356, the title showing up even when "Show the title" is off
+- Folder overview: sort by the Front Matter Title when that integration is enabled
+
 ## 1.8.27-3-beta
 - Fix for #335: folder styling disappearing after naming a new note in the folder
 - Fix for #332: folders after an excluded folder no longer lose their link in the path
