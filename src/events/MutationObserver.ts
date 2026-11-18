@@ -6,6 +6,7 @@ import { getExcludedFolder } from 'src/ExcludeFolders/functions/folderFunctions'
 import { updateCSSClassesForFolder } from 'src/functions/styleFunctions';
 
 let fileExplorerMutationObserver: MutationObserver | null = null;
+let reconcileTimeout: number | null = null;
 
 export function registerFileExplorerObserver(plugin: FolderNotesPlugin): void {
 	// Run once on initial layout
@@ -35,6 +36,10 @@ export function unregisterFileExplorerObserver(): void {
 		fileExplorerMutationObserver.disconnect();
 		fileExplorerMutationObserver = null;
 	}
+	if (reconcileTimeout !== null) {
+		window.clearTimeout(reconcileTimeout);
+		reconcileTimeout = null;
+	}
 }
 
 function initializeFolderNoteFeatures(plugin: FolderNotesPlugin): void {
@@ -61,27 +66,93 @@ function observeFolderTitleMutations(plugin: FolderNotesPlugin): void {
 	}
 	fileExplorerMutationObserver = new MutationObserver((mutations) => {
 		const affectedFolderPaths = new Set<string>();
+		let explorerTouched = false;
 		for (const mutation of mutations) {
-			// Obsidian can rebuild the parent folder title when its children change.
-			const folderPath = getAffectedFolderPath(mutation.target);
-			if (folderPath) affectedFolderPaths.add(folderPath);
+			// Obsidian can rebuild the parent folder title when its children
+			// change. Title text is also rewritten directly on a text node,
+			// which reports the text node as the mutation target, so fall back
+			// to its parent element.
+			const target = mutation.target instanceof Element
+				? mutation.target
+				: mutation.target.parentElement;
+			const folderPath = getAffectedFolderPath(target);
+			if (folderPath) {
+				explorerTouched = true;
+				affectedFolderPaths.add(folderPath);
+			}
 
 			for (const node of Array.from(mutation.addedNodes)) {
 				if (!(node.instanceOf(HTMLElement))) continue;
-				processAddedFolders(node, plugin);
+				if (processAddedFolders(node, plugin)) {
+					explorerTouched = true;
+				}
 			}
 		}
 
 		affectedFolderPaths.forEach((folderPath) => {
 			void updateCSSClassesForFolder(folderPath, plugin);
+			// Obsidian rewrites the folder title text in place (e.g. when the
+			// explorer re-sorts or re-renders after its children change), which
+			// wipes the Front Matter Title folder name applied by
+			// changeFolderNameInExplorer. Re-apply it for affected folders.
+			if (plugin.settings.frontMatterTitle.enabled) {
+				void plugin.fmtpHandler?.fmptUpdateFolderName(
+					{ id: '', result: false, path: folderPath, pathOnly: false },
+					false,
+				);
+			}
 		});
+
+		if (explorerTouched && plugin.settings.frontMatterTitle.enabled) {
+			scheduleFolderTitleReconcile(plugin);
+		}
 	});
 
-	fileExplorerMutationObserver.observe(document, { childList: true, subtree: true });
+	fileExplorerMutationObserver.observe(document, {
+		childList: true,
+		characterData: true,
+		subtree: true,
+	});
 }
 
-function getAffectedFolderPath(target: Node): string | null {
-	if (!(target.instanceOf(HTMLElement))) return null;
+const RECONCILE_DELAY_MS = 500;
+
+/**
+ * Re-applies the Front Matter Title name to every folder in the File Explorer
+ * once explorer mutations have settled.
+ *
+ * Safety net for title texts that got reset outside of the per-mutation
+ * handling above, e.g. while the observer was being re-registered or while a
+ * re-apply ran while the Front Matter Title resolver was momentarily unable to
+ * resolve the title. Applying a title is idempotent and folders without a
+ * resolvable title are skipped by fmptUpdateFolderName, so this cannot loop.
+ */
+function scheduleFolderTitleReconcile(plugin: FolderNotesPlugin): void {
+	if (reconcileTimeout !== null) {
+		window.clearTimeout(reconcileTimeout);
+	}
+	reconcileTimeout = window.setTimeout(() => {
+		reconcileTimeout = null;
+		reconcileFolderTitles(plugin);
+	}, RECONCILE_DELAY_MS);
+}
+
+function reconcileFolderTitles(plugin: FolderNotesPlugin): void {
+	if (!plugin.settings.frontMatterTitle.enabled) return;
+	const allTitles = activeDocument.querySelectorAll('.nav-folder-title');
+	for (const folderTitle of Array.from(allTitles)) {
+		if (!(folderTitle.instanceOf(HTMLElement))) continue;
+		const folderPath = folderTitle.getAttribute('data-path');
+		if (!folderPath) continue;
+		plugin.fmtpHandler?.fmptUpdateFolderName(
+			{ id: '', result: false, path: folderPath, pathOnly: false },
+			false,
+		);
+	}
+}
+
+function getAffectedFolderPath(target: Node | null): string | null {
+	if (!target || !(target.instanceOf(HTMLElement))) return null;
 	const folder = target.closest('.nav-folder');
 	const folderTitle = folder?.querySelector('.nav-folder-title');
 	return folderTitle?.getAttribute('data-path') ?? null;
@@ -99,7 +170,7 @@ function initializeAllFolderTitles(plugin: FolderNotesPlugin): void {
 	}
 }
 
-function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin): void {
+function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin): boolean {
 	const titles: HTMLElement[] = [];
 	if (node.matches('.nav-folder-title-content')) {
 		titles.push(node);
@@ -107,6 +178,7 @@ function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin): void
 	node.querySelectorAll('.nav-folder-title-content').forEach((el) => {
 		titles.push(el as HTMLElement);
 	});
+	if (titles.length === 0) return false;
 
 	titles.forEach((folderTitle) => {
 		const folderEl = folderTitle.closest('.nav-folder-title');
@@ -124,6 +196,7 @@ function processAddedFolders(node: HTMLElement, plugin: FolderNotesPlugin): void
 		}
 		setupFolderTitle(folderTitle, plugin, folderPath);
 	});
+	return true;
 }
 
 async function setupFolderTitle(
