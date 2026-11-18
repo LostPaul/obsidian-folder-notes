@@ -19,6 +19,7 @@ import {
 	openFolderNote,
 	extractFolderName,
 	detachFolderNote,
+	getFolderNoteNameTemplates,
 } from './functions/folderNoteFunctions';
 import { ExcludedFolder } from './ExcludeFolders/ExcludeFolder';
 import { getFolderPathFromString, getFileExplorerActiveFolder } from './functions/utils';
@@ -279,9 +280,9 @@ export class Commands {
 					if (this.plugin.settings.storageLocation === 'insideFolder') {
 						folder = file.parent;
 					} else {
-						const { folderNoteName } = this.plugin.settings;
-						const fileName = extractFolderName(folderNoteName, file.basename);
-						if (fileName) {
+						for (const template of getFolderNoteNameTemplates(this.plugin)) {
+							const fileName = extractFolderName(template, file.basename);
+							if (!fileName) { continue; }
 							if (file.parent?.path === '' || file.parent?.path === '/') {
 								folder = this.plugin.app.vault.getAbstractFileByPath(fileName);
 							} else {
@@ -289,6 +290,7 @@ export class Commands {
 									file.parent?.path + '/' + fileName,
 								);
 							}
+							if (folder) { break; }
 						}
 					}
 
